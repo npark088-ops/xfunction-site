@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 export default function Home() {
   const [page, setPage] = useState("home");
   const [visible, setVisible] = useState(false);
+  const [acceptedCookies, setAcceptedCookies] = useState(false);
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 100);
@@ -270,7 +271,58 @@ export default function Home() {
 
       {page === "about" && <div style={{ padding: "100px" }}>About Page</div>}
       {page === "app" && <div style={{ padding: "100px" }}>App Page</div>}
+{!acceptedCookies && (
+  <div style={{
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    background: "#111",
+    color: "white",
+    padding: "15px 30px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    zIndex: 999
+  }}>
+    <span>
+      This site uses cookies to improve your experience.
+    </span>
 
+    <div style={{ display: "flex", gap: "10px" }}>
+
+      <button
+        onClick={() => {
+          document.cookie = "acceptedCookies=true";
+          setAcceptedCookies(true);
+        }}
+        style={{
+          padding: "8px 15px",
+          background: "white",
+          color: "black",
+          border: "none",
+          cursor: "pointer"
+        }}
+      >
+        Accept
+      </button>
+
+      <button
+        onClick={() => setAcceptedCookies(true)}
+        style={{
+          padding: "8px 15px",
+          background: "#333",
+          color: "white",
+          border: "none",
+          cursor: "pointer"
+        }}
+      >
+        Reject
+      </button>
+
+    </div>
+  </div>
+)}
     </div>
   );
 }
