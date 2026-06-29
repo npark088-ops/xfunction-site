@@ -9,8 +9,23 @@ export default function Home() {
   const [acceptedCookies, setAcceptedCookies] = useState(false);
 
   useEffect(() => {
+  if (!localStorage.getItem("user_id")) {
+    localStorage.setItem("user_id", Math.random().toString(36).substring(2));
+  }
+}, []);
+  
+  useEffect(() => {
     setTimeout(() => setVisible(true), 100);
   }, []);
+  useEffect(() => {
+  const hasAccepted = document.cookie.includes("acceptedCookies=true");
+
+  if (hasAccepted) {
+    setAcceptedCookies(true);
+  }
+}, []);
+``
+
 
   return (
     <div style={{ margin: 0, fontFamily: "Arial" }}>
@@ -31,18 +46,41 @@ export default function Home() {
 
   <div style={{ display: "flex", gap: "30px" }}>
 
-    <Link href="/" style={navBtn}>
-      Home
-    </Link>
+    <span
+  onClick={() => {
+    if (typeof window !== "undefined") {
+      (window as any).gtag?.("event", "click_home");
+    }
+  }}
+>
+  <Link href="/" style={navBtn}>
+    Home
+  </Link>
+</span>
 
-    <Link href="/about" style={navBtn}>
-      About
-    </Link>
+    <span
+  onClick={() => {
+    if (typeof window !== "undefined") {
+      (window as any).gtag?.("event", "click_about");
+    }
+  }}
+>
+  <Link href="/about" style={navBtn}>
+    About
+  </Link>
+</span>
 
-    <Link href="/app-page" style={navBtn}>
-      App
-    </Link>
-
+    <span
+  onClick={() => {
+    if (typeof window !== "undefined") {
+      (window as any).gtag?.("event", "click_app");
+    }
+  }}
+>
+  <Link href="/app-page" style={navBtn}>
+    App
+  </Link>
+</span>
   </div>
 </div>
 
@@ -292,33 +330,59 @@ export default function Home() {
     <div style={{ display: "flex", gap: "10px" }}>
 
       <button
-        onClick={() => {
-          document.cookie = "acceptedCookies=true";
-          setAcceptedCookies(true);
-        }}
-        style={{
-          padding: "8px 15px",
-          background: "white",
-          color: "black",
-          border: "none",
-          cursor: "pointer"
-        }}
-      >
-        Accept
-      </button>
+  onClick={() => {
+    if (typeof window !== "undefined") {
+      (window as any).gtag?.('event', 'cookie_reject');
+    }
+
+    setAcceptedCookies(true);
+  }}
+  style={{
+    padding: "8px 15px",
+    background: "#333",
+    color: "white",
+    border: "none",
+    cursor: "pointer"
+  }}
+>
+  Reject
+</button>
+
+      
+
+
 
       <button
-        onClick={() => setAcceptedCookies(true)}
-        style={{
-          padding: "8px 15px",
-          background: "#333",
-          color: "white",
-          border: "none",
-          cursor: "pointer"
-        }}
-      >
-        Reject
-      </button>
+  onClick={() => {
+  document.cookie = "acceptedCookies=true; path=/; max-age=31536000";
+
+  if (typeof window !== "undefined") {
+    (window as any).gtag?.("event", "cookie_accept");
+  }
+
+  // ✅ NEW: SEND TO YOUR BACKEND
+  
+  fetch("/api/events", {
+  method: "POST",
+  body: JSON.stringify({
+    event: "cookie_accept",
+    user: localStorage.getItem("user_id")
+  })
+});
+``
+
+  setAcceptedCookies(true);
+}}
+  style={{
+    padding: "8px 15px",
+    background: "white",
+    color: "black",
+    border: "none",
+    cursor: "pointer"
+  }}
+>
+  Accept
+</button>
 
     </div>
   </div>
