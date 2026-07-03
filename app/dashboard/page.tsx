@@ -54,6 +54,43 @@ filtered.forEach(e => {
     counts[e.event] = (counts[e.event] || 0) + 1;
   });
 
+const trends: Record<string, number> = {};
+
+filtered.forEach(e => {
+  const hour = new Date(e.time).getHours();
+
+  trends[hour] = (trends[hour] || 0) + 1;
+});
+
+const totalUsers = Object.keys(userCounts).length;
+
+const topEvent =
+  Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || "None";
+
+const latestEvent =
+  filtered[0]?.event || "None";
+
+const lastUpdated =
+  filtered[0]?.time
+    ? new Date(filtered[0].time).toLocaleString()
+    : "No data";
+
+<div style={card}>
+  <div>⏰ Last Updated</div>
+  <div>{lastUpdated}</div>
+</div>
+
+const trendData = {
+  labels: Object.keys(trends),
+  datasets: [
+    {
+      label: "Events by Hour",
+      data: Object.values(trends),
+      backgroundColor: "#22c55e"
+    }
+  ]
+};
+
   const chartData = {
     labels: Object.keys(counts),
     datasets: [
@@ -82,9 +119,52 @@ filtered.forEach(e => {
 
 
   return (
-    <div style={{ padding: "40px", color: "white", background: "#111" }}>
-      <h1>📊 Dashboard</h1>
+  <div
+    style={{
+      minHeight: "100vh",
+      color: "white",
+      background: "#111",
+      padding: "30px"
+    }}
+  >
 
+    
+      <h1
+  style={{
+    fontSize: "42px",
+    marginBottom: "20px"
+  }}
+>
+  🚀 xFunction Analytics
+</h1>
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 220px)",
+    gap: "15px",
+    marginBottom: "20px"
+  }}
+>
+  <div style={card}>
+    <div>📈 Total Events</div>
+    <div>{filtered.length}</div>
+  </div>
+
+  <div style={card}>
+    <div>👥 Total Users</div>
+    <div>{totalUsers}</div>
+  </div>
+
+  <div style={card}>
+    <div>🔥 Top Event</div>
+    <div>{topEvent}</div>
+  </div>
+
+  <div style={card}>
+    <div>⏰ Latest Event</div>
+    <div>{latestEvent}</div>
+  </div>
+</div>
       <p style={{ marginBottom: "10px", opacity: 0.7, fontSize: "14px" }}>
         Total Events: {filtered.length}
       </p>
@@ -121,21 +201,41 @@ filtered.forEach(e => {
           borderRadius: "10px"
         }}
       >
-        <Bar data={chartData} />
+        <div style={{ width: "500px", height: "250px" }}>
+  <Bar data={chartData} />
+</div>
       </div>
 
 
       <div
         style={{
-          marginBottom: "30px",
-          background: "#1e293b",
-          padding: "20px",
-          borderRadius: "10px"
-        }}
+  marginBottom: "30px",
+  background: "#1e293b",
+  padding: "20px",
+  borderRadius: "10px",
+  maxWidth: "100%",
+  overflow: "hidden"
+}}
       >
-        <Pie data={chartData} />
+        <div style={{ width: "300px", height: "300px" }}>
+  <Pie data={chartData} />
+</div>
+``
       </div>
 
+<div
+  style={{
+  marginBottom: "30px",
+  background: "#1e293b",
+  padding: "20px",
+  borderRadius: "10px",
+  maxWidth: "100%",
+  overflow: "hidden"
+}}
+>
+  <h2>📈 Activity Trend</h2>
+  <Bar data={trendData} />
+</div>
 
       <div style={{ marginBottom: "30px" }}>
         <h2>👤 User Activity</h2>
@@ -176,8 +276,36 @@ filtered.forEach(e => {
         ))}
       </div>
 
+<div style={{ marginBottom: "30px" }}>
+  <h2>🔴 Live Activity</h2>
 
-      <div style={{ display: "flex", gap: "15px", marginBottom: "20px" }}>
+  {filtered.slice(0, 20).map((e, i) => (
+    <div
+      key={i}
+      style={{
+        background: "#1e293b",
+        padding: "10px",
+        borderRadius: "8px",
+        marginBottom: "5px"
+      }}
+    >
+      <strong>{e.event}</strong>
+      {" • "}
+      {e.user}
+      {" • "}
+      {new Date(e.time).toLocaleTimeString()}
+    </div>
+  ))}
+</div>
+
+      <div
+  style={{
+    display: "flex",
+    gap: "15px",
+    marginBottom: "20px",
+    flexWrap: "nowrap"
+  }}
+>
         {Object.entries(counts).map(([event, count]) => (
           <div
             key={event}
@@ -194,7 +322,8 @@ filtered.forEach(e => {
       </div>
 
 
-      <table>
+      <div style={{ overflowX: "auto" }}>
+  <table style={{ width: "100%" }}>
         <thead>
           <tr>
             <th style={cell}>Event</th>
@@ -223,6 +352,7 @@ filtered.forEach(e => {
           ))}
         </tbody>
       </table>
+</div>
     </div>
   );
 }
@@ -232,6 +362,13 @@ const cell = {
   padding: "10px"
 };
 
+const card = {
+  background: "#1e293b",
+  padding: "12px",
+  borderRadius: "10px",
+  width: "220px",
+  height: "90px"
+};
 
 const btn = {
   marginRight: "10px",

@@ -19,10 +19,9 @@ export async function POST(request: Request) {
   const events = JSON.parse(file);
 
   events.push({
-  ...data,
-  user: data.user || "anonymous",
-  time: new Date().toISOString(),
-});
+    ...data,
+    time: new Date().toISOString(),
+  });
 
   await fs.writeFile(filePath, JSON.stringify(events, null, 2));
 

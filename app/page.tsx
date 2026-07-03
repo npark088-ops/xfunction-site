@@ -44,44 +44,57 @@ export default function Home() {
 }}>
   <h2>XFunction</h2>
 
-  <div style={{ display: "flex", gap: "30px" }}>
+<div style={{ display: "flex", gap: "30px" }}>
 
-    <span
-  onClick={() => {
-    if (typeof window !== "undefined") {
-      (window as any).gtag?.("event", "click_home");
-    }
-  }}
->
-  <Link href="/" style={navBtn}>
-    Home
-  </Link>
-</span>
+  <span
+    onClick={() => {
+      if (typeof window !== "undefined") {
+        (window as any).gtag?.("event", "click_home");
+      }
+    }}
+  >
+    <Link href="/" style={navBtn}>
+      Home
+    </Link>
+  </span>
 
-    <span
-  onClick={() => {
-    if (typeof window !== "undefined") {
-      (window as any).gtag?.("event", "click_about");
-    }
-  }}
->
-  <Link href="/about" style={navBtn}>
-    About
-  </Link>
-</span>
+  <span
+    onClick={() => {
+      if (typeof window !== "undefined") {
+        (window as any).gtag?.("event", "click_about");
+      }
+    }}
+  >
+    <Link href="/about" style={navBtn}>
+      About
+    </Link>
+  </span>
 
-    <span
-  onClick={() => {
-    if (typeof window !== "undefined") {
-      (window as any).gtag?.("event", "click_app");
-    }
-  }}
->
-  <Link href="/app-page" style={navBtn}>
-    App
-  </Link>
-</span>
-  </div>
+  <span
+    onClick={() => {
+      if (typeof window !== "undefined") {
+        (window as any).gtag?.("event", "click_app");
+      }
+    }}
+  >
+    <Link href="/tasks" style={navBtn}>
+      App
+    </Link>
+  </span>
+
+  <span
+    onClick={() => {
+      if (typeof window !== "undefined") {
+        (window as any).gtag?.("event", "click_tasks");
+      }
+    }}
+  >
+    <Link href="/tasks" style={navBtn}>
+      Tasks
+    </Link>
+  </span>
+
+</div>
 </div>
 
       {/* ================= HOME ================= */}
