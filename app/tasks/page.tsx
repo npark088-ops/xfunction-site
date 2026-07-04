@@ -6,6 +6,7 @@ type Task = {
   text: string;
   completed: boolean;
   dueDate: string;
+  aiResponse?: string;
 };
 
 export default function TasksPage() {
@@ -29,12 +30,13 @@ export default function TasksPage() {
   const addTask = () => {
     if (!task.trim()) return;
 
-    setTasks([
+setTasks([
   ...tasks,
   {
     text: task,
     completed: false,
-    dueDate
+    dueDate,
+    aiResponse: ""
   }
 ]);
 
@@ -55,18 +57,31 @@ export default function TasksPage() {
     );
   };
 
-  const breakDownTask = () => {
-    if (!task.trim()) return;
+  const breakDownTask = async () => {
+  if (!task.trim()) return;
 
-    setSteps([
-      `Research "${task}"`,
-      `Create a plan for "${task}"`,
-      `Complete the first section`,
-      `Complete the second section`,
-      `Review your work`,
-      `Finish and submit`
-    ]);
-  };
+  try {
+    const response = await fetch(
+      "/api/task-breakdown",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+  task,
+  dueDate,
+}),
+      }
+    );
+
+const data = await response.json();
+
+setSteps([data.response || "No response"]);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const completedTasks = tasks.filter(
     (task) => task.completed
