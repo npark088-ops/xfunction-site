@@ -14,6 +14,8 @@ export default function TasksPage() {
   const [dueDate, setDueDate] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [steps, setSteps] = useState<string[]>([]);
+const [coachAdvice, setCoachAdvice] = useState("");
+
 
   useEffect(() => {
     const savedTasks = localStorage.getItem("xfunction_tasks");
@@ -60,6 +62,7 @@ setTasks([
   const breakDownTask = async () => {
   if (!task.trim()) return;
 
+
   try {
     const response = await fetch(
       "/api/task-breakdown",
@@ -83,6 +86,45 @@ setSteps([data.response || "No response"]);
   }
 };
 
+const getCoachAdvice = async () => {
+  try {
+    const response = await fetch(
+      "/api/task-breakdown",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          task: `
+Current Tasks:
+
+${tasks
+  .map(
+    (t) =>
+      `${t.text} | Due: ${t.dueDate} | Completed: ${t.completed}`
+  )
+  .join("\n")}
+
+Tell me:
+1. Most important task
+2. Why
+3. What I should do right now
+`,
+          dueDate: "",
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    setCoachAdvice(data.response);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
   const completedTasks = tasks.filter(
     (task) => task.completed
   ).length;
@@ -95,22 +137,63 @@ setSteps([data.response || "No response"]);
         );
 
   return (
+  <div
+    style={{
+      background: "#020617",
+      color: "white",
+      minHeight: "100vh",
+      display: "flex",
+      fontFamily: "Inter, sans-serif"
+    }}
+  >
     <div
-      style={{
-        background: "#111827",
-        color: "white",
-        minHeight: "100vh",
-        padding: "40px",
-        fontFamily: "Arial"
-      }}
-    >
+  style={{
+    width: "250px",
+    background: "#0f172a",
+    padding: "30px",
+    borderRight: "1px solid #1e293b"
+  }}
+>
+  <h2
+    style={{
+      fontSize: "28px",
+      marginBottom: "40px"
+    }}
+  >
+    xFunction
+  </h2>
+
+  <div style={sidebarItem}>Dashboard</div>
+  <div style={sidebarItem}>Tasks</div>
+  <div style={sidebarItem}>AI Coach</div>
+  <div style={sidebarItem}>Analytics</div>
+</div>
+
+<div
+  style={{
+    flex: 1,
+    padding: "40px",
+    maxWidth: "1100px"
+  </div>
+  }}
+></div>
       <h1
         style={{
-          fontSize: "42px",
+          fontSize: "56px",
+          fontWeight: 700,
+          letterSpacing: "-2px",
           marginBottom: "10px"
         }}
       >
-        🧠 xFunction Tasks
+        xFunction Tasks
+        <p
+  style={{
+    fontSize: "18px",
+    opacity: 0.7
+  }}
+>
+  AI-powered executive function assistant
+</p>
       </h1>
 
       <p
@@ -152,13 +235,23 @@ setSteps([data.response || "No response"]);
 
       <div
         style={{
-          background: "#1e293b",
+          background: "#111827",
           padding: "20px",
           borderRadius: "12px",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
+border: "1px solid #1f2937",
           marginBottom: "30px"
         }}
       >
-        <h2>➕ Add Task</h2>
+     <h2
+  style={{
+    marginBottom: "15px",
+    fontSize: "24px",
+    fontWeight: 600
+  }}
+>
+  New Task
+</h2>
 
         <input
           value={task}
@@ -172,7 +265,9 @@ setSteps([data.response || "No response"]);
             marginTop: "10px",
             marginBottom: "15px",
             borderRadius: "8px",
-            border: "none"
+           border: "1px solid #374151",
+background: "#0f172a",
+color: "white",
           }}
         />
 
@@ -187,7 +282,9 @@ setSteps([data.response || "No response"]);
     padding: "12px",
     marginBottom: "15px",
     borderRadius: "8px",
-    border: "none"
+    border: "1px solid #374151",
+background: "#0f172a",
+color: "white",
   }}
 />
 
@@ -212,19 +309,22 @@ setSteps([data.response || "No response"]);
       {steps.length > 0 && (
         <div
           style={{
-            background: "#1e293b",
-            padding: "20px",
+            background: "#111827",
+            padding: "28px",
             borderRadius: "12px",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
+border: "1px solid #1f2937",
             marginBottom: "30px"
           }}
         >
-          <h2>🤖 AI Breakdown</h2>
+          <h2>AI Breakdown</h2>
 
           {steps.map((step, index) => (
             <div
               key={index}
               style={{
-                background: "#334155",
+               background: "#0f172a",
+border: "1px solid #334155",
                 padding: "12px",
                 borderRadius: "8px",
                 marginBottom: "10px"
@@ -236,14 +336,48 @@ setSteps([data.response || "No response"]);
         </div>
       )}
 
-      <div
-        style={{
-          background: "#1e293b",
-          padding: "20px",
-          borderRadius: "12px"
-        }}
-      >
-        <h2>📋 My Tasks</h2>
+<button
+  onClick={getCoachAdvice}
+  style={{
+    ...button,
+    marginBottom: "20px",
+  }}
+>
+  What Should I Work On?
+</button>
+
+{coachAdvice && (
+  <div
+    style={{
+     background:
+  "linear-gradient(135deg,#1e3a8a,#2563eb)",
+      padding: "28px",
+      borderRadius: "12px",
+      marginBottom: "20px",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+      border: "1px solid #1f2937"
+    }}
+  >
+    <h2>AI Coach</h2>
+
+    <div
+      style={{
+        whiteSpace: "pre-wrap",
+        lineHeight: 1.8
+      }}
+    >
+      {coachAdvice}
+    </div>
+  </div>
+)}
+<div
+  style={{
+ background: "#111827",
+    padding: "28px",
+    borderRadius: "12px"
+  }}
+>
+  <h2>My Tasks</h2>
 
         {tasks.length === 0 && (
           <p>No tasks yet.</p>
@@ -253,7 +387,8 @@ setSteps([data.response || "No response"]);
           <div
             key={index}
             style={{
-              background: "#334155",
+             background: "#0f172a",
+border: "1px solid #334155",
               padding: "12px",
               borderRadius: "8px",
               marginBottom: "10px",
@@ -290,7 +425,7 @@ setSteps([data.response || "No response"]);
         opacity: 0.7
       }}
     >
-      📅 Due: {task.dueDate}
+       Due: {task.dueDate}
     </div>
   )}
 </div>
@@ -320,10 +455,13 @@ setSteps([data.response || "No response"]);
 }
 
 const card = {
-  background: "#1e293b",
-  padding: "20px",
+  background: "#111827",
+  padding: "28px",
   borderRadius: "12px",
+  boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
+border: "1px solid #1f2937",
   minWidth: "180px"
+  
 };
 
 const bigNumber = {
@@ -333,10 +471,14 @@ const bigNumber = {
 };
 
 const button = {
-  background: "#38bdf8",
-  border: "none",
+  background: "#2563eb",
+  border: "1px solid #3b82f6",
   color: "white",
-  padding: "10px 18px",
-  borderRadius: "8px",
-  cursor: "pointer"
+  padding: "12px 20px",
+  borderRadius: "12px",
+  cursor: "pointer",
+  fontWeight: 600,
+  boxShadow:
+    "0 4px 14px rgba(37,99,235,0.35)"
 };
+
