@@ -142,68 +142,40 @@ Tell me:
       background: "#020617",
       color: "white",
       minHeight: "100vh",
-      display: "flex",
+      padding: "40px",
       fontFamily: "Inter, sans-serif"
-    }}
+     }}
   >
-    <div
+  <div
   style={{
-    width: "250px",
-    background: "#0f172a",
-    padding: "30px",
-    borderRight: "1px solid #1e293b"
+    maxWidth: "1200px",
+    margin: "0 auto"
   }}
 >
-  <h2
-    style={{
-      fontSize: "28px",
-      marginBottom: "40px"
-    }}
-  >
-    xFunction
-  </h2>
-
-  <div style={sidebarItem}>Dashboard</div>
-  <div style={sidebarItem}>Tasks</div>
-  <div style={sidebarItem}>AI Coach</div>
-  <div style={sidebarItem}>Analytics</div>
-</div>
-
-<div
+   <h1
   style={{
-    flex: 1,
-    padding: "40px",
-    maxWidth: "1100px"
-  </div>
-  }}
-></div>
-      <h1
-        style={{
-          fontSize: "56px",
-          fontWeight: 700,
-          letterSpacing: "-2px",
-          marginBottom: "10px"
-        }}
-      >
-        xFunction Tasks
-        <p
-  style={{
-    fontSize: "18px",
-    opacity: 0.7
+    fontSize: "56px",
+    fontWeight: 700,
+    lineHeight: 0.9,
+    letterSpacing: "-2px",
+    marginBottom: "0px"
   }}
 >
-  AI-powered executive function assistant
+  xFunction
+</h1>
+
+<p
+  style={{
+    fontSize: "16px",
+    opacity: 0.55,
+    fontWeight: 500,
+    marginTop: "10px",
+    marginBottom: "40px",
+    letterSpacing: "0.5px"
+  }}
+>
+  Plan less. Execute more.
 </p>
-      </h1>
-
-      <p
-        style={{
-          opacity: 0.8,
-          marginBottom: "30px"
-        }}
-      >
-        Turn overwhelming tasks into manageable steps.
-      </p>
 
       <div
         style={{
@@ -261,7 +233,8 @@ border: "1px solid #1f2937",
           placeholder="Enter a task..."
           style={{
             width: "100%",
-            padding: "12px",
+            padding: "18px",
+            transition: "0.2s ease",
             marginTop: "10px",
             marginBottom: "15px",
             borderRadius: "8px",
@@ -279,7 +252,8 @@ color: "white",
   }
   style={{
     width: "100%",
-    padding: "12px",
+    padding: "18px",
+    transition: "0.2s ease",
     marginBottom: "15px",
     borderRadius: "8px",
     border: "1px solid #374151",
@@ -287,23 +261,32 @@ background: "#0f172a",
 color: "white",
   }}
 />
+<button
+  onClick={addTask}
+  style={button}
+>
+  Save Task
+</button>
 
-        <button
-          onClick={addTask}
-          style={button}
-        >
-          Save Task
-        </button>
+<button
+  onClick={breakDownTask}
+  style={{
+    ...button,
+    marginLeft: "10px"
+  }}
+>
+  Break Down With AI
+</button>
 
-        <button
-          onClick={breakDownTask}
-          style={{
-            ...button,
-            marginLeft: "10px"
-          }}
-        >
-          Break Down With AI
-        </button>
+<button
+  onClick={getCoachAdvice}
+  style={{
+    ...button,
+    marginLeft: "10px"
+  }}
+>
+  Get AI Recommendation
+</button>
       </div>
 
       {steps.length > 0 && (
@@ -325,32 +308,24 @@ border: "1px solid #1f2937",
               style={{
                background: "#0f172a",
 border: "1px solid #334155",
-                padding: "12px",
+                padding: "18px",
+                transition: "0.2s ease",
                 borderRadius: "8px",
                 marginBottom: "10px"
               }}
             >
-              ✅ {step}
+               {step}
             </div>
           ))}
         </div>
       )}
 
-<button
-  onClick={getCoachAdvice}
-  style={{
-    ...button,
-    marginBottom: "20px",
-  }}
->
-  What Should I Work On?
-</button>
+
 
 {coachAdvice && (
   <div
     style={{
-     background:
-  "linear-gradient(135deg,#1e3a8a,#2563eb)",
+     background: "#111827",
       padding: "28px",
       borderRadius: "12px",
       marginBottom: "20px",
@@ -389,7 +364,8 @@ border: "1px solid #334155",
             style={{
              background: "#0f172a",
 border: "1px solid #334155",
-              padding: "12px",
+              padding: "18px",
+              transition: "0.2s ease",
               borderRadius: "8px",
               marginBottom: "10px",
               display: "flex",
@@ -451,13 +427,15 @@ border: "1px solid #334155",
         ))}
       </div>
     </div>
+  </div>
   );
 }
 
 const card = {
   background: "#111827",
-  padding: "28px",
-  borderRadius: "12px",
+  padding: "24px",
+  height: "120px",
+  borderRadius: "16px",
   boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
 border: "1px solid #1f2937",
   minWidth: "180px"
@@ -465,7 +443,7 @@ border: "1px solid #1f2937",
 };
 
 const bigNumber = {
-  fontSize: "32px",
+  fontSize: "42px",
   fontWeight: "bold" as const,
   marginTop: "10px"
 };
