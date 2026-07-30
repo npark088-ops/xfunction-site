@@ -4,3 +4,13 @@ body {
   background: #111;
   color: white;
 }
+
+.course-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.course-card:hover {
+  border-color: #5EEAD4;
+  transform: translateY(-4px);
+}

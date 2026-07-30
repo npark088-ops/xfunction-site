@@ -36,15 +36,16 @@ export default function Home() {
   top: 0,
   left: 0,
   width: "100%",
+  boxSizing: "border-box",
   display: "flex",
   justifyContent: "space-between",
-  padding: "20px 40px",
+  padding: "40px 24px",
   color: "white",
   zIndex: 100
 }}>
   <h2>XFunction</h2>
 
-<div style={{ display: "flex", gap: "30px" }}>
+<div style={{ display: "flex", gap: "32px" }}>
 
   <span
     onClick={() => {
@@ -77,20 +78,8 @@ export default function Home() {
       }
     }}
   >
-    <Link href="/tasks" style={navBtn}>
+    <Link href="/app" style={navBtn}>
       App
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_tasks");
-      }
-    }}
-  >
-    <Link href="/tasks" style={navBtn}>
-      Tasks
     </Link>
   </span>
 
@@ -140,43 +129,49 @@ export default function Home() {
             }} />
 
             {/* HERO TEXT */}
-            <div style={{
-              position: "relative",
-              height: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              textAlign: "center",
-              color: "white",
-              padding: "20px"
-            }}>
-              <div style={{
-                opacity: visible ? 1 : 0,
-                transform: visible ? "translateY(0px)" : "translateY(40px)",
-                transition: "all 1s ease"
-              }}>
+<div
+  style={{
+    position: "relative",
+    height: "100%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    textAlign: "center",
+    color: "white",
+    padding: "20px"
+  }}
+>
+  <div
+    style={{
+      opacity: visible ? 1 : 0,
+      transform: visible ? "translateY(0px)" : "translateY(40px)",
+      transition: "all 1s ease"
+    }}
+  >
+    <h1
+      style={{
+        fontSize: "100px",
+        fontWeight: "600",
+        lineHeight: "1.1"
+      }}
+    >
+      XFunction
+    </h1>
 
-                <h1 style={{
-                  fontSize: "100px",
-                  fontWeight: "600",
-                  lineHeight: "1.1"
-                }}>
-                  XFunction
-                </h1>
-
-                <p style={{
-                  marginTop: "20px",
-                  fontSize: "24px",
-                  maxWidth: "700px",
-                  marginLeft: "auto",
-                  marginRight: "auto"
-                }}>
-                  A system designed to transform complexity into clarity,
-                  enabling consistent execution and long-term progress.
-                </p>
-
-              </div>
-            </div>
+    <p
+      style={{
+        marginTop: "20px",
+        fontSize: "24px",
+        maxWidth: "700px",
+        marginLeft: "auto",
+        marginRight: "auto"
+      }}
+    >
+      A system designed to transform complexity into clarity,
+      enabling consistent execution and long-term progress.
+    </p>
+  </div>
+</div>
 
           </div>
 
