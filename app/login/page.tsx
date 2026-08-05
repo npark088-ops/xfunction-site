@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { createClient } from "../../lib/supabase/client";
 
 const bg = "#0B1120";
@@ -25,7 +25,20 @@ const inputStyle = {
 
 type Mode = "sign-in" | "sign-up";
 
+// useSearchParams() opts the component into client-side rendering that
+// needs a Suspense boundary during static generation/build — Next.js's
+// documented pattern is to isolate it in its own component and wrap
+// that in <Suspense> from the page's default export, rather than
+// suspend the whole page.
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/overview";
 
