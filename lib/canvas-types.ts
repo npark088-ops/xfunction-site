@@ -44,3 +44,16 @@ export interface CanvasSubmission {
   submitted_at: string | null;
   workflow_state: "submitted" | "graded" | "unsubmitted" | "pending_review";
 }
+
+// Response shape from POST /login/oauth2/token, per Canvas's OAuth2 docs:
+// https://canvas.instructure.com/doc/api/file.oauth.html
+export interface CanvasOAuthTokenResponse {
+  access_token: string;
+  token_type: "Bearer";
+  user: {
+    id: number;
+    name: string;
+  };
+  refresh_token?: string;
+  expires_in?: number;
+}

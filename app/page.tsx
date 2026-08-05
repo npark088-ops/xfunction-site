@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
+const bg = "#0B1120";
+const card = "#141B2E";
+const border = "#232C45";
+const cyan = "#5EEAD4";
+const textDim = "#8B94AC";
+
 export default function Home() {
   const [page, setPage] = useState("home");
   const [visible, setVisible] = useState(false);
@@ -28,7 +34,7 @@ export default function Home() {
 
 
   return (
-    <div style={{ margin: 0, fontFamily: "Arial" }}>
+    <div style={{ margin: 0, fontFamily: "Inter, sans-serif", background: bg }}>
 
       {/* NAVBAR */}
       <div style={{
@@ -43,7 +49,7 @@ export default function Home() {
   color: "white",
   zIndex: 100
 }}>
-  <h2>XFunction</h2>
+  <h2 style={{ color: cyan }}>XFunction</h2>
 
 <div style={{ display: "flex", gap: "32px" }}>
 
@@ -74,11 +80,23 @@ export default function Home() {
   <span
     onClick={() => {
       if (typeof window !== "undefined") {
+        (window as any).gtag?.("event", "click_pricing");
+      }
+    }}
+  >
+    <Link href="/pricing" style={navBtn}>
+      Pricing
+    </Link>
+  </span>
+
+  <span
+    onClick={() => {
+      if (typeof window !== "undefined") {
         (window as any).gtag?.("event", "click_app");
       }
     }}
   >
-    <Link href="/app" style={navBtn}>
+    <Link href="/overview" style={navBtn}>
       App
     </Link>
   </span>
@@ -178,7 +196,7 @@ export default function Home() {
           {/* SECTION 1 */}
           <div style={{
   padding: "120px 20px",
-  background: "white",
+  background: bg,
   display: "flex",
   justifyContent: "center"
 }}>
@@ -187,14 +205,14 @@ export default function Home() {
     textAlign: "center",
     padding: "60px",
     borderRadius: "20px",
-    background: "#f1f5f9",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
+    background: card,
+    border: `1px solid ${border}`
   }}>
 
     <h2 style={{
       fontSize: "52px",
       fontWeight: "700",
-      color: "#111"
+      color: "white"
     }}>
       Plan less. Execute more.
     </h2>
@@ -202,7 +220,7 @@ export default function Home() {
     <p style={{
       marginTop: "20px",
       fontSize: "20px",
-      color: "#333",
+      color: textDim,
       lineHeight: "1.7"
     }}>
       XFunction eliminates the constant need to decide what to do next.
@@ -213,7 +231,7 @@ export default function Home() {
     <p style={{
       marginTop: "15px",
       fontSize: "20px",
-      color: "#333",
+      color: textDim,
       lineHeight: "1.7"
     }}>
       This removes hesitation, reduces wasted time, and allows you to
@@ -234,7 +252,7 @@ export default function Home() {
           {/* SECTION 2 */}
           <div style={{
   padding: "120px 20px",
-  background: "white",
+  background: bg,
   display: "flex",
   justifyContent: "center"
 }}>
@@ -243,13 +261,13 @@ export default function Home() {
     textAlign: "center",
     padding: "60px",
     borderRadius: "20px",
-    background: "#f1f5f9",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
+    background: card,
+    border: `1px solid ${border}`
   }}>
     <h2 style={{
   fontSize: "52px",
   fontWeight: "700",
-  color: "#111"
+  color: "white"
 }}>
       Built for consistency
     </h2>
@@ -257,7 +275,7 @@ export default function Home() {
     <p style={{
       marginTop: "20px",
       fontSize: "20px",
-      color: "#444",
+      color: textDim,
       lineHeight: "1.7"
     }}>
       Most systems depend on motivation, which fluctuates over time.
@@ -268,7 +286,7 @@ export default function Home() {
     <p style={{
       marginTop: "15px",
       fontSize: "20px",
-      color: "#444",
+      color: textDim,
       lineHeight: "1.7"
     }}>
       By removing uncertainty and simplifying decisions, execution becomes
@@ -291,7 +309,8 @@ export default function Home() {
           <div style={{
             padding: "140px 20px",
             textAlign: "center",
-            background: "#111",
+            background: card,
+            borderTop: `1px solid ${border}`,
             color: "white"
           }}>
             <h2 style={{ fontSize: "44px" }}>
@@ -304,7 +323,7 @@ export default function Home() {
               maxWidth: "700px",
               marginLeft: "auto",
               marginRight: "auto",
-              opacity: 0.8
+              color: textDim
             }}>
               When structure replaces uncertainty, execution becomes natural.
               Over time, this creates a compounding effect of consistent progress
@@ -323,7 +342,8 @@ export default function Home() {
     bottom: 0,
     left: 0,
     right: 0,
-    background: "#111",
+    background: card,
+    borderTop: `1px solid ${border}`,
     color: "white",
     padding: "15px 30px",
     display: "flex",
@@ -347,9 +367,10 @@ export default function Home() {
   }}
   style={{
     padding: "8px 15px",
-    background: "#333",
+    background: "transparent",
     color: "white",
-    border: "none",
+    border: `1px solid ${border}`,
+    borderRadius: "6px",
     cursor: "pointer"
   }}
 >
@@ -383,9 +404,11 @@ export default function Home() {
 }}
   style={{
     padding: "8px 15px",
-    background: "white",
-    color: "black",
+    background: cyan,
+    color: bg,
     border: "none",
+    borderRadius: "6px",
+    fontWeight: 700,
     cursor: "pointer"
   }}
 >

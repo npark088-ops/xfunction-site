@@ -1,13 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createClient } from "../../../lib/supabase/client";
+
+const bg = "#0B1120";
+const card = "#141B2E";
+const border = "#232C45";
+const cyan = "#5EEAD4";
+const red = "#F16565";
+const textDim = "#8B94AC";
 
 type Task = {
+  id: string;
   text: string;
   completed: boolean;
-  dueDate: string;
-  aiResponse?: string;
+  due_date: string | null;
 };
+
+const supabase = createClient();
 
 export default function TasksPage() {
   const [task, setTask] = useState("");
@@ -18,45 +28,64 @@ const [coachAdvice, setCoachAdvice] = useState("");
 
 
   useEffect(() => {
-    const savedTasks = localStorage.getItem("xfunction_tasks");
-
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks));
-    }
+    supabase
+      .from("tasks")
+      .select("id, text, completed, due_date")
+      .order("created_at", { ascending: true })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error(error);
+          return;
+        }
+        setTasks(data ?? []);
+      });
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("xfunction_tasks", JSON.stringify(tasks));
-  }, [tasks]);
-
-  const addTask = () => {
+  const addTask = async () => {
     if (!task.trim()) return;
 
-setTasks([
-  ...tasks,
-  {
-    text: task,
-    completed: false,
-    dueDate,
-    aiResponse: ""
-  }
-]);
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert({ text: task, due_date: dueDate || null })
+      .select("id, text, completed, due_date")
+      .single();
 
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setTasks([...tasks, data]);
     setDueDate("");
   };
 
-  const deleteTask = (index: number) => {
-    setTasks(tasks.filter((_, i) => i !== index));
+  const deleteTask = async (id: string) => {
+    const previous = tasks;
+    setTasks(tasks.filter((t) => t.id !== id));
+
+    const { error } = await supabase.from("tasks").delete().eq("id", id);
+    if (error) {
+      console.error(error);
+      setTasks(previous);
+    }
   };
 
-  const toggleTask = (index: number) => {
-    setTasks(
-      tasks.map((task, i) =>
-        i === index
-          ? { ...task, completed: !task.completed }
-          : task
-      )
-    );
+  const toggleTask = async (id: string) => {
+    const target = tasks.find((t) => t.id === id);
+    if (!target) return;
+
+    const previous = tasks;
+    setTasks(tasks.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
+
+    const { error } = await supabase
+      .from("tasks")
+      .update({ completed: !target.completed })
+      .eq("id", id);
+
+    if (error) {
+      console.error(error);
+      setTasks(previous);
+    }
   };
 
   const breakDownTask = async () => {
@@ -102,7 +131,7 @@ Current Tasks:
 ${tasks
   .map(
     (t) =>
-      `${t.text} | Due: ${t.dueDate} | Completed: ${t.completed}`
+      `${t.text} | Due: ${t.due_date ?? ""} | Completed: ${t.completed}`
   )
   .join("\n")}
 
@@ -139,10 +168,9 @@ Tell me:
   return (
   <div
     style={{
-      background: "#020617",
       color: "white",
       minHeight: "100vh",
-      padding: "40px",
+      padding: "48px 40px",
       fontFamily: "Inter, sans-serif"
      }}
   >
@@ -152,26 +180,25 @@ Tell me:
     margin: "0 auto"
   }}
 >
+   <div style={{ marginBottom: 8, color: textDim, fontSize: 13, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+     xFunction · Tasks
+   </div>
    <h1
   style={{
-    fontSize: "56px",
+    fontSize: 34,
     fontWeight: 700,
-    lineHeight: 0.9,
-    letterSpacing: "-2px",
-    marginBottom: "0px"
+    letterSpacing: "-0.02em",
+    marginBottom: 4
   }}
 >
-  xFunction
+  Your tasks
 </h1>
 
 <p
   style={{
-    fontSize: "16px",
-    opacity: 0.55,
-    fontWeight: 500,
-    marginTop: "10px",
-    marginBottom: "40px",
-    letterSpacing: "0.5px"
+    fontSize: 15,
+    color: textDim,
+    marginBottom: 24,
   }}
 >
   Plan less. Execute more.
@@ -185,21 +212,21 @@ Tell me:
           flexWrap: "wrap"
         }}
       >
-        <div style={card}>
-          <div>Total Tasks</div>
+        <div style={statCard}>
+          <div style={{ color: textDim, fontSize: 13 }}>Total Tasks</div>
           <div style={bigNumber}>{tasks.length}</div>
         </div>
 
-        <div style={card}>
-          <div>Completed</div>
+        <div style={statCard}>
+          <div style={{ color: textDim, fontSize: 13 }}>Completed</div>
           <div style={bigNumber}>
             {completedTasks}
           </div>
         </div>
 
-        <div style={card}>
-          <div>Completion Rate</div>
-          <div style={bigNumber}>
+        <div style={statCard}>
+          <div style={{ color: textDim, fontSize: 13 }}>Completion Rate</div>
+          <div style={{ ...bigNumber, color: cyan }}>
             {completionRate}%
           </div>
         </div>
@@ -207,12 +234,11 @@ Tell me:
 
       <div
         style={{
-          background: "#111827",
-          padding: "20px",
-          borderRadius: "12px",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
-border: "1px solid #1f2937",
-          marginBottom: "30px"
+          background: card,
+          padding: "24px",
+          borderRadius: "16px",
+border: `1px solid ${border}`,
+          marginBottom: "24px"
         }}
       >
      <h2
@@ -233,13 +259,13 @@ border: "1px solid #1f2937",
           placeholder="Enter a task..."
           style={{
             width: "100%",
-            padding: "18px",
+            padding: "14px",
             transition: "0.2s ease",
             marginTop: "10px",
             marginBottom: "15px",
-            borderRadius: "8px",
-           border: "1px solid #374151",
-background: "#0f172a",
+            borderRadius: "10px",
+           border: `1px solid ${border}`,
+background: bg,
 color: "white",
           }}
         />
@@ -252,12 +278,12 @@ color: "white",
   }
   style={{
     width: "100%",
-    padding: "18px",
+    padding: "14px",
     transition: "0.2s ease",
     marginBottom: "15px",
-    borderRadius: "8px",
-    border: "1px solid #374151",
-background: "#0f172a",
+    borderRadius: "10px",
+    border: `1px solid ${border}`,
+background: bg,
 color: "white",
   }}
 />
@@ -271,7 +297,7 @@ color: "white",
 <button
   onClick={breakDownTask}
   style={{
-    ...button,
+    ...secondaryButton,
     marginLeft: "10px"
   }}
 >
@@ -281,7 +307,7 @@ color: "white",
 <button
   onClick={getCoachAdvice}
   style={{
-    ...button,
+    ...secondaryButton,
     marginLeft: "10px"
   }}
 >
@@ -292,25 +318,24 @@ color: "white",
       {steps.length > 0 && (
         <div
           style={{
-            background: "#111827",
-            padding: "28px",
-            borderRadius: "12px",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
-border: "1px solid #1f2937",
-            marginBottom: "30px"
+            background: card,
+            padding: "24px",
+            borderRadius: "16px",
+border: `1px solid ${border}`,
+            marginBottom: "24px"
           }}
         >
-          <h2>AI Breakdown</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>AI Breakdown</h2>
 
           {steps.map((step, index) => (
             <div
               key={index}
               style={{
-               background: "#0f172a",
-border: "1px solid #334155",
-                padding: "18px",
+               background: bg,
+border: `1px solid ${border}`,
+                padding: "16px",
                 transition: "0.2s ease",
-                borderRadius: "8px",
+                borderRadius: "10px",
                 marginBottom: "10px"
               }}
             >
@@ -325,20 +350,20 @@ border: "1px solid #334155",
 {coachAdvice && (
   <div
     style={{
-     background: "#111827",
-      padding: "28px",
-      borderRadius: "12px",
-      marginBottom: "20px",
-      boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-      border: "1px solid #1f2937"
+     background: card,
+      padding: "24px",
+      borderRadius: "16px",
+      marginBottom: "24px",
+      border: `1px solid ${border}`
     }}
   >
-    <h2>AI Coach</h2>
+    <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>AI Coach</h2>
 
     <div
       style={{
         whiteSpace: "pre-wrap",
-        lineHeight: 1.8
+        lineHeight: 1.8,
+        color: textDim,
       }}
     >
       {coachAdvice}
@@ -347,26 +372,27 @@ border: "1px solid #334155",
 )}
 <div
   style={{
- background: "#111827",
-    padding: "28px",
-    borderRadius: "12px"
+ background: card,
+    padding: "24px",
+    borderRadius: "16px",
+    border: `1px solid ${border}`,
   }}
 >
-  <h2>My Tasks</h2>
+  <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>My Tasks</h2>
 
         {tasks.length === 0 && (
-          <p>No tasks yet.</p>
+          <p style={{ color: textDim }}>No tasks yet.</p>
         )}
 
-        {tasks.map((task, index) => (
+        {tasks.map((task) => (
           <div
-            key={index}
+            key={task.id}
             style={{
-             background: "#0f172a",
-border: "1px solid #334155",
-              padding: "18px",
+             background: bg,
+border: `1px solid ${border}`,
+              padding: "16px",
               transition: "0.2s ease",
-              borderRadius: "8px",
+              borderRadius: "10px",
               marginBottom: "10px",
               display: "flex",
               justifyContent: "space-between",
@@ -378,7 +404,7 @@ border: "1px solid #334155",
                 type="checkbox"
                 checked={task.completed}
                 onChange={() =>
-                  toggleTask(index)
+                  toggleTask(task.id)
                 }
               />
 
@@ -394,14 +420,14 @@ border: "1px solid #334155",
                 <div>
   <div>{task.text}</div>
 
-  {task.dueDate && (
+  {task.due_date && (
     <div
       style={{
         fontSize: "12px",
-        opacity: 0.7
+        color: textDim,
       }}
     >
-       Due: {task.dueDate}
+       Due: {task.due_date}
     </div>
   )}
 </div>
@@ -410,15 +436,17 @@ border: "1px solid #334155",
 
             <button
               onClick={() =>
-                deleteTask(index)
+                deleteTask(task.id)
               }
               style={{
-                background: "#ef4444",
-                border: "none",
-                color: "white",
+                background: "transparent",
+                border: `1px solid ${red}`,
+                color: red,
                 padding: "8px 12px",
-                borderRadius: "6px",
-                cursor: "pointer"
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 13,
               }}
             >
               Delete
@@ -431,32 +459,38 @@ border: "1px solid #334155",
   );
 }
 
-const card = {
-  background: "#111827",
+const statCard = {
+  background: card,
   padding: "24px",
-  height: "120px",
+  height: "110px",
   borderRadius: "16px",
-  boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
-border: "1px solid #1f2937",
+border: `1px solid ${border}`,
   minWidth: "180px"
-  
+
 };
 
 const bigNumber = {
-  fontSize: "42px",
+  fontSize: "36px",
   fontWeight: "bold" as const,
-  marginTop: "10px"
+  marginTop: "6px"
 };
 
 const button = {
-  background: "#2563eb",
-  border: "1px solid #3b82f6",
-  color: "white",
+  background: cyan,
+  border: "none",
+  color: bg,
   padding: "12px 20px",
-  borderRadius: "12px",
+  borderRadius: "10px",
   cursor: "pointer",
-  fontWeight: 600,
-  boxShadow:
-    "0 4px 14px rgba(37,99,235,0.35)"
+  fontWeight: 700,
 };
 
+const secondaryButton = {
+  background: "transparent",
+  border: `1px solid ${border}`,
+  color: "white",
+  padding: "12px 20px",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontWeight: 600,
+};

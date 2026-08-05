@@ -5,9 +5,27 @@ import { CanvasAssignmentGroup } from "./canvas-types";
 // without needing live Canvas access. Swap this for a real fetch()
 // to the Canvas API later — nothing downstream needs to change.
 
-// Example course: "AP Biology" — weighted grading:
-// Homework 20%, Quizzes 30%, Tests 50%
-export const mockAssignmentGroups: CanvasAssignmentGroup[] = [
+// The three "(upcoming)" assignments below need to stay in the future
+// relative to whenever the app actually runs, or the Coming Up list
+// (and the email/text reminder buttons, which only show up when
+// something's due soon) silently go empty as real time passes. Fixed
+// calendar dates bit us once already — this keeps them anchored to
+// "today" instead.
+function daysFromNow(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  date.setHours(23, 59, 0, 0);
+  return date.toISOString();
+}
+
+export interface MockCourse {
+  id: string;
+  name: string;
+  assignmentGroups: CanvasAssignmentGroup[];
+}
+
+// "AP Biology" — weighted grading: Homework 20%, Quizzes 30%, Tests 50%
+const apBiologyGroups: CanvasAssignmentGroup[] = [
   {
     id: 1,
     name: "Homework",
@@ -67,10 +85,171 @@ export const mockAssignmentGroups: CanvasAssignmentGroup[] = [
         id: 302,
         name: "Unit 2 Test (upcoming)",
         points_possible: 100,
-        due_at: "2026-08-01T23:59:00Z",
+        due_at: daysFromNow(1),
         // this is the assignment we'll ask "what do I need to score on this?"
         submission: null as any,
       },
     ],
   },
 ];
+
+// "US History" — weighted grading: Homework 20%, Quizzes 25%, Essays 25%, Tests 30%
+const usHistoryGroups: CanvasAssignmentGroup[] = [
+  {
+    id: 1,
+    name: "Homework",
+    group_weight: 20,
+    assignments: [
+      {
+        id: 111,
+        name: "Reading Response: Manifest Destiny",
+        points_possible: 10,
+        due_at: "2026-07-02T23:59:00Z",
+        submission: { score: 9, submitted_at: "2026-07-01T19:00:00Z", workflow_state: "graded" },
+      },
+      {
+        id: 112,
+        name: "Primary Source Analysis",
+        points_possible: 10,
+        due_at: "2026-07-09T23:59:00Z",
+        submission: { score: 7, submitted_at: "2026-07-08T21:00:00Z", workflow_state: "graded" },
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: "Quizzes",
+    group_weight: 25,
+    assignments: [
+      {
+        id: 211,
+        name: "Quiz 1: Colonial America",
+        points_possible: 20,
+        due_at: "2026-07-06T23:59:00Z",
+        submission: { score: 15, submitted_at: "2026-07-06T15:00:00Z", workflow_state: "graded" },
+      },
+      {
+        id: 212,
+        name: "Quiz 2: Civil War",
+        points_possible: 20,
+        due_at: "2026-07-22T23:59:00Z",
+        // not graded yet
+        submission: null as any,
+      },
+    ],
+  },
+  {
+    id: 3,
+    name: "Essays",
+    group_weight: 25,
+    assignments: [
+      {
+        id: 311,
+        name: "DBQ: Industrial Revolution",
+        points_possible: 50,
+        due_at: "2026-07-14T23:59:00Z",
+        submission: { score: 41, submitted_at: "2026-07-13T22:00:00Z", workflow_state: "graded" },
+      },
+    ],
+  },
+  {
+    id: 4,
+    name: "Tests",
+    group_weight: 30,
+    assignments: [
+      {
+        id: 411,
+        name: "Midterm Exam",
+        points_possible: 100,
+        due_at: "2026-07-11T23:59:00Z",
+        submission: { score: 74, submitted_at: "2026-07-11T14:00:00Z", workflow_state: "graded" },
+      },
+      {
+        id: 412,
+        name: "Unit 4 Test (upcoming)",
+        points_possible: 100,
+        due_at: daysFromNow(4),
+        // this is the assignment we'll ask "what do I need to score on this?"
+        submission: null as any,
+      },
+    ],
+  },
+];
+
+// "Algebra II" — weighted grading: Homework 15%, Quizzes 25%, Tests 60%
+const algebra2Groups: CanvasAssignmentGroup[] = [
+  {
+    id: 1,
+    name: "Homework",
+    group_weight: 15,
+    assignments: [
+      {
+        id: 121,
+        name: "Section 4.2 Problems",
+        points_possible: 10,
+        due_at: "2026-07-03T23:59:00Z",
+        submission: { score: 10, submitted_at: "2026-07-02T20:00:00Z", workflow_state: "graded" },
+      },
+      {
+        id: 122,
+        name: "Section 4.3 Problems",
+        points_possible: 10,
+        due_at: "2026-07-10T23:59:00Z",
+        submission: { score: 8, submitted_at: "2026-07-09T18:00:00Z", workflow_state: "graded" },
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: "Quizzes",
+    group_weight: 25,
+    assignments: [
+      {
+        id: 221,
+        name: "Quiz: Polynomial Functions",
+        points_possible: 25,
+        due_at: "2026-07-07T23:59:00Z",
+        submission: { score: 20, submitted_at: "2026-07-07T15:00:00Z", workflow_state: "graded" },
+      },
+      {
+        id: 222,
+        name: "Quiz: Rational Expressions",
+        points_possible: 25,
+        due_at: "2026-07-21T23:59:00Z",
+        // not graded yet
+        submission: null as any,
+      },
+    ],
+  },
+  {
+    id: 3,
+    name: "Tests",
+    group_weight: 60,
+    assignments: [
+      {
+        id: 321,
+        name: "Unit 3 Test: Exponentials",
+        points_possible: 100,
+        due_at: "2026-07-12T23:59:00Z",
+        submission: { score: 88, submitted_at: "2026-07-12T14:00:00Z", workflow_state: "graded" },
+      },
+      {
+        id: 322,
+        name: "Unit 4 Test: Logarithms (upcoming)",
+        points_possible: 100,
+        due_at: daysFromNow(2),
+        // this is the assignment we'll ask "what do I need to score on this?"
+        submission: null as any,
+      },
+    ],
+  },
+];
+
+export const mockCourses: Record<string, MockCourse> = {
+  "ap-biology": { id: "ap-biology", name: "AP Biology", assignmentGroups: apBiologyGroups },
+  "us-history": { id: "us-history", name: "US History", assignmentGroups: usHistoryGroups },
+  "algebra-2": { id: "algebra-2", name: "Algebra II", assignmentGroups: algebra2Groups },
+};
+
+// Kept for lib/test-calculator.ts, which exercises the calculator against a single course.
+export const mockAssignmentGroups = apBiologyGroups;
