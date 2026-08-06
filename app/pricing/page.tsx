@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Check } from "lucide-react";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -26,13 +27,14 @@ const FREE_FEATURES = [
   "Grade trend charts",
   "Email & text deadline reminders",
   "Daily streak tracking",
-  "3 AI generations / month (study plans, study guides, coach check-ins combined)",
+  "3 AI generations / month (study plans, study guides, practice quizzes, coach check-ins combined)",
 ];
 
 const PRO_FEATURES = [
   "Everything in Free",
   "Unlimited study plans",
   "Unlimited study guides",
+  "Unlimited practice quizzes",
   "Unlimited AI coach check-ins",
 ];
 
@@ -64,7 +66,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: text, background: bg, minHeight: "100vh" }}>
+    <div className="xf-page-enter" style={{ fontFamily: "Inter, sans-serif", color: text, background: bg, minHeight: "100vh" }}>
       {/* NAVBAR */}
       <div
         style={{
@@ -110,6 +112,14 @@ export default function PricingPage() {
             Pricing
           </Link>
           <Link
+            href="/help"
+            style={navLink}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+          >
+            Help
+          </Link>
+          <Link
             href="/overview"
             style={navLink}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
@@ -143,10 +153,11 @@ export default function PricingPage() {
       >
         {/* FREE */}
         <div
+          className="xf-card xf-card-hover"
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 20,
+            borderRadius: "var(--radius-xl)",
             padding: 36,
           }}
         >
@@ -175,7 +186,7 @@ export default function PricingPage() {
                   color: text,
                 }}
               >
-                <span style={{ color: green, flexShrink: 0 }}>✓</span>
+                <span style={{ color: green, flexShrink: 0 }}><Check size={15} strokeWidth={2.5} /></span>
                 {f}
               </li>
             ))}
@@ -187,7 +198,7 @@ export default function PricingPage() {
               display: "block",
               textAlign: "center",
               padding: "12px 20px",
-              borderRadius: 10,
+              borderRadius: "var(--radius-sm)",
               background: "transparent",
               border: `1px solid ${border}`,
               color: text,
@@ -202,10 +213,11 @@ export default function PricingPage() {
 
         {/* PRO */}
         <div
+          className="xf-card xf-card-hover"
           style={{
             background: card,
             border: `1px solid ${amber}`,
-            borderRadius: 20,
+            borderRadius: "var(--radius-xl)",
             padding: 36,
             position: "relative",
           }}
@@ -253,7 +265,7 @@ export default function PricingPage() {
                   color: text,
                 }}
               >
-                <span style={{ color: green, flexShrink: 0 }}>✓</span>
+                <span style={{ color: green, flexShrink: 0 }}><Check size={15} strokeWidth={2.5} /></span>
                 {f}
               </li>
             ))}
@@ -267,7 +279,7 @@ export default function PricingPage() {
               width: "100%",
               textAlign: "center",
               padding: "12px 20px",
-              borderRadius: 10,
+              borderRadius: "var(--radius-sm)",
               background: blue,
               border: "none",
               color: "white",

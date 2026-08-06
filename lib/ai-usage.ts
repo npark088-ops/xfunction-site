@@ -1,7 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { ensureNotification } from "./notifications";
 
-// Combined across study plans, study guides, and coach check-ins — see
-// app/api/study-plan, app/api/study-guide, app/api/coach-overview.
+// Combined across study plans, study guides, practice quizzes, and
+// coach check-ins — see app/api/study-plan, app/api/study-guide,
+// app/api/practice-quiz, app/api/coach-overview.
 export const FREE_AI_GENERATIONS_PER_MONTH = 3;
 
 export type AiUsageResult = {
@@ -56,6 +58,15 @@ export async function consumeAiGeneration(
   }
 
   if (usedThisPeriod >= FREE_AI_GENERATIONS_PER_MONTH) {
+    // Only fires once per billing period — dedupe_key includes
+    // periodStart, so hitting the limit repeatedly in the same month
+    // doesn't spam the bell.
+    await ensureNotification(supabase, {
+      type: "ai-limit",
+      message: `You've used all ${FREE_AI_GENERATIONS_PER_MONTH} free AI generations this month. Upgrade to Pro for unlimited access.`,
+      link: "/settings",
+      dedupeKey: `ai-limit:${periodStart}`,
+    });
     return { allowed: false, used: usedThisPeriod, limit: FREE_AI_GENERATIONS_PER_MONTH, isPro: false };
   }
 

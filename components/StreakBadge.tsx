@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Flame, Sparkle } from "lucide-react";
 import { resolveCssVar } from "../lib/theme-color";
 
 const card = "#FFF8EB";
@@ -47,23 +48,23 @@ export function StreakBadge() {
         gap: 12,
         background: `linear-gradient(135deg, ${card}, #FFF1D6)`,
         border: `1px solid ${resolvedAmber}88`,
-        borderRadius: 16,
+        borderRadius: "var(--radius-lg)",
         padding: "12px 20px",
         marginBottom: 24,
-        boxShadow: celebrate ? `0 0 24px ${resolvedAmber}55` : "none",
+        boxShadow: celebrate ? `var(--shadow-sm), 0 0 24px ${resolvedAmber}55` : "var(--shadow-sm)",
         transition: "box-shadow 0.4s ease",
       }}
     >
       <div
         style={{
-          fontSize: 32,
-          lineHeight: 1,
+          display: "flex",
           animation: celebrate ? "streakPop 0.7s ease" : undefined,
-          filter: `drop-shadow(0 0 ${celebrate ? 12 : 5}px ${resolvedAmber}aa)`,
+          filter: `drop-shadow(0 0 ${celebrate ? 10 : 4}px ${resolvedAmber}aa)`,
           transition: "filter 0.4s ease",
+          color: resolvedAmber,
         }}
       >
-        🔥
+        <Flame size={30} strokeWidth={2} fill={resolvedAmber} fillOpacity={0.25} />
       </div>
       <div>
         <div
@@ -92,14 +93,14 @@ export function StreakBadge() {
 
       {celebrate && (
         <>
-          <span style={{ position: "absolute", top: "40%", left: 18, fontSize: 14, animation: "streakParticle0 1s ease-out forwards", pointerEvents: "none" }}>
-            ✨
+          <span style={{ position: "absolute", top: "40%", left: 18, color: resolvedAmber, animation: "streakParticle0 1s ease-out forwards", pointerEvents: "none" }}>
+            <Sparkle size={14} fill={resolvedAmber} />
           </span>
-          <span style={{ position: "absolute", top: "40%", left: 18, fontSize: 14, animation: "streakParticle1 1s ease-out forwards", pointerEvents: "none" }}>
-            ✨
+          <span style={{ position: "absolute", top: "40%", left: 18, color: resolvedAmber, animation: "streakParticle1 1s ease-out forwards", pointerEvents: "none" }}>
+            <Sparkle size={14} fill={resolvedAmber} />
           </span>
-          <span style={{ position: "absolute", top: "40%", left: 18, fontSize: 14, animation: "streakParticle2 1s ease-out forwards", pointerEvents: "none" }}>
-            ✨
+          <span style={{ position: "absolute", top: "40%", left: 18, color: resolvedAmber, animation: "streakParticle2 1s ease-out forwards", pointerEvents: "none" }}>
+            <Sparkle size={14} fill={resolvedAmber} />
           </span>
         </>
       )}

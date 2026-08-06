@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { createClient } from "../../lib/supabase/client";
 
 const bg = "var(--bg)";
@@ -17,7 +18,7 @@ const textDim = "var(--text-dim)";
 const inputStyle = {
   width: "100%",
   padding: "12px 14px",
-  borderRadius: 10,
+  borderRadius: "var(--radius-sm)",
   border: `1px solid ${border}`,
   background: bg,
   color: text,
@@ -112,6 +113,7 @@ function LoginForm() {
 
   return (
     <div
+      className="xf-page-enter"
       style={{
         minHeight: "100vh",
         background: bg,
@@ -127,7 +129,9 @@ function LoginForm() {
         <Link
           href="/"
           style={{
-            display: "inline-block",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
             color: blue,
             textDecoration: "none",
             fontSize: 14,
@@ -135,14 +139,16 @@ function LoginForm() {
             marginBottom: 20,
           }}
         >
-          ← Back to Home
+          <ArrowLeft size={15} strokeWidth={2.5} />
+          Back to Home
         </Link>
 
         <div
+          className="xf-card"
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: "var(--radius-lg)",
             padding: 28,
           }}
         >
@@ -192,7 +198,7 @@ function LoginForm() {
               style={{
                 width: "100%",
                 padding: "12px 16px",
-                borderRadius: 10,
+                borderRadius: "var(--radius-sm)",
                 background: blue,
                 color: "white",
                 border: "none",

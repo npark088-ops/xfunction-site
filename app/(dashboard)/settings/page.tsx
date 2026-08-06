@@ -3,6 +3,7 @@ import { getAiUsageSnapshot } from "../../../lib/ai-usage";
 import { getCanvasConnection } from "../../../lib/canvas-token-store";
 import { getUnlockedAchievementIds } from "../../../lib/achievements";
 import { SettingsContent } from "../../../components/SettingsContent";
+import { ParentAccessCard, type ParentLink } from "../../../components/ParentAccessCard";
 
 const text = "var(--text)";
 const textDim = "var(--text-dim)";
@@ -24,11 +25,12 @@ export default async function SettingsPage({
   let used = 0;
   let limit = 3;
   let unlockedIds: string[] = [];
+  let parentLinks: ParentLink[] = [];
 
   if (user) {
     const supabase = await createClient();
 
-    const [usage, profileRow, canvasConnection] = await Promise.all([
+    const [usage, profileRow, canvasConnection, parentLinksRow] = await Promise.all([
       getAiUsageSnapshot(supabase, user.id),
       supabase
         .from("profiles")
@@ -36,6 +38,10 @@ export default async function SettingsPage({
         .eq("user_id", user.id)
         .maybeSingle(),
       getCanvasConnection(supabase, user.id),
+      supabase
+        .from("parent_links")
+        .select("id, parent_email, status, invite_code, created_at")
+        .order("created_at", { ascending: false }),
     ]);
 
     isPro = usage.isPro;
@@ -48,10 +54,12 @@ export default async function SettingsPage({
       canvasConnected: Boolean(canvasConnection),
     });
     unlockedIds = Array.from(unlocked);
+    parentLinks = parentLinksRow.data ?? [];
   }
 
   return (
     <div
+      className="xf-page-enter"
       style={{
         minHeight: "100vh",
         color: text,
@@ -86,6 +94,8 @@ export default async function SettingsPage({
           justUpgraded={upgraded === "1"}
           unlockedAchievementIds={unlockedIds}
         />
+
+        <ParentAccessCard initialLinks={parentLinks} userEmail={user?.email ?? null} />
       </div>
     </div>
   );

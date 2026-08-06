@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X, Minus, Plus, Play, Pause, RotateCcw, SkipForward } from "lucide-react";
 
 const bg = "var(--bg)";
 const border = "var(--border)";
@@ -23,8 +24,11 @@ function formatTime(totalSeconds: number): string {
 }
 
 const primaryButton = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
   padding: "10px 22px",
-  borderRadius: 10,
+  borderRadius: "var(--radius-sm)",
   background: blue,
   color: "white",
   border: "none",
@@ -34,8 +38,11 @@ const primaryButton = {
 };
 
 const secondaryButton = {
+  display: "flex",
+  alignItems: "center",
+  gap: 6,
   padding: "10px 18px",
-  borderRadius: 10,
+  borderRadius: "var(--radius-sm)",
   background: "transparent",
   color: text,
   border: `1px solid ${border}`,
@@ -47,12 +54,13 @@ const secondaryButton = {
 const stepperButton = {
   width: 26,
   height: 26,
-  borderRadius: 8,
+  borderRadius: "var(--radius-sm)",
   border: `1px solid ${border}`,
   background: "white",
   color: text,
-  fontSize: 15,
-  fontWeight: 700,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   cursor: "pointer",
   lineHeight: 1,
 };
@@ -147,11 +155,11 @@ export function FocusTimer({
         onClick={(e) => e.stopPropagation()}
         style={{
           background: bg,
-          borderRadius: 20,
+          borderRadius: "var(--radius-xl)",
           padding: 40,
           width: "100%",
           maxWidth: 420,
-          boxShadow: "0 20px 60px rgba(15, 23, 42, 0.25)",
+          boxShadow: "var(--shadow-lg)",
           textAlign: "center",
           position: "relative",
         }}
@@ -165,13 +173,12 @@ export function FocusTimer({
             right: 16,
             background: "none",
             border: "none",
-            fontSize: 20,
+            display: "flex",
             cursor: "pointer",
             color: textDim,
-            lineHeight: 1,
           }}
         >
-          ✕
+          <X size={20} strokeWidth={2} />
         </button>
 
         <div
@@ -211,6 +218,7 @@ export function FocusTimer({
               {phase === "focus" ? "Nice work — take a break." : "Break's over — ready to focus?"}
             </div>
             <button onClick={switchPhase} style={primaryButton}>
+              <Play size={14} strokeWidth={2} fill="white" />
               {phase === "focus" ? "Start break" : "Start next focus session"}
             </button>
           </div>
@@ -218,17 +226,21 @@ export function FocusTimer({
           <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 28 }}>
             {!running ? (
               <button onClick={start} style={primaryButton}>
+                <Play size={14} strokeWidth={2} fill="white" />
                 Start
               </button>
             ) : (
               <button onClick={pause} style={secondaryButton}>
+                <Pause size={13} strokeWidth={2} />
                 Pause
               </button>
             )}
             <button onClick={reset} style={secondaryButton}>
+              <RotateCcw size={13} strokeWidth={2} />
               Reset
             </button>
             <button onClick={switchPhase} style={secondaryButton}>
+              <SkipForward size={13} strokeWidth={2} />
               Skip to {phase === "focus" ? "break" : "focus"}
             </button>
           </div>
@@ -247,11 +259,11 @@ export function FocusTimer({
             <div style={{ fontSize: 12, color: textDim, marginBottom: 6 }}>Focus (min)</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <button onClick={() => adjustFocus(-5)} disabled={running} style={stepperButton}>
-                −
+                <Minus size={13} strokeWidth={2.5} />
               </button>
               <div style={{ fontWeight: 700, color: text, width: 24 }}>{focusMinutes}</div>
               <button onClick={() => adjustFocus(5)} disabled={running} style={stepperButton}>
-                +
+                <Plus size={13} strokeWidth={2.5} />
               </button>
             </div>
           </div>
@@ -259,11 +271,11 @@ export function FocusTimer({
             <div style={{ fontSize: 12, color: textDim, marginBottom: 6 }}>Break (min)</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <button onClick={() => adjustBreak(-1)} disabled={running} style={stepperButton}>
-                −
+                <Minus size={13} strokeWidth={2.5} />
               </button>
               <div style={{ fontWeight: 700, color: text, width: 24 }}>{breakMinutes}</div>
               <button onClick={() => adjustBreak(1)} disabled={running} style={stepperButton}>
-                +
+                <Plus size={13} strokeWidth={2.5} />
               </button>
             </div>
           </div>

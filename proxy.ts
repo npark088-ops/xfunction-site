@@ -5,16 +5,16 @@ import { NextResponse, type NextRequest } from "next/server";
 // This runs on every request (see matcher below) to:
 //   1. Refresh the Supabase session cookie, so it doesn't silently expire.
 //   2. Gate the signed-in parts of the app (/overview, /courses,
-//      /tasks, /grades, /settings — /app is a compat redirect to
-//      /overview) behind auth, redirecting to /login when there's no
-//      session.
+//      /schedule, /tasks, /grades, /settings, /parent — /app is a
+//      compat redirect to /overview) behind auth, redirecting to
+//      /login when there's no session.
 //   3. Redirect an already-signed-in user away from /login.
 //
 // This is an "optimistic" check (cookie-only, no DB round trip) per
 // Next.js's auth guidance — real authorization for data access still
 // happens at the database via Row Level Security policies.
 
-const PROTECTED_PREFIXES = ["/app", "/overview", "/courses", "/tasks", "/grades", "/settings"];
+const PROTECTED_PREFIXES = ["/app", "/overview", "/courses", "/schedule", "/tasks", "/grades", "/settings", "/parent"];
 
 export default async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CheckCircle2, Link2 } from "lucide-react";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -40,10 +41,11 @@ export function CanvasConnectionCard({
 
   return (
     <div
+      className="xf-card"
       style={{
         background: card,
         border: `1px solid ${border}`,
-        borderRadius: 16,
+        borderRadius: "var(--radius-lg)",
         padding: 20,
         marginBottom: 24,
         display: "flex",
@@ -56,8 +58,19 @@ export function CanvasConnectionCard({
       <div>
         {canvasStatus.connected ? (
           <>
-            <div style={{ fontSize: 14, fontWeight: 600, color: green, marginBottom: 2 }}>
-              ✓ Canvas connected
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 14,
+                fontWeight: 600,
+                color: green,
+                marginBottom: 2,
+              }}
+            >
+              <CheckCircle2 size={16} strokeWidth={2} />
+              Canvas connected
             </div>
             <div style={{ fontSize: 13, color: textDim }}>
               Signed in as {canvasStatus.user?.name}
@@ -82,7 +95,7 @@ export function CanvasConnectionCard({
           onClick={disconnectCanvas}
           style={{
             padding: "10px 20px",
-            borderRadius: 10,
+            borderRadius: "var(--radius-sm)",
             background: bg,
             border: `1px solid ${border}`,
             color: text,
@@ -97,8 +110,11 @@ export function CanvasConnectionCard({
         <a
           href="/api/canvas/connect"
           style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
             padding: "10px 20px",
-            borderRadius: 10,
+            borderRadius: "var(--radius-sm)",
             background: blue,
             color: "white",
             textDecoration: "none",
@@ -106,6 +122,7 @@ export function CanvasConnectionCard({
             fontWeight: 700,
           }}
         >
+          <Link2 size={15} strokeWidth={2} />
           Connect Canvas
         </a>
       )}

@@ -2,6 +2,27 @@
 
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import {
+  ArrowLeft,
+  Download,
+  Check,
+  Timer,
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Sparkles,
+  Target,
+  Pencil,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Plus,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  Save,
+} from "lucide-react";
 import { mockCourses } from "../../../../lib/mock-canvas-data";
 import {
   calculateCategoryBreakdown,
@@ -16,6 +37,7 @@ import { TrendChart } from "../../../../components/TrendChart";
 import { UpgradePrompt } from "../../../../components/UpgradePrompt";
 import { FocusTimer } from "../../../../components/FocusTimer";
 import { createClient } from "../../../../lib/supabase/client";
+import { downloadGradePdf } from "../../../../lib/pdf-export";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -52,11 +74,25 @@ type StudyGuide = {
   topics: StudyGuideTopic[];
 };
 
+type QuizQuestion = {
+  question: string;
+  answer: string;
+};
+
+type PracticeQuiz = {
+  courseName: string;
+  targetAssignment: string;
+  targetGroup: string;
+  questions: QuizQuestion[];
+};
+
 const backLink = (
   <Link
     href="/courses"
     style={{
-      display: "inline-block",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 6,
       color: blue,
       textDecoration: "none",
       fontSize: 14,
@@ -64,7 +100,8 @@ const backLink = (
       marginBottom: 20,
     }}
   >
-    ← Back to courses
+    <ArrowLeft size={15} strokeWidth={2.5} />
+    Back to courses
   </Link>
 );
 
@@ -102,11 +139,93 @@ export default function GradesPage({
         return;
       }
       setStudyPlan(data);
+      setPlanSaveStatus("idle");
     } catch {
       setStudyPlanError({ kind: "error", message: "Failed to generate study plan" });
     } finally {
       setStudyPlanLoading(false);
     }
+  };
+
+  // Saved/edited plans, persisted in Supabase (study_plans, see
+  // supabase/migrations/0010_study_plans.sql) — without this, an
+  // AI-generated (or hand-edited) plan would vanish on refresh.
+  // planLoaded gates the "Generate study plan" button so it doesn't
+  // flash before a previously-saved plan has had a chance to load.
+  const [planLoaded, setPlanLoaded] = useState(false);
+  const [planEditing, setPlanEditing] = useState(false);
+  const [planSaveStatus, setPlanSaveStatus] = useState<"idle" | "saving" | "saved" | "error">(
+    "idle"
+  );
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("study_plans")
+      .select("plan")
+      .eq("course_id", courseId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) console.error(error);
+        if (data?.plan) setStudyPlan(data.plan as StudyPlan);
+        setPlanLoaded(true);
+      });
+  }, [courseId]);
+
+  const saveStudyPlan = () => {
+    if (!studyPlan) return;
+    setPlanSaveStatus("saving");
+    const supabase = createClient();
+    supabase
+      .from("study_plans")
+      .upsert({ course_id: courseId, plan: studyPlan, updated_at: new Date().toISOString() })
+      .then(({ error }) => {
+        setPlanSaveStatus(error ? "error" : "saved");
+        if (error) console.error(error);
+      });
+  };
+
+  const updatePlanTaskText = (dayIndex: number, taskIndex: number, value: string) => {
+    setStudyPlan((prev) => {
+      if (!prev) return prev;
+      const days = prev.days.map((d, di) =>
+        di !== dayIndex ? d : { ...d, tasks: d.tasks.map((t, ti) => (ti === taskIndex ? value : t)) }
+      );
+      return { ...prev, days };
+    });
+  };
+
+  const removePlanTask = (dayIndex: number, taskIndex: number) => {
+    setStudyPlan((prev) => {
+      if (!prev) return prev;
+      const days = prev.days.map((d, di) =>
+        di !== dayIndex ? d : { ...d, tasks: d.tasks.filter((_, ti) => ti !== taskIndex) }
+      );
+      return { ...prev, days };
+    });
+  };
+
+  const addPlanTask = (dayIndex: number) => {
+    setStudyPlan((prev) => {
+      if (!prev) return prev;
+      const days = prev.days.map((d, di) => (di !== dayIndex ? d : { ...d, tasks: [...d.tasks, ""] }));
+      return { ...prev, days };
+    });
+  };
+
+  const movePlanTask = (dayIndex: number, taskIndex: number, direction: -1 | 1) => {
+    setStudyPlan((prev) => {
+      if (!prev) return prev;
+      const day = prev.days[dayIndex];
+      const target = taskIndex + direction;
+      if (target < 0 || target >= day.tasks.length) return prev;
+
+      const tasks = [...day.tasks];
+      [tasks[taskIndex], tasks[target]] = [tasks[target], tasks[taskIndex]];
+
+      const days = prev.days.map((d, di) => (di !== dayIndex ? d : { ...d, tasks }));
+      return { ...prev, days };
+    });
   };
 
   const [studyGuide, setStudyGuide] = useState<StudyGuide | null>(null);
@@ -139,6 +258,50 @@ export default function GradesPage({
     } finally {
       setStudyGuideLoading(false);
     }
+  };
+
+  const [quiz, setQuiz] = useState<PracticeQuiz | null>(null);
+  const [quizLoading, setQuizLoading] = useState(false);
+  const [quizError, setQuizError] = useState<{ kind: "error" | "upgrade"; message: string } | null>(
+    null
+  );
+  // Which questions currently have their answer showing — cleared on
+  // regenerate so a fresh set of questions always starts hidden.
+  const [revealedQuestions, setRevealedQuestions] = useState<Set<number>>(new Set());
+
+  const generateQuiz = async () => {
+    setQuizLoading(true);
+    setQuizError(null);
+    try {
+      const res = await fetch("/api/practice-quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setQuizError({
+          kind: res.status === 402 ? "upgrade" : "error",
+          message: data.message || data.error || "Failed to generate practice quiz",
+        });
+        return;
+      }
+      setQuiz(data);
+      setRevealedQuestions(new Set());
+    } catch {
+      setQuizError({ kind: "error", message: "Failed to generate practice quiz" });
+    } finally {
+      setQuizLoading(false);
+    }
+  };
+
+  const toggleRevealed = (index: number) => {
+    setRevealedQuestions((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
   };
 
   const currentGrade = useMemo(
@@ -199,9 +362,84 @@ export default function GradesPage({
     });
   };
 
+  // Grade goal, persisted in Supabase (course_goals, see
+  // supabase/migrations/0009_course_goals.sql). Loaded once on mount;
+  // goalLoaded gates rendering the set-goal vs. edit-goal UI so it
+  // doesn't flash the "no goal set" state for a returning goal.
+  const [goal, setGoal] = useState<number | null>(null);
+  const [goalLoaded, setGoalLoaded] = useState(false);
+  const [goalInput, setGoalInput] = useState("90");
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalSaving, setGoalSaving] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("course_goals")
+      .select("target_grade")
+      .eq("course_id", courseId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error(error);
+        }
+        if (data?.target_grade != null) {
+          setGoal(data.target_grade);
+          setGoalInput(String(data.target_grade));
+          // Seeds the "what do I need on the next assignment" calculator
+          // below with the same target the student already set for this
+          // course, instead of always defaulting to 90 — only happens
+          // once, right here on initial load, so it never fights with
+          // the student's own later adjustments to that slider.
+          setTargetGrade(data.target_grade);
+        } else {
+          setEditingGoal(true);
+        }
+        setGoalLoaded(true);
+      });
+  }, [courseId]);
+
+  const saveGoal = () => {
+    const value = Number(goalInput);
+    if (!Number.isFinite(value) || value <= 0 || value > 100) return;
+
+    setGoalSaving(true);
+    const supabase = createClient();
+    supabase
+      .from("course_goals")
+      .upsert({ course_id: courseId, target_grade: value, updated_at: new Date().toISOString() })
+      .then(({ error }) => {
+        setGoalSaving(false);
+        if (error) {
+          console.error(error);
+          return;
+        }
+        setGoal(value);
+        setEditingGoal(false);
+      });
+  };
+
   // Pomodoro-style focus timer, launched from a study plan step below.
   // Non-null taskLabel means the overlay is open.
   const [focusTask, setFocusTask] = useState<string | null>(null);
+
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (!course) return;
+    setPdfGenerating(true);
+    try {
+      await downloadGradePdf({
+        courseName: course.name,
+        currentGrade,
+        letterGrade,
+        breakdown: breakdown.map((c) => ({ name: c.name, percentage: c.percentage, weight: c.weight })),
+        studyGuideTopics: studyGuide?.topics ?? null,
+      });
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
 
   // Per-course notes, persisted in Supabase (course_notes, see
   // supabase/migrations/0005_course_notes.sql). Loaded once on mount;
@@ -313,6 +551,7 @@ export default function GradesPage({
 
   return (
     <div
+      className="xf-page-enter"
       style={{
         minHeight: "100vh",
         color: text,
@@ -325,19 +564,53 @@ export default function GradesPage({
         <div style={{ marginBottom: 8, color: textDim, fontSize: 13, letterSpacing: "0.04em", textTransform: "uppercase" }}>
           xFunction · Grades
         </div>
-        <h1 style={{ fontSize: 34, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em", color: text }}>
-          {course.name}
-        </h1>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <h1 style={{ fontSize: 34, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em", color: text }}>
+            {course.name}
+          </h1>
+          <button
+            onClick={handleDownloadPdf}
+            disabled={pdfGenerating}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 18px",
+              borderRadius: "var(--radius-sm)",
+              background: "transparent",
+              border: `1px solid ${border}`,
+              color: text,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: pdfGenerating ? "default" : "pointer",
+              opacity: pdfGenerating ? 0.7 : 1,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            <Download size={14} strokeWidth={2} />
+            {pdfGenerating ? "Preparing…" : "Download PDF"}
+          </button>
+        </div>
         <p style={{ color: textDim, marginBottom: 36, fontSize: 15 }}>
           Linked from Canvas · updated just now
         </p>
 
         {/* Current grade + category breakdown */}
         <div
+          className="xf-card"
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: "var(--radius-lg)",
             padding: 28,
             display: "flex",
             gap: 28,
@@ -394,12 +667,166 @@ export default function GradesPage({
           </div>
         </div>
 
-        {/* Assignments — done tracking, separate from grading state */}
+        {/* Grade goal — persisted per course, progress updates live as currentGrade changes */}
         <div
+          className="xf-card"
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: "var(--radius-lg)",
+            padding: 28,
+            marginBottom: 24,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: goalLoaded ? 18 : 0,
+            }}
+          >
+            <h2
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 19,
+                fontWeight: 600,
+                margin: 0,
+                color: text,
+              }}
+            >
+              <Target size={17} strokeWidth={2} />
+              Grade goal
+            </h2>
+            {goalLoaded && goal !== null && !editingGoal && (
+              <button
+                type="button"
+                onClick={() => {
+                  setGoalInput(String(goal));
+                  setEditingGoal(true);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "transparent",
+                  border: "none",
+                  color: blue,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                <Pencil size={12} strokeWidth={2} />
+                Edit
+              </button>
+            )}
+          </div>
+
+          {goalLoaded && editingGoal && (
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <label style={{ fontSize: 13, color: textDim }}>I want to end up with</label>
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={goalInput}
+                onChange={(e) => setGoalInput(e.target.value)}
+                style={{
+                  width: 72,
+                  padding: "8px 10px",
+                  borderRadius: "var(--radius-sm)",
+                  border: `1px solid ${border}`,
+                  background: bg,
+                  color: text,
+                  fontSize: 14,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                }}
+              />
+              <span style={{ fontSize: 13, color: textDim }}>% in {course.name}</span>
+              <button
+                type="button"
+                onClick={saveGoal}
+                disabled={goalSaving}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "var(--radius-sm)",
+                  background: blue,
+                  color: "white",
+                  border: "none",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: goalSaving ? "default" : "pointer",
+                  opacity: goalSaving ? 0.7 : 1,
+                }}
+              >
+                {goalSaving ? "Saving…" : "Save goal"}
+              </button>
+              {goal !== null && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGoalInput(String(goal));
+                    setEditingGoal(false);
+                  }}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: textDim,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    padding: "8px 4px",
+                  }}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          )}
+
+          {goalLoaded && goal !== null && !editingGoal && (
+            <>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ fontSize: 13, color: textDim }}>
+                  Target: <strong style={{ color: text }}>{goal}%</strong> · Currently{" "}
+                  <strong style={{ color: gradeColor(currentGrade) }}>{currentGrade.toFixed(1)}%</strong>
+                </div>
+                {currentGrade >= goal ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 700, color: green }}>
+                    <CheckCircle2 size={15} strokeWidth={2.5} />
+                    Goal reached
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, fontWeight: 700, color: blue }}>
+                    {(goal - currentGrade).toFixed(1)} pts to go
+                  </div>
+                )}
+              </div>
+              <div style={{ height: 10, background: border, borderRadius: 999, overflow: "hidden" }}>
+                <div
+                  style={{
+                    width: `${Math.min(100, (currentGrade / goal) * 100)}%`,
+                    height: "100%",
+                    background: currentGrade >= goal ? green : blue,
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Assignments — done tracking, separate from grading state */}
+        <div
+          className="xf-card"
+          style={{
+            background: card,
+            border: `1px solid ${border}`,
+            borderRadius: "var(--radius-lg)",
             padding: 28,
             marginBottom: 24,
           }}
@@ -449,12 +876,10 @@ export default function GradesPage({
                           style={{
                             width: 22,
                             height: 22,
-                            borderRadius: 6,
+                            borderRadius: "var(--radius-sm)",
                             border: `1.5px solid ${done ? green : border}`,
                             background: done ? green : "transparent",
                             color: "white",
-                            fontSize: 13,
-                            fontWeight: 700,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -463,7 +888,7 @@ export default function GradesPage({
                             padding: 0,
                           }}
                         >
-                          {done ? "✓" : ""}
+                          {done && <Check size={14} strokeWidth={3} />}
                         </button>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div
@@ -499,10 +924,11 @@ export default function GradesPage({
 
         {/* Grade trend */}
         <div
+          className="xf-card"
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: "var(--radius-lg)",
             padding: 28,
             marginBottom: 24,
           }}
@@ -520,16 +946,36 @@ export default function GradesPage({
             <h2 style={{ fontSize: 19, fontWeight: 600, margin: 0, color: text }}>Grade trend</h2>
             <div
               style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
                 fontSize: 13,
                 fontWeight: 700,
                 color: trend === "up" ? green : trend === "down" ? red : textDim,
               }}
             >
-              {trend === "up" ? "↑ Improving" : trend === "down" ? "↓ Declining" : "→ Steady"}
+              {trend === "up" ? (
+                <TrendingUp size={15} strokeWidth={2.5} />
+              ) : trend === "down" ? (
+                <TrendingDown size={15} strokeWidth={2.5} />
+              ) : (
+                <Minus size={15} strokeWidth={2.5} />
+              )}
+              {trend === "up" ? "Improving" : trend === "down" ? "Declining" : "Steady"}
             </div>
           </div>
-          <div style={{ fontSize: 12, color: textDim, marginBottom: 18 }}>
-            ⚠ Simulated historical data — real Canvas grade history isn&apos;t connected yet.
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 12,
+              color: textDim,
+              marginBottom: 18,
+            }}
+          >
+            <AlertTriangle size={13} strokeWidth={2} />
+            Simulated historical data — real Canvas grade history isn&apos;t connected yet.
           </div>
           <TrendChart points={gradeHistory} />
         </div>
@@ -537,10 +983,11 @@ export default function GradesPage({
         {/* The core feature: target grade calculator */}
         {nextUngraded && (
           <div
+            className="xf-card"
             style={{
               background: card,
               border: `1px solid ${border}`,
-              borderRadius: 16,
+              borderRadius: "var(--radius-lg)",
               padding: 28,
             }}
           >
@@ -624,26 +1071,100 @@ export default function GradesPage({
         {/* AI-generated study plan */}
         {studyTarget && (
           <div
+            className="xf-card"
             style={{
               background: card,
               border: `1px solid ${border}`,
-              borderRadius: 16,
+              borderRadius: "var(--radius-lg)",
               padding: 28,
               marginTop: 24,
             }}
           >
-            <div style={{ fontSize: 13, color: textDim, marginBottom: 4 }}>Study plan</div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 12,
+                marginBottom: 4,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: textDim }}>
+                <Sparkles size={13} strokeWidth={2} />
+                Study plan
+              </div>
+              {studyPlan && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                  {planSaveStatus !== "idle" && (
+                    <span style={{ fontSize: 12, color: planSaveStatus === "error" ? red : textDim }}>
+                      {planSaveStatus === "saving"
+                        ? "Saving…"
+                        : planSaveStatus === "saved"
+                          ? "Saved"
+                          : "Failed to save"}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      saveStudyPlan();
+                    }}
+                    disabled={planSaveStatus === "saving"}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      background: "transparent",
+                      border: "none",
+                      color: blue,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: planSaveStatus === "saving" ? "default" : "pointer",
+                      padding: 0,
+                    }}
+                  >
+                    <Save size={13} strokeWidth={2} />
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPlanEditing((v) => !v)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      background: "transparent",
+                      border: "none",
+                      color: blue,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
+                  >
+                    <Pencil size={12} strokeWidth={2} />
+                    {planEditing ? "Done editing" : "Edit"}
+                  </button>
+                </div>
+              )}
+            </div>
             <h2 style={{ fontSize: 19, fontWeight: 600, marginBottom: 20, color: text }}>
               Prep for {studyTarget.assignment.name}
             </h2>
 
-            {!studyPlan && (
+            {!studyPlan && !planLoaded && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="xf-skeleton" style={{ height: 40, width: 200 }} />
+              </div>
+            )}
+
+            {!studyPlan && planLoaded && (
               <button
                 onClick={generateStudyPlan}
                 disabled={studyPlanLoading}
                 style={{
                   padding: "12px 20px",
-                  borderRadius: 10,
+                  borderRadius: "var(--radius-sm)",
                   background: blue,
                   color: "white",
                   border: "none",
@@ -670,15 +1191,16 @@ export default function GradesPage({
               <>
                 <p style={{ color: textDim, fontSize: 14, marginBottom: 24 }}>
                   {studyPlan.days.length}-day plan leading up to {studyPlan.targetDueDate}
+                  {planEditing && " — editing"}
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  {studyPlan.days.map((day) => (
+                  {studyPlan.days.map((day, dayIndex) => (
                     <div
                       key={day.date}
                       style={{
                         background: bg,
                         border: `1px solid ${border}`,
-                        borderRadius: 12,
+                        borderRadius: "var(--radius-md)",
                         padding: 18,
                       }}
                     >
@@ -693,43 +1215,143 @@ export default function GradesPage({
                       >
                         {day.label}
                       </div>
-                      <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-                        {day.tasks.map((t, i) => (
-                          <li
-                            key={i}
+                      {planEditing ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {day.tasks.map((t, i) => (
+                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <input
+                                value={t}
+                                onChange={(e) => updatePlanTaskText(dayIndex, i, e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: "8px 10px",
+                                  borderRadius: "var(--radius-sm)",
+                                  border: `1px solid ${border}`,
+                                  background: card,
+                                  color: text,
+                                  fontSize: 13,
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => movePlanTask(dayIndex, i, -1)}
+                                disabled={i === 0}
+                                title="Move up"
+                                style={{
+                                  display: "flex",
+                                  background: "transparent",
+                                  border: `1px solid ${border}`,
+                                  borderRadius: "var(--radius-sm)",
+                                  color: text,
+                                  padding: 6,
+                                  cursor: i === 0 ? "default" : "pointer",
+                                  opacity: i === 0 ? 0.4 : 1,
+                                }}
+                              >
+                                <ChevronUp size={13} strokeWidth={2} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => movePlanTask(dayIndex, i, 1)}
+                                disabled={i === day.tasks.length - 1}
+                                title="Move down"
+                                style={{
+                                  display: "flex",
+                                  background: "transparent",
+                                  border: `1px solid ${border}`,
+                                  borderRadius: "var(--radius-sm)",
+                                  color: text,
+                                  padding: 6,
+                                  cursor: i === day.tasks.length - 1 ? "default" : "pointer",
+                                  opacity: i === day.tasks.length - 1 ? 0.4 : 1,
+                                }}
+                              >
+                                <ChevronDown size={13} strokeWidth={2} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removePlanTask(dayIndex, i)}
+                                title="Remove step"
+                                style={{
+                                  display: "flex",
+                                  background: "transparent",
+                                  border: `1px solid ${red}`,
+                                  borderRadius: "var(--radius-sm)",
+                                  color: red,
+                                  padding: 6,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <Trash2 size={13} strokeWidth={2} />
+                              </button>
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => addPlanTask(dayIndex)}
                             style={{
                               display: "flex",
-                              alignItems: "flex-start",
-                              justifyContent: "space-between",
-                              gap: 10,
-                              fontSize: 14,
-                              lineHeight: 1.5,
-                              color: text,
+                              alignItems: "center",
+                              gap: 6,
+                              alignSelf: "flex-start",
+                              background: "transparent",
+                              border: `1px dashed ${border}`,
+                              borderRadius: "var(--radius-sm)",
+                              color: blue,
+                              padding: "6px 12px",
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              marginTop: 2,
                             }}
                           >
-                            <span style={{ flex: 1 }}>• {t}</span>
-                            <button
-                              type="button"
-                              onClick={() => setFocusTask(t)}
-                              title="Start a focus timer for this step"
+                            <Plus size={13} strokeWidth={2} />
+                            Add step
+                          </button>
+                        </div>
+                      ) : (
+                        <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+                          {day.tasks.map((t, i) => (
+                            <li
+                              key={i}
                               style={{
-                                flexShrink: 0,
-                                background: "transparent",
-                                border: `1px solid ${blue}`,
-                                color: blue,
-                                borderRadius: 8,
-                                padding: "3px 10px",
-                                fontSize: 12,
-                                fontWeight: 600,
-                                cursor: "pointer",
-                                whiteSpace: "nowrap",
+                                display: "flex",
+                                alignItems: "flex-start",
+                                justifyContent: "space-between",
+                                gap: 10,
+                                fontSize: 14,
+                                lineHeight: 1.5,
+                                color: text,
                               }}
                             >
-                              ⏱ Focus
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
+                              <span style={{ flex: 1 }}>• {t}</span>
+                              <button
+                                type="button"
+                                onClick={() => setFocusTask(t)}
+                                title="Start a focus timer for this step"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 5,
+                                  flexShrink: 0,
+                                  background: "transparent",
+                                  border: `1px solid ${blue}`,
+                                  color: blue,
+                                  borderRadius: "var(--radius-sm)",
+                                  padding: "3px 10px",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  cursor: "pointer",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                <Timer size={12} strokeWidth={2} />
+                                Focus
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -739,7 +1361,7 @@ export default function GradesPage({
                   style={{
                     marginTop: 20,
                     padding: "10px 18px",
-                    borderRadius: 10,
+                    borderRadius: "var(--radius-sm)",
                     background: "transparent",
                     color: blue,
                     border: `1px solid ${border}`,
@@ -758,15 +1380,28 @@ export default function GradesPage({
         {/* AI-generated study guide */}
         {studyTarget && (
           <div
+            className="xf-card"
             style={{
               background: card,
               border: `1px solid ${border}`,
-              borderRadius: 16,
+              borderRadius: "var(--radius-lg)",
               padding: 28,
               marginTop: 24,
             }}
           >
-            <div style={{ fontSize: 13, color: textDim, marginBottom: 4 }}>Study guide</div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 13,
+                color: textDim,
+                marginBottom: 4,
+              }}
+            >
+              <Sparkles size={13} strokeWidth={2} />
+              Study guide
+            </div>
             <h2 style={{ fontSize: 19, fontWeight: 600, marginBottom: 20, color: text }}>
               Key concepts for {studyTarget.assignment.name}
             </h2>
@@ -852,12 +1487,153 @@ export default function GradesPage({
           </div>
         )}
 
+        {/* AI-generated practice quiz */}
+        {studyTarget && (
+          <div
+            className="xf-card"
+            style={{
+              background: card,
+              border: `1px solid ${border}`,
+              borderRadius: "var(--radius-lg)",
+              padding: 28,
+              marginTop: 24,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 13,
+                color: textDim,
+                marginBottom: 4,
+              }}
+            >
+              <Sparkles size={13} strokeWidth={2} />
+              Practice quiz
+            </div>
+            <h2 style={{ fontSize: 19, fontWeight: 600, marginBottom: 20, color: text }}>
+              Test yourself on {studyTarget.assignment.name}
+            </h2>
+
+            {!quiz && (
+              <button
+                onClick={generateQuiz}
+                disabled={quizLoading}
+                style={{
+                  padding: "12px 20px",
+                  borderRadius: "var(--radius-sm)",
+                  background: blue,
+                  color: "white",
+                  border: "none",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: quizLoading ? "default" : "pointer",
+                  opacity: quizLoading ? 0.7 : 1,
+                }}
+              >
+                {quizLoading ? "Generating…" : "Generate practice quiz"}
+              </button>
+            )}
+
+            {quizError?.kind === "upgrade" && (
+              <div style={{ marginTop: 12 }}>
+                <UpgradePrompt message={quizError.message} />
+              </div>
+            )}
+            {quizError?.kind === "error" && (
+              <div style={{ color: red, fontSize: 13, marginTop: 12 }}>{quizError.message}</div>
+            )}
+
+            {quiz && (
+              <>
+                <p style={{ color: textDim, fontSize: 14, marginBottom: 24 }}>
+                  {quiz.questions.length} question{quiz.questions.length === 1 ? "" : "s"} — click a
+                  question to reveal its answer.
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {quiz.questions.map((q, i) => {
+                    const revealed = revealedQuestions.has(i);
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          background: bg,
+                          border: `1px solid ${border}`,
+                          borderRadius: "var(--radius-md)",
+                          padding: 16,
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleRevealed(i)}
+                          style={{
+                            display: "flex",
+                            width: "100%",
+                            alignItems: "flex-start",
+                            justifyContent: "space-between",
+                            gap: 12,
+                            background: "none",
+                            border: "none",
+                            padding: 0,
+                            cursor: "pointer",
+                            textAlign: "left",
+                          }}
+                        >
+                          <span style={{ fontSize: 14, fontWeight: 600, color: text, lineHeight: 1.5 }}>
+                            {i + 1}. {q.question}
+                          </span>
+                          <span style={{ flexShrink: 0, color: blue, marginTop: 2 }}>
+                            {revealed ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
+                          </span>
+                        </button>
+                        {revealed && (
+                          <div
+                            style={{
+                              marginTop: 12,
+                              paddingTop: 12,
+                              borderTop: `1px solid ${border}`,
+                              fontSize: 14,
+                              lineHeight: 1.6,
+                              color: textDim,
+                            }}
+                          >
+                            {q.answer}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={generateQuiz}
+                  disabled={quizLoading}
+                  style={{
+                    marginTop: 20,
+                    padding: "10px 18px",
+                    borderRadius: "var(--radius-sm)",
+                    background: "transparent",
+                    color: blue,
+                    border: `1px solid ${border}`,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: quizLoading ? "default" : "pointer",
+                  }}
+                >
+                  {quizLoading ? "Regenerating…" : "Regenerate quiz"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Notes — private per-user, per-course journal */}
         <div
+          className="xf-card"
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: "var(--radius-lg)",
             padding: 28,
             marginTop: 24,
           }}

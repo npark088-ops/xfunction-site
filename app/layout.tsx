@@ -1,5 +1,22 @@
 import Script from "next/script";
+import { Inter, Sora } from "next/font/google";
 import "./globals.css";
+
+// Body copy uses Inter (already referenced everywhere as the fallback
+// string "Inter, sans-serif" — this actually loads it as a web font
+// instead of silently falling back to whatever sans-serif the OS
+// happens to ship). Headings use Sora, a distinct-but-compatible
+// geometric sans, for a clearer heading/body pairing. Both are
+// exposed as CSS variables (see app/globals.css's `h1,h2,h3,h4` and
+// `body` rules) so every existing page picks them up automatically —
+// no per-page edits needed.
+const inter = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const sora = Sora({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-heading",
+  display: "swap",
+});
 
 export default function RootLayout({
   children,
@@ -13,7 +30,7 @@ export default function RootLayout({
     // server- and client-rendered HTML. That's expected here, not a
     // real bug, so React shouldn't warn about (or try to "fix") it —
     // same recommended pattern as Next.js's own dark-mode docs.
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sora.variable}`}>
       <head>
         {/* Sets data-theme before first paint so returning dark-mode
             users don't see a flash of the light theme. A plain <script>

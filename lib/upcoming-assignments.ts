@@ -9,6 +9,7 @@ export const URGENT_WITHIN_DAYS = 2;
 
 export interface UpcomingAssignment {
   courseId: string;
+  assignmentId: number;
   courseName: string;
   assignmentName: string;
   dueAt: Date;
@@ -30,6 +31,7 @@ export function getUpcomingAssignments(withinDays: number): UpcomingAssignment[]
           .filter((a) => a.submission?.score == null && a.due_at)
           .map((a) => ({
             courseId: c.id,
+            assignmentId: a.id,
             courseName: c.name,
             assignmentName: a.name,
             dueAt: new Date(a.due_at as string),

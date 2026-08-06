@@ -61,6 +61,7 @@ export default async function CoursesPage({
 
   return (
     <div
+      className="xf-page-enter"
       style={{
         minHeight: "100vh",
         color: text,

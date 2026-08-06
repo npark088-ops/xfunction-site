@@ -35,7 +35,7 @@ export default function Home() {
 
 
   return (
-    <div style={{ margin: 0, fontFamily: "Inter, sans-serif", background: bg }}>
+    <div className="xf-page-enter" style={{ margin: 0, fontFamily: "Inter, sans-serif", background: bg }}>
 
       {/* NAVBAR — solid background (not transparent) so it stays
           readable over both the dark hero video and the light sections
@@ -91,6 +91,18 @@ export default function Home() {
   >
     <Link href="/pricing" style={navBtn}>
       Pricing
+    </Link>
+  </span>
+
+  <span
+    onClick={() => {
+      if (typeof window !== "undefined") {
+        (window as any).gtag?.("event", "click_help");
+      }
+    }}
+  >
+    <Link href="/help" style={navBtn}>
+      Help
     </Link>
   </span>
 
@@ -175,7 +187,7 @@ export default function Home() {
   >
     <h1
       style={{
-        fontSize: "100px",
+        fontSize: "64px",
         fontWeight: "600",
         lineHeight: "1.1"
       }}
@@ -207,17 +219,17 @@ export default function Home() {
   display: "flex",
   justifyContent: "center"
 }}>
-  <div style={{
+  <div className="xf-card" style={{
     maxWidth: "900px",
     textAlign: "center",
     padding: "60px",
-    borderRadius: "20px",
+    borderRadius: "var(--radius-xl)",
     background: card,
     border: `1px solid ${border}`
   }}>
 
     <h2 style={{
-      fontSize: "52px",
+      fontSize: "40px",
       fontWeight: "700",
       color: text
     }}>
@@ -263,16 +275,16 @@ export default function Home() {
   display: "flex",
   justifyContent: "center"
 }}>
-  <div style={{
+  <div className="xf-card" style={{
     maxWidth: "900px",
     textAlign: "center",
     padding: "60px",
-    borderRadius: "20px",
+    borderRadius: "var(--radius-xl)",
     background: card,
     border: `1px solid ${border}`
   }}>
     <h2 style={{
-  fontSize: "52px",
+  fontSize: "40px",
   fontWeight: "700",
   color: text
 }}>

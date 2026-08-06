@@ -12,6 +12,7 @@ const textDim = "var(--text-dim)";
 export default function About() {
   return (
     <div
+  className="xf-page-enter"
   style={{
     fontFamily: "Inter, sans-serif",
     color: text,
@@ -69,6 +70,15 @@ export default function About() {
 </Link>
 
           <Link
+  href="/help"
+  style={navLink}
+  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
+  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+>
+  Help
+</Link>
+
+          <Link
   href="/overview"
   style={navLink}
   onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
@@ -122,14 +132,14 @@ export default function About() {
         display: "flex",
         justifyContent: "center"
       }}>
-        <div style={{
+        <div className="xf-card" style={{
           maxWidth: "900px",
           padding: "60px",
-          borderRadius: "20px",
+          borderRadius: "var(--radius-xl)",
           background: card,
           border: `1px solid ${border}`
         }}>
-          <h2 style={{ fontSize: "48px", fontWeight: "700", color: text }}>
+          <h2 style={{ fontSize: "40px", fontWeight: "700", color: text }}>
             The problem
           </h2>
 
@@ -152,14 +162,14 @@ export default function About() {
         display: "flex",
         justifyContent: "center"
       }}>
-        <div style={{
+        <div className="xf-card" style={{
           maxWidth: "900px",
           padding: "60px",
-          borderRadius: "20px",
+          borderRadius: "var(--radius-xl)",
           background: card,
           border: `1px solid ${border}`
         }}>
-          <h2 style={{ fontSize: "48px", fontWeight: "700", color: text }}>
+          <h2 style={{ fontSize: "40px", fontWeight: "700", color: text }}>
             What XFunction does
           </h2>
 
@@ -182,14 +192,14 @@ export default function About() {
         display: "flex",
         justifyContent: "center"
       }}>
-        <div style={{
+        <div className="xf-card" style={{
           maxWidth: "900px",
           padding: "60px",
-          borderRadius: "20px",
+          borderRadius: "var(--radius-xl)",
           background: card,
           border: `1px solid ${border}`
         }}>
-          <h2 style={{ fontSize: "48px", fontWeight: "700", color: text }}>
+          <h2 style={{ fontSize: "40px", fontWeight: "700", color: text }}>
             Our approach
           </h2>
 
@@ -236,7 +246,7 @@ export default function About() {
 /* ✅ NAV LINK STYLE */
 const navLink = {
   textDecoration: "none",
-  color: "#0F172A",
+  color: "var(--text)",
   fontSize: "16px",
   cursor: "pointer",
   transition: "opacity 0.3s"

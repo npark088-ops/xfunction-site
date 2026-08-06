@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, Sparkles, Mail, MessageSquareText } from "lucide-react";
 import { mockCourses, getCreditHours } from "../../../lib/mock-canvas-data";
 import { calculateCurrentGrade, calculateWeightedOverallGrade } from "../../../lib/grade-calculator";
 import { Gauge, gradeColor } from "../../../components/Gauge";
@@ -126,6 +127,7 @@ export default function OverviewPage() {
 
   return (
     <div
+      className="xf-page-enter"
       style={{
         minHeight: "100vh",
         color: text,
@@ -151,10 +153,11 @@ export default function OverviewPage() {
 
         {/* OVERALL GRADE */}
         <div
+          className="xf-card"
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: "var(--radius-lg)",
             padding: 28,
             marginBottom: 24,
             display: "flex",
@@ -187,10 +190,11 @@ export default function OverviewPage() {
 
         {/* OVERALL GRADE TREND */}
         <div
+          className="xf-card"
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: "var(--radius-lg)",
             padding: 28,
             marginBottom: 24,
           }}
@@ -208,30 +212,47 @@ export default function OverviewPage() {
             <h2 style={{ fontSize: 19, fontWeight: 600, margin: 0, color: text }}>Overall grade trend</h2>
             <div
               style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
                 fontSize: 13,
                 fontWeight: 700,
                 color: overallTrend === "up" ? green : overallTrend === "down" ? red : textDim,
               }}
             >
-              {overallTrend === "up"
-                ? "↑ Improving"
-                : overallTrend === "down"
-                  ? "↓ Declining"
-                  : "→ Steady"}
+              {overallTrend === "up" ? (
+                <TrendingUp size={15} strokeWidth={2.5} />
+              ) : overallTrend === "down" ? (
+                <TrendingDown size={15} strokeWidth={2.5} />
+              ) : (
+                <Minus size={15} strokeWidth={2.5} />
+              )}
+              {overallTrend === "up" ? "Improving" : overallTrend === "down" ? "Declining" : "Steady"}
             </div>
           </div>
-          <div style={{ fontSize: 12, color: textDim, marginBottom: 18 }}>
-            ⚠ Simulated historical data — real Canvas grade history isn&apos;t connected yet.
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 12,
+              color: textDim,
+              marginBottom: 18,
+            }}
+          >
+            <AlertTriangle size={13} strokeWidth={2} />
+            Simulated historical data — real Canvas grade history isn&apos;t connected yet.
           </div>
           <TrendChart points={overallGradeHistory} />
         </div>
 
         {/* AI COACH CHECK-IN */}
         <div
+          className="xf-card"
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: "var(--radius-lg)",
             padding: 24,
             marginBottom: 24,
           }}
@@ -246,6 +267,9 @@ export default function OverviewPage() {
           >
             <div
               style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
                 fontSize: 13,
                 color: textDim,
                 fontWeight: 600,
@@ -253,6 +277,7 @@ export default function OverviewPage() {
                 textTransform: "uppercase",
               }}
             >
+              <Sparkles size={14} strokeWidth={2} />
               Coach check-in
             </div>
             {!coachLoading && (coachInsight || coachError) && (
@@ -274,7 +299,10 @@ export default function OverviewPage() {
           </div>
 
           {coachLoading && (
-            <div style={{ fontSize: 14, color: textDim }}>Looking at your grades…</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div className="xf-skeleton" style={{ height: 14, width: "92%" }} />
+              <div className="xf-skeleton" style={{ height: 14, width: "68%" }} />
+            </div>
           )}
           {!coachLoading && coachError?.kind === "upgrade" && (
             <UpgradePrompt message={coachError.message} />
@@ -289,10 +317,11 @@ export default function OverviewPage() {
 
         {/* COMING UP */}
         <div
+          className="xf-card"
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: "var(--radius-lg)",
             padding: 20,
           }}
         >
@@ -313,8 +342,11 @@ export default function OverviewPage() {
                   onClick={sendReminderEmail}
                   disabled={reminderStatus?.kind === "sending"}
                   style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
                     padding: "6px 14px",
-                    borderRadius: 8,
+                    borderRadius: "var(--radius-sm)",
                     background: "transparent",
                     border: `1px solid ${red}`,
                     color: red,
@@ -323,14 +355,18 @@ export default function OverviewPage() {
                     cursor: reminderStatus?.kind === "sending" ? "default" : "pointer",
                   }}
                 >
+                  <Mail size={13} strokeWidth={2} />
                   {reminderStatus?.kind === "sending" ? "Sending…" : "Email me these reminders"}
                 </button>
                 <button
                   onClick={sendReminderSms}
                   disabled={smsStatus?.kind === "sending"}
                   style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
                     padding: "6px 14px",
-                    borderRadius: 8,
+                    borderRadius: "var(--radius-sm)",
                     background: "transparent",
                     border: `1px solid ${blue}`,
                     color: blue,
@@ -339,6 +375,7 @@ export default function OverviewPage() {
                     cursor: smsStatus?.kind === "sending" ? "default" : "pointer",
                   }}
                 >
+                  <MessageSquareText size={13} strokeWidth={2} />
                   {smsStatus?.kind === "sending" ? "Sending…" : "Text me these reminders"}
                 </button>
               </div>

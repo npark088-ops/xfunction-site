@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Zap } from "lucide-react";
 
 const card = "#FFF8EB";
 const amber = "var(--amber)";
@@ -36,26 +37,38 @@ export function UpgradePrompt({ message }: { message?: string }) {
 
   return (
     <div
+      className="xf-card"
       style={{
         background: card,
         border: `1px solid ${amber}`,
-        borderRadius: 14,
+        borderRadius: "var(--radius-md)",
         padding: 20,
       }}
     >
-      <div style={{ fontSize: 14, fontWeight: 700, color: "#8A5A00", marginBottom: 4 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 14,
+          fontWeight: 700,
+          color: "#8A5A00",
+          marginBottom: 4,
+        }}
+      >
+        <Zap size={16} strokeWidth={2} fill="#8A5A00" fillOpacity={0.2} />
         Free plan limit reached
       </div>
       <p style={{ fontSize: 13, color: text, margin: 0, marginBottom: 14, lineHeight: 1.5 }}>
         {message ?? "You've used all your free AI generations this month."} Upgrade to xFunction
-        Pro for unlimited study plans, study guides, and coach check-ins — $7/month.
+        Pro for unlimited study plans, study guides, practice quizzes, and coach check-ins — $7/month.
       </p>
       <button
         onClick={startCheckout}
         disabled={loading}
         style={{
           padding: "8px 16px",
-          borderRadius: 10,
+          borderRadius: "var(--radius-sm)",
           background: blue,
           color: "white",
           border: "none",

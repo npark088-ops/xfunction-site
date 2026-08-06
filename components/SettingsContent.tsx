@@ -1,6 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import {
+  PartyPopper,
+  CreditCard,
+  LogOut,
+  Download,
+  Trash2,
+  Sun,
+  Moon,
+  Trophy,
+  Mail,
+  MessageSquareOff,
+  Bell,
+} from "lucide-react";
 import { ACHIEVEMENTS } from "../lib/achievements";
 
 const bg = "var(--bg)";
@@ -84,6 +97,14 @@ export function SettingsContent({
   const [upgrading, setUpgrading] = useState(false);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
+  const [openingPortal, setOpeningPortal] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   // Purely local — not wired to any backend yet, see note under
   // Notifications below. Just lets the toggle feel real to click.
   const [emailReminders, setEmailReminders] = useState(true);
@@ -135,6 +156,44 @@ export function SettingsContent({
       });
   };
 
+  const openBillingPortal = () => {
+    setOpeningPortal(true);
+    setPortalError(null);
+    fetch("/api/stripe/portal", { method: "POST" })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok || !data.url) {
+          setPortalError(data.error || "Failed to open billing portal");
+          setOpeningPortal(false);
+          return;
+        }
+        window.location.href = data.url;
+      })
+      .catch(() => {
+        setPortalError("Failed to open billing portal");
+        setOpeningPortal(false);
+      });
+  };
+
+  const deleteAccount = () => {
+    setDeleting(true);
+    setDeleteError(null);
+    fetch("/api/account/delete", { method: "POST" })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok) {
+          setDeleteError(data.error || "Failed to delete account");
+          setDeleting(false);
+          return;
+        }
+        window.location.href = "/";
+      })
+      .catch(() => {
+        setDeleteError("Failed to delete account");
+        setDeleting(false);
+      });
+  };
+
   const sendTestDigest = () => {
     setDigestStatus({ kind: "sending" });
     fetch("/api/weekly-digest", { method: "POST" })
@@ -156,9 +215,12 @@ export function SettingsContent({
       {justUpgraded && (
         <div
           style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
             background: "#F0FDF4",
             border: `1px solid ${green}`,
-            borderRadius: 14,
+            borderRadius: "var(--radius-md)",
             padding: "14px 18px",
             marginBottom: 24,
             color: "#166534",
@@ -166,30 +228,72 @@ export function SettingsContent({
             fontWeight: 600,
           }}
         >
-          🎉 You&apos;re on xFunction Pro now — unlimited AI generations.
+          <PartyPopper size={18} strokeWidth={2} />
+          You&apos;re on xFunction Pro now — unlimited AI generations.
         </div>
       )}
 
       {/* Plan */}
       <div
+        className="xf-card"
         style={{
           background: card,
           border: `1px solid ${border}`,
-          borderRadius: 16,
+          borderRadius: "var(--radius-lg)",
           padding: 28,
           marginBottom: 24,
         }}
       >
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, color: text }}>Plan</h2>
+        <h2
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 18,
+            fontWeight: 700,
+            marginBottom: 16,
+            color: text,
+          }}
+        >
+          <CreditCard size={17} strokeWidth={2} />
+          Plan
+        </h2>
 
         {isPro ? (
           <>
             <div style={{ fontSize: 16, fontWeight: 700, color: "#8A5A00", marginBottom: 4 }}>
               xFunction Pro
             </div>
-            <div style={{ fontSize: 13, color: textDim }}>
-              Unlimited study plans, study guides, and coach check-ins.
+            <div style={{ fontSize: 13, color: textDim, marginBottom: 16 }}>
+              Unlimited study plans, study guides, practice quizzes, and coach check-ins.
             </div>
+            <button
+              onClick={openBillingPortal}
+              disabled={openingPortal}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 18px",
+                borderRadius: "var(--radius-sm)",
+                background: "transparent",
+                border: `1px solid ${border}`,
+                color: text,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: openingPortal ? "default" : "pointer",
+                opacity: openingPortal ? 0.7 : 1,
+              }}
+            >
+              <CreditCard size={14} strokeWidth={2} />
+              {openingPortal ? "Opening…" : "Manage billing"}
+            </button>
+            <div style={{ fontSize: 12, color: textDim, marginTop: 8 }}>
+              Update your card, view invoices, or cancel your subscription.
+            </div>
+            {portalError && (
+              <div style={{ fontSize: 12, color: red, marginTop: 10 }}>{portalError}</div>
+            )}
           </>
         ) : (
           <>
@@ -197,15 +301,15 @@ export function SettingsContent({
               Free plan
             </div>
             <div style={{ fontSize: 13, color: textDim, marginBottom: 16 }}>
-              {used} / {limit} AI generations used this month (study plans, study guides, and
-              coach check-ins combined).
+              {used} / {limit} AI generations used this month (study plans, study guides,
+              practice quizzes, and coach check-ins combined).
             </div>
             <button
               onClick={startCheckout}
               disabled={upgrading}
               style={{
                 padding: "10px 18px",
-                borderRadius: 10,
+                borderRadius: "var(--radius-sm)",
                 background: blue,
                 color: "white",
                 border: "none",
@@ -226,10 +330,11 @@ export function SettingsContent({
 
       {/* Account */}
       <div
+        className="xf-card"
         style={{
           background: card,
           border: `1px solid ${border}`,
-          borderRadius: 16,
+          borderRadius: "var(--radius-lg)",
           padding: 28,
           marginBottom: 24,
         }}
@@ -245,8 +350,11 @@ export function SettingsContent({
           <button
             type="submit"
             style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
               padding: "10px 18px",
-              borderRadius: 10,
+              borderRadius: "var(--radius-sm)",
               background: bg,
               border: `1px solid ${border}`,
               color: text,
@@ -255,17 +363,163 @@ export function SettingsContent({
               cursor: "pointer",
             }}
           >
+            <LogOut size={14} strokeWidth={2} />
             Sign out
           </button>
         </form>
       </div>
 
-      {/* Appearance */}
+      {/* Data & Account */}
       <div
+        className="xf-card"
         style={{
           background: card,
           border: `1px solid ${border}`,
-          borderRadius: 16,
+          borderRadius: "var(--radius-lg)",
+          padding: 28,
+          marginBottom: 24,
+        }}
+      >
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: text }}>
+          Your data
+        </h2>
+        <p style={{ fontSize: 12, color: textDim, marginBottom: 18 }}>
+          Export everything xFunction has stored for you, or permanently delete your account.
+        </p>
+
+        <a
+          href="/api/account/export"
+          download
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "10px 18px",
+            borderRadius: "var(--radius-sm)",
+            background: bg,
+            border: `1px solid ${border}`,
+            color: text,
+            textDecoration: "none",
+            fontSize: 14,
+            fontWeight: 600,
+          }}
+        >
+          <Download size={14} strokeWidth={2} />
+          Download my data
+        </a>
+
+        <div style={{ borderTop: `1px solid ${border}`, marginTop: 24, paddingTop: 20 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: red, marginBottom: 4 }}>
+            Delete my account
+          </div>
+          <p style={{ fontSize: 12, color: textDim, marginBottom: 14 }}>
+            Permanently removes your profile, tasks, notes, Canvas connection, and everything
+            else tied to your account. This can&apos;t be undone.
+          </p>
+
+          {!deleteConfirmOpen ? (
+            <button
+              onClick={() => setDeleteConfirmOpen(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 18px",
+                borderRadius: "var(--radius-sm)",
+                background: "transparent",
+                border: `1px solid ${red}`,
+                color: red,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              <Trash2 size={14} strokeWidth={2} />
+              Delete my account
+            </button>
+          ) : (
+            <div
+              style={{
+                background: bg,
+                border: `1px solid ${red}`,
+                borderRadius: "var(--radius-md)",
+                padding: 16,
+              }}
+            >
+              <label style={{ fontSize: 13, color: text, display: "block", marginBottom: 8 }}>
+                Type <strong>DELETE</strong> to confirm — this is permanent.
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="DELETE"
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: "var(--radius-sm)",
+                  border: `1px solid ${border}`,
+                  background: card,
+                  color: text,
+                  fontSize: 14,
+                  boxSizing: "border-box",
+                  marginBottom: 12,
+                }}
+              />
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={deleteAccount}
+                  disabled={deleteConfirmText !== "DELETE" || deleting}
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: "var(--radius-sm)",
+                    background: red,
+                    border: "none",
+                    color: "white",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    cursor: deleteConfirmText === "DELETE" && !deleting ? "pointer" : "default",
+                    opacity: deleteConfirmText === "DELETE" && !deleting ? 1 : 0.5,
+                  }}
+                >
+                  {deleting ? "Deleting…" : "Permanently delete"}
+                </button>
+                <button
+                  onClick={() => {
+                    setDeleteConfirmOpen(false);
+                    setDeleteConfirmText("");
+                    setDeleteError(null);
+                  }}
+                  disabled={deleting}
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: "var(--radius-sm)",
+                    background: "transparent",
+                    border: `1px solid ${border}`,
+                    color: text,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: deleting ? "default" : "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+              {deleteError && (
+                <div style={{ fontSize: 12, color: red, marginTop: 10 }}>{deleteError}</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Appearance */}
+      <div
+        className="xf-card"
+        style={{
+          background: card,
+          border: `1px solid ${border}`,
+          borderRadius: "var(--radius-lg)",
           padding: 28,
           marginBottom: 24,
         }}
@@ -277,10 +531,13 @@ export function SettingsContent({
           Choose how xFunction looks.
         </p>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: text }}>Dark mode</div>
-            <div style={{ fontSize: 12, color: textDim }}>
-              Switches the whole app to a dark theme. Remembered on this browser.
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {darkMode ? <Moon size={17} strokeWidth={2} color={textDim} /> : <Sun size={17} strokeWidth={2} color={textDim} />}
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: text }}>Dark mode</div>
+              <div style={{ fontSize: 12, color: textDim }}>
+                Switches the whole app to a dark theme. Remembered on this browser.
+              </div>
             </div>
           </div>
           <Toggle on={darkMode} onClick={toggleDarkMode} />
@@ -289,15 +546,27 @@ export function SettingsContent({
 
       {/* Achievements */}
       <div
+        className="xf-card"
         style={{
           background: card,
           border: `1px solid ${border}`,
-          borderRadius: 16,
+          borderRadius: "var(--radius-lg)",
           padding: 28,
           marginBottom: 24,
         }}
       >
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: text }}>
+        <h2
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 18,
+            fontWeight: 700,
+            marginBottom: 4,
+            color: text,
+          }}
+        >
+          <Trophy size={17} strokeWidth={2} />
           Achievements
         </h2>
         <p style={{ fontSize: 12, color: textDim, marginBottom: 18 }}>
@@ -312,6 +581,7 @@ export function SettingsContent({
         >
           {ACHIEVEMENTS.map((a) => {
             const unlocked = unlockedSet.has(a.id);
+            const AchievementIcon = a.icon;
             return (
               <div
                 key={a.id}
@@ -320,13 +590,15 @@ export function SettingsContent({
                   alignItems: "flex-start",
                   gap: 12,
                   padding: 14,
-                  borderRadius: 12,
+                  borderRadius: "var(--radius-md)",
                   background: unlocked ? "#F0FDF4" : bg,
                   border: `1px solid ${unlocked ? green : border}`,
                   opacity: unlocked ? 1 : 0.6,
                 }}
               >
-                <div style={{ fontSize: 22, lineHeight: 1 }}>{a.icon}</div>
+                <div style={{ color: unlocked ? green : textDim, flexShrink: 0 }}>
+                  <AchievementIcon size={22} strokeWidth={2} />
+                </div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: text }}>{a.name}</div>
                   <div style={{ fontSize: 12, color: textDim, marginTop: 2 }}>
@@ -341,15 +613,27 @@ export function SettingsContent({
 
       {/* Weekly digest */}
       <div
+        className="xf-card"
         style={{
           background: card,
           border: `1px solid ${border}`,
-          borderRadius: 16,
+          borderRadius: "var(--radius-lg)",
           padding: 28,
           marginBottom: 24,
         }}
       >
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: text }}>
+        <h2
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 18,
+            fontWeight: 700,
+            marginBottom: 4,
+            color: text,
+          }}
+        >
+          <Mail size={17} strokeWidth={2} />
           Weekly digest
         </h2>
         <p style={{ fontSize: 12, color: textDim, marginBottom: 18 }}>
@@ -360,8 +644,11 @@ export function SettingsContent({
           onClick={sendTestDigest}
           disabled={digestStatus?.kind === "sending"}
           style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
             padding: "10px 18px",
-            borderRadius: 10,
+            borderRadius: "var(--radius-sm)",
             background: "transparent",
             border: `1px solid ${blue}`,
             color: blue,
@@ -370,6 +657,7 @@ export function SettingsContent({
             cursor: digestStatus?.kind === "sending" ? "default" : "pointer",
           }}
         >
+          <Mail size={14} strokeWidth={2} />
           {digestStatus?.kind === "sending" ? "Sending…" : "Send me a test digest now"}
         </button>
         {digestStatus?.kind === "sent" && (
@@ -384,14 +672,26 @@ export function SettingsContent({
 
       {/* Notifications */}
       <div
+        className="xf-card"
         style={{
           background: card,
           border: `1px solid ${border}`,
-          borderRadius: 16,
+          borderRadius: "var(--radius-lg)",
           padding: 28,
         }}
       >
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: text }}>
+        <h2
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 18,
+            fontWeight: 700,
+            marginBottom: 4,
+            color: text,
+          }}
+        >
+          <Bell size={17} strokeWidth={2} />
           Notifications
         </h2>
         <p style={{ color: textDim, fontSize: 13, marginBottom: 20 }}>
@@ -407,10 +707,13 @@ export function SettingsContent({
             borderBottom: `1px solid ${border}`,
           }}
         >
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: text }}>Email reminders</div>
-            <div style={{ fontSize: 12, color: textDim }}>
-              Deadline reminders sent to {userEmail ?? "your email"}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Mail size={16} strokeWidth={2} color={textDim} />
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: text }}>Email reminders</div>
+              <div style={{ fontSize: 12, color: textDim }}>
+                Deadline reminders sent to {userEmail ?? "your email"}
+              </div>
             </div>
           </div>
           <Toggle on={emailReminders} onClick={() => setEmailReminders((v) => !v)} />
@@ -424,11 +727,14 @@ export function SettingsContent({
             padding: "14px 0",
           }}
         >
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: textDim }}>
-              Text reminders <span style={{ fontWeight: 400 }}>(coming soon)</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <MessageSquareOff size={16} strokeWidth={2} color={textDim} />
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: textDim }}>
+                Text reminders <span style={{ fontWeight: 400 }}>(coming soon)</span>
+              </div>
+              <div style={{ fontSize: 12, color: textDim }}>Deadline reminders sent by SMS</div>
             </div>
-            <div style={{ fontSize: 12, color: textDim }}>Deadline reminders sent by SMS</div>
           </div>
           <Toggle on={false} onClick={() => {}} disabled />
         </div>
@@ -437,7 +743,7 @@ export function SettingsContent({
           style={{
             marginTop: 20,
             padding: "12px 14px",
-            borderRadius: 10,
+            borderRadius: "var(--radius-sm)",
             background: bg,
             border: `1px solid ${border}`,
             fontSize: 12,

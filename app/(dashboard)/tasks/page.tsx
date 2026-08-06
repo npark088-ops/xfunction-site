@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Plus, Trash2, Sparkles } from "lucide-react";
 import { createClient } from "../../../lib/supabase/client";
 
 const bg = "var(--bg)";
@@ -25,8 +26,10 @@ export default function TasksPage() {
   const [task, setTask] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(true);
   const [steps, setSteps] = useState<string[]>([]);
 const [coachAdvice, setCoachAdvice] = useState("");
+  const [aiLoading, setAiLoading] = useState<"breakdown" | "coach" | null>(null);
 
 
   useEffect(() => {
@@ -37,9 +40,11 @@ const [coachAdvice, setCoachAdvice] = useState("");
       .then(({ data, error }) => {
         if (error) {
           console.error(error);
+          setTasksLoading(false);
           return;
         }
         setTasks(data ?? []);
+        setTasksLoading(false);
       });
   }, []);
 
@@ -93,7 +98,7 @@ const [coachAdvice, setCoachAdvice] = useState("");
   const breakDownTask = async () => {
   if (!task.trim()) return;
 
-
+  setAiLoading("breakdown");
   try {
     const response = await fetch(
       "/api/task-breakdown",
@@ -114,10 +119,13 @@ const data = await response.json();
 setSteps([data.response || "No response"]);
   } catch (error) {
     console.error(error);
+  } finally {
+    setAiLoading(null);
   }
 };
 
 const getCoachAdvice = async () => {
+  setAiLoading("coach");
   try {
     const response = await fetch(
       "/api/task-breakdown",
@@ -152,6 +160,8 @@ Tell me:
     setCoachAdvice(data.response);
   } catch (error) {
     console.error(error);
+  } finally {
+    setAiLoading(null);
   }
 };
 
@@ -169,6 +179,7 @@ Tell me:
 
   return (
   <div
+    className="xf-page-enter"
     style={{
       color: text,
       minHeight: "100vh",
@@ -215,19 +226,19 @@ Tell me:
           flexWrap: "wrap"
         }}
       >
-        <div style={statCard}>
+        <div className="xf-card" style={statCard}>
           <div style={{ color: textDim, fontSize: 13 }}>Total Tasks</div>
           <div style={bigNumber}>{tasks.length}</div>
         </div>
 
-        <div style={statCard}>
+        <div className="xf-card" style={statCard}>
           <div style={{ color: textDim, fontSize: 13 }}>Completed</div>
           <div style={bigNumber}>
             {completedTasks}
           </div>
         </div>
 
-        <div style={statCard}>
+        <div className="xf-card" style={statCard}>
           <div style={{ color: textDim, fontSize: 13 }}>Completion Rate</div>
           <div style={{ ...bigNumber, color: green }}>
             {completionRate}%
@@ -236,10 +247,11 @@ Tell me:
       </div>
 
       <div
+        className="xf-card"
         style={{
           background: card,
           padding: "24px",
-          borderRadius: "16px",
+          borderRadius: "var(--radius-lg)",
 border: `1px solid ${border}`,
           marginBottom: "24px"
         }}
@@ -266,7 +278,7 @@ border: `1px solid ${border}`,
             transition: "0.2s ease",
             marginTop: "10px",
             marginBottom: "15px",
-            borderRadius: "10px",
+            borderRadius: "var(--radius-sm)",
            border: `1px solid ${border}`,
 background: bg,
 color: text,
@@ -284,7 +296,7 @@ color: text,
     padding: "14px",
     transition: "0.2s ease",
     marginBottom: "15px",
-    borderRadius: "10px",
+    borderRadius: "var(--radius-sm)",
     border: `1px solid ${border}`,
 background: bg,
 color: text,
@@ -294,41 +306,54 @@ color: text,
   onClick={addTask}
   style={button}
 >
+  <Plus size={15} strokeWidth={2.5} />
   Save Task
 </button>
 
 <button
   onClick={breakDownTask}
+  disabled={aiLoading !== null}
   style={{
     ...secondaryButton,
-    marginLeft: "10px"
+    marginLeft: "10px",
+    opacity: aiLoading === "breakdown" ? 0.7 : 1,
+    cursor: aiLoading !== null ? "default" : "pointer",
   }}
 >
-  Break Down With AI
+  <Sparkles size={14} strokeWidth={2} />
+  {aiLoading === "breakdown" ? "Breaking down…" : "Break Down With AI"}
 </button>
 
 <button
   onClick={getCoachAdvice}
+  disabled={aiLoading !== null}
   style={{
     ...secondaryButton,
-    marginLeft: "10px"
+    marginLeft: "10px",
+    opacity: aiLoading === "coach" ? 0.7 : 1,
+    cursor: aiLoading !== null ? "default" : "pointer",
   }}
 >
-  Get AI Recommendation
+  <Sparkles size={14} strokeWidth={2} />
+  {aiLoading === "coach" ? "Thinking…" : "Get AI Recommendation"}
 </button>
       </div>
 
       {steps.length > 0 && (
         <div
+          className="xf-card"
           style={{
             background: card,
             padding: "24px",
-            borderRadius: "16px",
+            borderRadius: "var(--radius-lg)",
 border: `1px solid ${border}`,
             marginBottom: "24px"
           }}
         >
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>AI Breakdown</h2>
+          <h2 style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 18, fontWeight: 700, marginBottom: 12 }}>
+            <Sparkles size={16} strokeWidth={2} />
+            AI Breakdown
+          </h2>
 
           {steps.map((step, index) => (
             <div
@@ -338,7 +363,7 @@ border: `1px solid ${border}`,
 border: `1px solid ${border}`,
                 padding: "16px",
                 transition: "0.2s ease",
-                borderRadius: "10px",
+                borderRadius: "var(--radius-sm)",
                 marginBottom: "10px"
               }}
             >
@@ -352,15 +377,19 @@ border: `1px solid ${border}`,
 
 {coachAdvice && (
   <div
+    className="xf-card"
     style={{
      background: card,
       padding: "24px",
-      borderRadius: "16px",
+      borderRadius: "var(--radius-lg)",
       marginBottom: "24px",
       border: `1px solid ${border}`
     }}
   >
-    <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>AI Coach</h2>
+    <h2 style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 18, fontWeight: 700, marginBottom: 12 }}>
+      <Sparkles size={16} strokeWidth={2} />
+      AI Coach
+    </h2>
 
     <div
       style={{
@@ -374,17 +403,26 @@ border: `1px solid ${border}`,
   </div>
 )}
 <div
+  className="xf-card"
   style={{
  background: card,
     padding: "24px",
-    borderRadius: "16px",
+    borderRadius: "var(--radius-lg)",
     border: `1px solid ${border}`,
   }}
 >
   <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>My Tasks</h2>
 
         {tasks.length === 0 && (
-          <p style={{ color: textDim }}>No tasks yet.</p>
+          tasksLoading ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div className="xf-skeleton" style={{ height: 52 }} />
+              <div className="xf-skeleton" style={{ height: 52 }} />
+              <div className="xf-skeleton" style={{ height: 52 }} />
+            </div>
+          ) : (
+            <p style={{ color: textDim }}>No tasks yet.</p>
+          )
         )}
 
         {tasks.map((task) => (
@@ -395,7 +433,7 @@ border: `1px solid ${border}`,
 border: `1px solid ${border}`,
               padding: "16px",
               transition: "0.2s ease",
-              borderRadius: "10px",
+              borderRadius: "var(--radius-sm)",
               marginBottom: "10px",
               display: "flex",
               justifyContent: "space-between",
@@ -442,16 +480,20 @@ border: `1px solid ${border}`,
                 deleteTask(task.id)
               }
               style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
                 background: "transparent",
                 border: `1px solid ${red}`,
                 color: red,
                 padding: "8px 12px",
-                borderRadius: "8px",
+                borderRadius: "var(--radius-sm)",
                 cursor: "pointer",
                 fontWeight: 600,
                 fontSize: 13,
               }}
             >
+              <Trash2 size={13} strokeWidth={2} />
               Delete
             </button>
           </div>
@@ -466,7 +508,7 @@ const statCard = {
   background: card,
   padding: "24px",
   height: "110px",
-  borderRadius: "16px",
+  borderRadius: "var(--radius-lg)",
 border: `1px solid ${border}`,
   minWidth: "180px"
 
@@ -479,21 +521,27 @@ const bigNumber = {
 };
 
 const button = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
   background: blue,
   border: "none",
   color: "white",
   padding: "12px 20px",
-  borderRadius: "10px",
+  borderRadius: "var(--radius-sm)",
   cursor: "pointer",
   fontWeight: 700,
 };
 
 const secondaryButton = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
   background: "transparent",
   border: `1px solid ${border}`,
   color: text,
   padding: "12px 20px",
-  borderRadius: "10px",
+  borderRadius: "var(--radius-sm)",
   cursor: "pointer",
   fontWeight: 600,
 };

@@ -1,11 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { ClipboardList, Flame, Award, Link2, type LucideIcon } from "lucide-react";
 import { mockCourses } from "./mock-canvas-data";
 
 export interface Achievement {
   id: string;
   name: string;
   description: string;
-  icon: string;
+  icon: LucideIcon;
 }
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -13,25 +14,25 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: "first-study-plan",
     name: "First study plan generated",
     description: "Generate your first AI study plan.",
-    icon: "📋",
+    icon: ClipboardList,
   },
   {
     id: "week-streak",
     name: "7-day streak",
     description: "Use xFunction 7 days in a row.",
-    icon: "🔥",
+    icon: Flame,
   },
   {
     id: "first-a",
     name: "First A on a test",
     description: "Score 90% or higher on a graded assignment.",
-    icon: "🅰️",
+    icon: Award,
   },
   {
     id: "canvas-connected",
     name: "Connected Canvas",
     description: "Link your Canvas account.",
-    icon: "🔗",
+    icon: Link2,
   },
 ];
 

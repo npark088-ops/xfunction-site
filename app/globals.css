@@ -26,19 +26,142 @@
   --amber: #F5A623;
 }
 
+/* Depth + shape system — one radius/shadow scale used everywhere
+   instead of ad-hoc per-component numbers. Shadows are themed
+   separately per mode: a black shadow at light-mode opacity is
+   basically invisible against the near-black dark background, so
+   dark mode leans on a slightly stronger, cooler shadow instead. */
+:root {
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 1px rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.05);
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 150ms var(--ease);
+  --transition: 220ms var(--ease);
+}
+
+:root[data-theme="dark"] {
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* Typography scale — reference sizes for consistent hierarchy.
+   Existing inline fontSize numbers already line up with most of
+   these; new/edited elements should pull from this scale rather
+   than picking a fresh number. */
+:root {
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 16px;
+  --text-lg: 19px;
+  --text-xl: 24px;
+  --text-2xl: 34px;
+  --text-3xl: 44px;
+  --text-4xl: 64px;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body), Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
+  /* Smooths the dark-mode toggle itself — background/text/border
+     colors are all var()-driven, so flipping data-theme now animates
+     instead of hard-cutting between themes. */
+  transition: background-color var(--transition) ease, color var(--transition) ease;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading), var(--font-body), sans-serif;
+}
+
+a, button {
+  transition: opacity var(--transition-fast), transform var(--transition-fast),
+    background-color var(--transition-fast), border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+button:disabled {
+  transition: none;
 }
 
 .course-card {
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .course-card:hover {
   border-color: var(--blue);
   transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Reusable elevated-surface treatment — apply alongside the existing
+   background/border card styles for consistent depth + hover lift. */
+.xf-card {
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.xf-card-hover:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Per-page entrance — a subtle fade + rise applied to each page's
+   root container (see PAGE_ENTER_STYLE usage), standing in for a
+   full route-transition system without needing client-side routing
+   hooks or an animation library. */
+@keyframes xf-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.xf-page-enter {
+  animation: xf-fade-in 0.35s var(--ease) both;
+}
+
+/* Loading skeletons — shimmering placeholder blocks instead of a
+   blank flash or bare "Loading…" text while data loads. */
+@keyframes xf-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.xf-skeleton {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--border) 25%, var(--card) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: xf-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xf-page-enter,
+  .xf-skeleton {
+    animation: none;
+  }
+  a, button, .course-card, .xf-card {
+    transition: none;
+  }
 }
