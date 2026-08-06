@@ -3,17 +3,19 @@
 import Link from "next/link";
 import { useState } from "react";
 
-const bg = "#0B1120";
-const card = "#141B2E";
-const border = "#232C45";
-const cyan = "#5EEAD4";
-const amber = "#F5A623";
-const red = "#F16565";
-const textDim = "#8B94AC";
+const bg = "var(--bg)";
+const card = "var(--card)";
+const border = "var(--border)";
+const blue = "var(--blue)";
+const green = "var(--green)";
+const amber = "var(--amber)";
+const red = "var(--red)";
+const text = "var(--text)";
+const textDim = "var(--text-dim)";
 
 const navLink = {
   textDecoration: "none",
-  color: "white",
+  color: text,
   fontSize: "16px",
   cursor: "pointer",
   transition: "opacity 0.3s",
@@ -62,7 +64,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "white", background: bg, minHeight: "100vh" }}>
+    <div style={{ fontFamily: "Inter, sans-serif", color: text, background: bg, minHeight: "100vh" }}>
       {/* NAVBAR */}
       <div
         style={{
@@ -74,11 +76,13 @@ export default function PricingPage() {
           justifyContent: "space-between",
           alignItems: "center",
           padding: "20px 40px",
-          color: "white",
+          background: bg,
+          borderBottom: `1px solid ${border}`,
+          color: text,
           zIndex: 100,
         }}
       >
-        <h2 style={{ color: cyan }}>XFunction</h2>
+        <h2 style={{ color: blue }}>XFunction</h2>
 
         <div style={{ display: "flex", gap: "30px" }}>
           <Link
@@ -118,7 +122,7 @@ export default function PricingPage() {
 
       {/* HERO */}
       <div style={{ padding: "160px 20px 60px", textAlign: "center" }}>
-        <h1 style={{ fontSize: 44, fontWeight: 700, marginBottom: 12, letterSpacing: "-0.02em" }}>
+        <h1 style={{ fontSize: 44, fontWeight: 700, marginBottom: 12, letterSpacing: "-0.02em", color: text }}>
           Simple pricing
         </h1>
         <p style={{ color: textDim, fontSize: 17, maxWidth: 500, margin: "0 auto" }}>
@@ -149,7 +153,7 @@ export default function PricingPage() {
           <div style={{ fontSize: 14, color: textDim, fontWeight: 600, marginBottom: 8 }}>
             Free
           </div>
-          <div style={{ fontSize: 40, fontWeight: 700, marginBottom: 4 }}>
+          <div style={{ fontSize: 40, fontWeight: 700, marginBottom: 4, color: text }}>
             $0
             <span style={{ fontSize: 16, fontWeight: 500, color: textDim }}> /month</span>
           </div>
@@ -168,10 +172,10 @@ export default function PricingPage() {
                   fontSize: 14,
                   lineHeight: 1.6,
                   marginBottom: 12,
-                  color: "white",
+                  color: text,
                 }}
               >
-                <span style={{ color: cyan, flexShrink: 0 }}>✓</span>
+                <span style={{ color: green, flexShrink: 0 }}>✓</span>
                 {f}
               </li>
             ))}
@@ -186,7 +190,7 @@ export default function PricingPage() {
               borderRadius: 10,
               background: "transparent",
               border: `1px solid ${border}`,
-              color: "white",
+              color: text,
               textDecoration: "none",
               fontSize: 14,
               fontWeight: 600,
@@ -212,7 +216,7 @@ export default function PricingPage() {
               top: -14,
               right: 28,
               background: amber,
-              color: bg,
+              color: "#0B1120",
               fontSize: 11,
               fontWeight: 700,
               padding: "4px 12px",
@@ -224,10 +228,10 @@ export default function PricingPage() {
             Unlimited AI
           </div>
 
-          <div style={{ fontSize: 14, color: amber, fontWeight: 600, marginBottom: 8 }}>
+          <div style={{ fontSize: 14, color: "#8A5A00", fontWeight: 600, marginBottom: 8 }}>
             xFunction Pro
           </div>
-          <div style={{ fontSize: 40, fontWeight: 700, marginBottom: 4 }}>
+          <div style={{ fontSize: 40, fontWeight: 700, marginBottom: 4, color: text }}>
             $7
             <span style={{ fontSize: 16, fontWeight: 500, color: textDim }}> /month</span>
           </div>
@@ -246,10 +250,10 @@ export default function PricingPage() {
                   fontSize: 14,
                   lineHeight: 1.6,
                   marginBottom: 12,
-                  color: "white",
+                  color: text,
                 }}
               >
-                <span style={{ color: amber, flexShrink: 0 }}>✓</span>
+                <span style={{ color: green, flexShrink: 0 }}>✓</span>
                 {f}
               </li>
             ))}
@@ -264,9 +268,9 @@ export default function PricingPage() {
               textAlign: "center",
               padding: "12px 20px",
               borderRadius: 10,
-              background: amber,
+              background: blue,
               border: "none",
-              color: bg,
+              color: "white",
               fontSize: 14,
               fontWeight: 700,
               cursor: loading ? "default" : "pointer",

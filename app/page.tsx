@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
-const bg = "#0B1120";
-const card = "#141B2E";
-const border = "#232C45";
-const cyan = "#5EEAD4";
-const textDim = "#8B94AC";
+const bg = "var(--bg)";
+const card = "var(--card)";
+const border = "var(--border)";
+const blue = "var(--blue)";
+const text = "var(--text)";
+const textDim = "var(--text-dim)";
 
 export default function Home() {
   const [page, setPage] = useState("home");
@@ -19,7 +20,7 @@ export default function Home() {
     localStorage.setItem("user_id", Math.random().toString(36).substring(2));
   }
 }, []);
-  
+
   useEffect(() => {
     setTimeout(() => setVisible(true), 100);
   }, []);
@@ -36,7 +37,9 @@ export default function Home() {
   return (
     <div style={{ margin: 0, fontFamily: "Inter, sans-serif", background: bg }}>
 
-      {/* NAVBAR */}
+      {/* NAVBAR — solid background (not transparent) so it stays
+          readable over both the dark hero video and the light sections
+          below it while scrolling. */}
       <div style={{
   position: "fixed",
   top: 0,
@@ -45,11 +48,13 @@ export default function Home() {
   boxSizing: "border-box",
   display: "flex",
   justifyContent: "space-between",
-  padding: "40px 24px",
-  color: "white",
+  padding: "24px",
+  background: bg,
+  borderBottom: `1px solid ${border}`,
+  color: text,
   zIndex: 100
 }}>
-  <h2 style={{ color: cyan }}>XFunction</h2>
+  <h2 style={{ color: blue }}>XFunction</h2>
 
 <div style={{ display: "flex", gap: "32px" }}>
 
@@ -146,7 +151,9 @@ export default function Home() {
               background: "rgba(0,0,0,0.5)"
             }} />
 
-            {/* HERO TEXT */}
+            {/* HERO TEXT — kept white: this sits on a dark video/photo
+                overlay, not the page background, so light text is what
+                stays readable here regardless of the site's theme. */}
 <div
   style={{
     position: "relative",
@@ -212,7 +219,7 @@ export default function Home() {
     <h2 style={{
       fontSize: "52px",
       fontWeight: "700",
-      color: "white"
+      color: text
     }}>
       Plan less. Execute more.
     </h2>
@@ -267,7 +274,7 @@ export default function Home() {
     <h2 style={{
   fontSize: "52px",
   fontWeight: "700",
-  color: "white"
+  color: text
 }}>
       Built for consistency
     </h2>
@@ -311,7 +318,7 @@ export default function Home() {
             textAlign: "center",
             background: card,
             borderTop: `1px solid ${border}`,
-            color: "white"
+            color: text
           }}>
             <h2 style={{ fontSize: "44px" }}>
               Reduce complexity. Build momentum.
@@ -344,7 +351,7 @@ export default function Home() {
     right: 0,
     background: card,
     borderTop: `1px solid ${border}`,
-    color: "white",
+    color: text,
     padding: "15px 30px",
     display: "flex",
     justifyContent: "space-between",
@@ -368,7 +375,7 @@ export default function Home() {
   style={{
     padding: "8px 15px",
     background: "transparent",
-    color: "white",
+    color: text,
     border: `1px solid ${border}`,
     borderRadius: "6px",
     cursor: "pointer"
@@ -377,7 +384,7 @@ export default function Home() {
   Reject
 </button>
 
-      
+
 
 
 
@@ -390,7 +397,7 @@ export default function Home() {
   }
 
   // ✅ NEW: SEND TO YOUR BACKEND
-  
+
   fetch("/api/events", {
   method: "POST",
   body: JSON.stringify({
@@ -404,8 +411,8 @@ export default function Home() {
 }}
   style={{
     padding: "8px 15px",
-    background: cyan,
-    color: bg,
+    background: blue,
+    color: "white",
     border: "none",
     borderRadius: "6px",
     fontWeight: 700,
@@ -425,6 +432,6 @@ export default function Home() {
 const navBtn = {
   background: "none",
   border: "none",
-  color: "white",
+  color: text,
   cursor: "pointer"
 };

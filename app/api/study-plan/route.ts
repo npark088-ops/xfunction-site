@@ -4,6 +4,7 @@ import { calculateCategoryBreakdown, calculateCurrentGrade } from "../../../lib/
 import { findTargetAssignment } from "../../../lib/study-target";
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/ai-usage";
+import { markFirstStudyPlanGenerated } from "../../../lib/achievements";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -120,6 +121,8 @@ Rules:
       label: d.label,
       tasks: Array.isArray(parsed.days[i]?.tasks) ? parsed.days[i].tasks : [],
     }));
+
+    await markFirstStudyPlanGenerated(supabase, user.id);
 
     return Response.json({
       courseName: course.name,

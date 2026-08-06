@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { createClient } from "../../../lib/supabase/client";
 
-const bg = "#0B1120";
-const card = "#141B2E";
-const border = "#232C45";
-const cyan = "#5EEAD4";
-const red = "#F16565";
-const textDim = "#8B94AC";
+const bg = "var(--bg)";
+const card = "var(--card)";
+const border = "var(--border)";
+const blue = "var(--blue)";
+const green = "var(--green)";
+const red = "var(--red)";
+const text = "var(--text)";
+const textDim = "var(--text-dim)";
 
 type Task = {
   id: string;
@@ -168,7 +170,7 @@ Tell me:
   return (
   <div
     style={{
-      color: "white",
+      color: text,
       minHeight: "100vh",
       padding: "48px 40px",
       fontFamily: "Inter, sans-serif"
@@ -188,7 +190,8 @@ Tell me:
     fontSize: 34,
     fontWeight: 700,
     letterSpacing: "-0.02em",
-    marginBottom: 4
+    marginBottom: 4,
+    color: text
   }}
 >
   Your tasks
@@ -226,7 +229,7 @@ Tell me:
 
         <div style={statCard}>
           <div style={{ color: textDim, fontSize: 13 }}>Completion Rate</div>
-          <div style={{ ...bigNumber, color: cyan }}>
+          <div style={{ ...bigNumber, color: green }}>
             {completionRate}%
           </div>
         </div>
@@ -266,7 +269,7 @@ border: `1px solid ${border}`,
             borderRadius: "10px",
            border: `1px solid ${border}`,
 background: bg,
-color: "white",
+color: text,
           }}
         />
 
@@ -284,7 +287,7 @@ color: "white",
     borderRadius: "10px",
     border: `1px solid ${border}`,
 background: bg,
-color: "white",
+color: text,
   }}
 />
 <button
@@ -476,9 +479,9 @@ const bigNumber = {
 };
 
 const button = {
-  background: cyan,
+  background: blue,
   border: "none",
-  color: bg,
+  color: "white",
   padding: "12px 20px",
   borderRadius: "10px",
   cursor: "pointer",
@@ -488,7 +491,7 @@ const button = {
 const secondaryButton = {
   background: "transparent",
   border: `1px solid ${border}`,
-  color: "white",
+  color: text,
   padding: "12px 20px",
   borderRadius: "10px",
   cursor: "pointer",

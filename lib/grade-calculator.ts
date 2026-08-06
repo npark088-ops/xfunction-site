@@ -67,6 +67,19 @@ export function calculateCurrentGrade(groups: CanvasAssignmentGroup[]): number {
   return weightedSum / totalActiveWeight;
 }
 
+// Overall grade across courses, weighted by each course's credit
+// hours instead of a plain average — an AP/Honors course carrying 1.5
+// credits should pull the overall grade more than a 1.0-credit course.
+export function calculateWeightedOverallGrade(
+  courses: { grade: number; creditHours: number }[]
+): number {
+  const totalCredits = courses.reduce((sum, c) => sum + c.creditHours, 0);
+  if (totalCredits === 0) return 0;
+
+  const weightedSum = courses.reduce((sum, c) => sum + c.grade * c.creditHours, 0);
+  return weightedSum / totalCredits;
+}
+
 /**
  * The core product feature: "what do I need to score on THIS assignment
  * to reach my target overall grade?"

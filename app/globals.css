@@ -1,8 +1,36 @@
+/* Design tokens — every page/component references these by name
+   (const bg = "var(--bg)", etc.) instead of hardcoded hex, which is
+   what makes the dark mode toggle (Settings → Appearance) work: it
+   just flips the data-theme attribute on <html>, no per-page logic. */
+:root {
+  --bg: #FFFFFF;
+  --card: #F5F7FA;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --text-dim: #64748B;
+  --blue: #2563EB;
+  --green: #16A34A;
+  --red: #F16565;
+  --amber: #F5A623;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0B1120;
+  --card: #141B2E;
+  --border: #232C45;
+  --text: #F8FAFC;
+  --text-dim: #8B94AC;
+  --blue: #5EEAD4;
+  --green: #4ADE80;
+  --red: #F16565;
+  --amber: #F5A623;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #111;
-  color: white;
+  background: var(--bg);
+  color: var(--text);
 }
 
 .course-card {
@@ -11,6 +39,6 @@ body {
 }
 
 .course-card:hover {
-  border-color: #5EEAD4;
+  border-color: var(--blue);
   transform: translateY(-4px);
 }

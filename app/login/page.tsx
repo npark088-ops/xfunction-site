@@ -5,12 +5,14 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { createClient } from "../../lib/supabase/client";
 
-const bg = "#0B1120";
-const card = "#141B2E";
-const border = "#232C45";
-const cyan = "#5EEAD4";
-const red = "#F16565";
-const textDim = "#8B94AC";
+const bg = "var(--bg)";
+const card = "var(--card)";
+const border = "var(--border)";
+const blue = "var(--blue)";
+const green = "var(--green)";
+const red = "var(--red)";
+const text = "var(--text)";
+const textDim = "var(--text-dim)";
 
 const inputStyle = {
   width: "100%",
@@ -18,7 +20,7 @@ const inputStyle = {
   borderRadius: 10,
   border: `1px solid ${border}`,
   background: bg,
-  color: "white",
+  color: text,
   fontSize: 14,
   boxSizing: "border-box" as const,
 };
@@ -113,7 +115,7 @@ function LoginForm() {
       style={{
         minHeight: "100vh",
         background: bg,
-        color: "white",
+        color: text,
         fontFamily: "Inter, sans-serif",
         display: "flex",
         alignItems: "center",
@@ -126,7 +128,7 @@ function LoginForm() {
           href="/"
           style={{
             display: "inline-block",
-            color: cyan,
+            color: blue,
             textDecoration: "none",
             fontSize: 14,
             fontWeight: 600,
@@ -144,7 +146,7 @@ function LoginForm() {
             padding: 28,
           }}
         >
-          <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, color: text }}>
             {mode === "sign-in" ? "Sign in" : "Create your account"}
           </h1>
           <p style={{ color: textDim, fontSize: 14, marginBottom: 24 }}>
@@ -181,7 +183,7 @@ function LoginForm() {
               <div style={{ color: red, fontSize: 13, marginBottom: 16 }}>{error}</div>
             )}
             {info && (
-              <div style={{ color: cyan, fontSize: 13, marginBottom: 16 }}>{info}</div>
+              <div style={{ color: green, fontSize: 13, marginBottom: 16 }}>{info}</div>
             )}
 
             <button
@@ -191,8 +193,8 @@ function LoginForm() {
                 width: "100%",
                 padding: "12px 16px",
                 borderRadius: 10,
-                background: cyan,
-                color: "#0B1120",
+                background: blue,
+                color: "white",
                 border: "none",
                 fontSize: 14,
                 fontWeight: 700,
@@ -214,7 +216,7 @@ function LoginForm() {
                       setError(null);
                       setInfo(null);
                     }}
-                    style={{ background: "none", border: "none", color: cyan, cursor: "pointer", fontSize: 13 }}
+                    style={{ background: "none", border: "none", color: blue, cursor: "pointer", fontSize: 13 }}
                   >
                     Create one
                   </button>
@@ -228,7 +230,7 @@ function LoginForm() {
                       setError(null);
                       setInfo(null);
                     }}
-                    style={{ background: "none", border: "none", color: cyan, cursor: "pointer", fontSize: 13 }}
+                    style={{ background: "none", border: "none", color: blue, cursor: "pointer", fontSize: 13 }}
                   >
                     Sign in
                   </button>

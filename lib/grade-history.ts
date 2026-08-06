@@ -13,6 +13,8 @@
 // so history never drifts out of sync with the actual mock assignment
 // data if that changes.
 
+import { mockCourses, getCreditHours } from "./mock-canvas-data";
+
 export interface GradePoint {
   label: string;
   percentage: number;
@@ -44,14 +46,23 @@ export function getCourseGradeHistory(courseId: string, currentGrade: number): G
   return points;
 }
 
+// Credit-weighted, same as the live overall grade (see
+// calculateWeightedOverallGrade in lib/grade-calculator.ts) — otherwise
+// the trend line would visibly kink where simulated history (unweighted)
+// meets the live current-week point (weighted).
 export function getOverallGradeHistory(currentOverallGrade: number): GradePoint[] {
   const courseIds = Object.keys(PAST_WEEKS_BY_COURSE);
   const weekCount = PAST_WEEKS_BY_COURSE[courseIds[0]].length;
+  const credits = courseIds.map((id) => getCreditHours(mockCourses[id]));
+  const totalCredits = credits.reduce((sum, c) => sum + c, 0);
 
   const points: GradePoint[] = [];
   for (let i = 0; i < weekCount; i++) {
-    const average =
-      courseIds.reduce((sum, id) => sum + PAST_WEEKS_BY_COURSE[id][i], 0) / courseIds.length;
+    const weightedSum = courseIds.reduce(
+      (sum, id, idx) => sum + PAST_WEEKS_BY_COURSE[id][i] * credits[idx],
+      0
+    );
+    const average = totalCredits > 0 ? weightedSum / totalCredits : 0;
     points.push({ label: weekLabel(weekCount - i), percentage: Math.round(average * 10) / 10 });
   }
   points.push({ label: weekLabel(0), percentage: currentOverallGrade });

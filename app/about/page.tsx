@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 
-const bg = "#0B1120";
-const card = "#141B2E";
-const border = "#232C45";
-const cyan = "#5EEAD4";
-const textDim = "#8B94AC";
+const bg = "var(--bg)";
+const card = "var(--card)";
+const border = "var(--border)";
+const blue = "var(--blue)";
+const text = "var(--text)";
+const textDim = "var(--text-dim)";
 
 export default function About() {
   return (
     <div
   style={{
     fontFamily: "Inter, sans-serif",
-    color: "white",
+    color: text,
     background: bg,
     minHeight: "100vh"
   }}
@@ -30,11 +31,13 @@ export default function About() {
           justifyContent: "space-between",
           alignItems: "center",
           padding: "20px 40px",
-          color: "white",
+          background: bg,
+          borderBottom: `1px solid ${border}`,
+          color: text,
           zIndex: 100
         }}
       >
-        <h2 style={{ color: cyan }}>XFunction</h2>
+        <h2 style={{ color: blue }}>XFunction</h2>
 
         <div style={{ display: "flex", gap: "30px" }}>
 
@@ -87,17 +90,14 @@ export default function About() {
     textAlign: "center",
     padding: "20px",
     marginTop: "80px",
-
-    // ✅ ADD THIS LINE
-    background: "radial-gradient(circle at center, rgba(0,0,0,0.4), transparent 70%)"
+    background: `radial-gradient(circle at center, ${card}, transparent 70%)`
   }}
 >
         <div style={{ maxWidth: "800px" }}>
           <h1 style={{
   fontSize: "64px",
   fontWeight: "600",
-  color: "#ffffff",
-  textShadow: "0 0 20px rgba(255,255,255,0.15)"
+  color: text
 }}>
   About XFunction
 </h1>
@@ -129,7 +129,7 @@ export default function About() {
           background: card,
           border: `1px solid ${border}`
         }}>
-          <h2 style={{ fontSize: "48px", fontWeight: "700", color: "white" }}>
+          <h2 style={{ fontSize: "48px", fontWeight: "700", color: text }}>
             The problem
           </h2>
 
@@ -159,7 +159,7 @@ export default function About() {
           background: card,
           border: `1px solid ${border}`
         }}>
-          <h2 style={{ fontSize: "48px", fontWeight: "700", color: "white" }}>
+          <h2 style={{ fontSize: "48px", fontWeight: "700", color: text }}>
             What XFunction does
           </h2>
 
@@ -189,7 +189,7 @@ export default function About() {
           background: card,
           border: `1px solid ${border}`
         }}>
-          <h2 style={{ fontSize: "48px", fontWeight: "700", color: "white" }}>
+          <h2 style={{ fontSize: "48px", fontWeight: "700", color: text }}>
             Our approach
           </h2>
 
@@ -211,7 +211,7 @@ export default function About() {
         textAlign: "center",
         background: card,
         borderTop: `1px solid ${border}`,
-        color: "white"
+        color: text
       }}>
         <h2 style={{ fontSize: "44px" }}>
           Designed for real progress
@@ -236,7 +236,7 @@ export default function About() {
 /* ✅ NAV LINK STYLE */
 const navLink = {
   textDecoration: "none",
-  color: "white",
+  color: "#0F172A",
   fontSize: "16px",
   cursor: "pointer",
   transition: "opacity 0.3s"

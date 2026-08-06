@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 
-const bg = "#0B1120";
-const card = "#141B2E";
-const border = "#232C45";
-const cyan = "#5EEAD4";
-const textDim = "#8B94AC";
+const bg = "var(--bg)";
+const card = "var(--card)";
+const border = "var(--border)";
+const blue = "var(--blue)";
+const green = "var(--green)";
+const text = "var(--text)";
+const textDim = "var(--text-dim)";
 
 type CanvasStatus = {
   connected: boolean;
@@ -54,7 +56,7 @@ export function CanvasConnectionCard({
       <div>
         {canvasStatus.connected ? (
           <>
-            <div style={{ fontSize: 14, fontWeight: 600, color: cyan, marginBottom: 2 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: green, marginBottom: 2 }}>
               ✓ Canvas connected
             </div>
             <div style={{ fontSize: 13, color: textDim }}>
@@ -63,7 +65,7 @@ export function CanvasConnectionCard({
           </>
         ) : (
           <>
-            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: text, marginBottom: 2 }}>
               Canvas not connected
             </div>
             <div style={{ fontSize: 13, color: textDim }}>
@@ -72,7 +74,7 @@ export function CanvasConnectionCard({
             </div>
           </>
         )}
-        {banner && <div style={{ fontSize: 13, color: cyan, marginTop: 6 }}>{banner}</div>}
+        {banner && <div style={{ fontSize: 13, color: green, marginTop: 6 }}>{banner}</div>}
       </div>
 
       {canvasStatus.connected ? (
@@ -83,7 +85,7 @@ export function CanvasConnectionCard({
             borderRadius: 10,
             background: bg,
             border: `1px solid ${border}`,
-            color: "white",
+            color: text,
             fontSize: 14,
             fontWeight: 600,
             cursor: "pointer",
@@ -97,8 +99,8 @@ export function CanvasConnectionCard({
           style={{
             padding: "10px 20px",
             borderRadius: 10,
-            background: cyan,
-            color: "#0B1120",
+            background: blue,
+            color: "white",
             textDecoration: "none",
             fontSize: 14,
             fontWeight: 700,

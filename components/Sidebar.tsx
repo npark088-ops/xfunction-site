@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const bg = "#0B1120";
-const card = "#141B2E";
-const border = "#232C45";
-const cyan = "#5EEAD4";
-const textDim = "#8B94AC";
+const bg = "var(--bg)";
+const card = "var(--card)";
+const border = "var(--border)";
+const blue = "var(--blue)";
+const text = "var(--text)";
+const textDim = "var(--text-dim)";
 
 const NAV_ITEMS = [
   { href: "/overview", label: "Overview" },
@@ -41,7 +42,7 @@ export function Sidebar({ userEmail }: { userEmail: string | null }) {
       <Link
         href="/"
         style={{
-          color: cyan,
+          color: blue,
           fontSize: 18,
           fontWeight: 700,
           textDecoration: "none",
@@ -68,8 +69,8 @@ export function Sidebar({ userEmail }: { userEmail: string | null }) {
                 fontSize: 14,
                 fontWeight: 600,
                 textDecoration: "none",
-                color: active ? bg : "white",
-                background: active ? cyan : "transparent",
+                color: active ? "white" : text,
+                background: active ? blue : "transparent",
                 transition: "background 0.15s ease, color 0.15s ease",
               }}
             >
@@ -100,7 +101,7 @@ export function Sidebar({ userEmail }: { userEmail: string | null }) {
                 borderRadius: 8,
                 background: bg,
                 border: `1px solid ${border}`,
-                color: "white",
+                color: text,
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",

@@ -1,14 +1,17 @@
 import { getCachedUser, createClient } from "../../../lib/supabase/server";
 import { getAiUsageSnapshot } from "../../../lib/ai-usage";
+import { getCanvasConnection } from "../../../lib/canvas-token-store";
+import { getUnlockedAchievementIds } from "../../../lib/achievements";
 import { SettingsContent } from "../../../components/SettingsContent";
 
-const textDim = "#8B94AC";
+const text = "var(--text)";
+const textDim = "var(--text-dim)";
 
-// Server component — email and plan/usage status are known before the
-// page ever reaches the browser (getAiUsageSnapshot is called directly
-// here instead of the page fetching its own /api/profile route), so
-// there's no loading flash for either. Only the toggles/checkout button
-// need interactivity, which is what SettingsContent (client) handles.
+// Server component — email, plan/usage status, and achievement unlock
+// state are all known before the page ever reaches the browser, so
+// there's no loading flash for any of it. Only the toggles/checkout
+// button/digest test-send need interactivity, which is what
+// SettingsContent (client) handles.
 export default async function SettingsPage({
   searchParams,
 }: {
@@ -20,20 +23,38 @@ export default async function SettingsPage({
   let isPro = false;
   let used = 0;
   let limit = 3;
+  let unlockedIds: string[] = [];
 
   if (user) {
     const supabase = await createClient();
-    const usage = await getAiUsageSnapshot(supabase, user.id);
+
+    const [usage, profileRow, canvasConnection] = await Promise.all([
+      getAiUsageSnapshot(supabase, user.id),
+      supabase
+        .from("profiles")
+        .select("longest_streak, first_study_plan_at")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      getCanvasConnection(supabase, user.id),
+    ]);
+
     isPro = usage.isPro;
     used = usage.used;
     limit = usage.limit;
+
+    const unlocked = getUnlockedAchievementIds({
+      longestStreak: profileRow.data?.longest_streak ?? 0,
+      hasGeneratedStudyPlan: Boolean(profileRow.data?.first_study_plan_at),
+      canvasConnected: Boolean(canvasConnection),
+    });
+    unlockedIds = Array.from(unlocked);
   }
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        color: "white",
+        color: text,
         fontFamily: "Inter, sans-serif",
         padding: "48px 40px",
       }}
@@ -50,7 +71,7 @@ export default async function SettingsPage({
         >
           xFunction · Settings
         </div>
-        <h1 style={{ fontSize: 34, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em" }}>
+        <h1 style={{ fontSize: 34, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em", color: text }}>
           Settings
         </h1>
         <p style={{ color: textDim, marginBottom: 24, fontSize: 15 }}>
@@ -63,6 +84,7 @@ export default async function SettingsPage({
           used={used}
           limit={limit}
           justUpgraded={upgraded === "1"}
+          unlockedAchievementIds={unlockedIds}
         />
       </div>
     </div>

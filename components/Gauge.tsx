@@ -1,10 +1,11 @@
-const border = "#232C45";
-const cyan = "#5EEAD4";
-const amber = "#F5A623";
-const red = "#F16565";
+const border = "var(--border)";
+const green = "var(--green)";
+const amber = "var(--amber)";
+const red = "var(--red)";
+const text = "var(--text)";
 
 export function gradeColor(pct: number) {
-  if (pct >= 85) return cyan;
+  if (pct >= 85) return green;
   if (pct >= 70) return amber;
   return red;
 }
@@ -37,7 +38,7 @@ export function Gauge({ percentage, size = 88 }: { percentage: number; size?: nu
         y="50%"
         textAnchor="middle"
         dominantBaseline="middle"
-        fill="white"
+        fill={text}
         fontSize="20"
         fontFamily="'IBM Plex Mono', monospace"
         fontWeight="600"

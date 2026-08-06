@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { resolveCssVar } from "../lib/theme-color";
 
-const card = "#141B2E";
-const amber = "#F5A623";
-const textDim = "#8B94AC";
+const card = "#FFF8EB";
+const textDim = "var(--text-dim)";
 
 // Pings /api/streak once on mount to record today's visit and get back
 // the current count. `increased` only comes back true the first time
@@ -30,6 +30,12 @@ export function StreakBadge() {
     return () => clearTimeout(timeout);
   }, [celebrate]);
 
+  // Resolved to a literal hex (once per mount) specifically for the
+  // spots below that append an alpha suffix, e.g. `${resolvedAmber}88`
+  // — that only produces valid CSS with a real hex value, not the
+  // `var(--amber)` reference `amber` holds everywhere else in this file.
+  const resolvedAmber = useMemo(() => resolveCssVar("--amber", "#F5A623"), []);
+
   if (streak === null) return null;
 
   return (
@@ -39,12 +45,12 @@ export function StreakBadge() {
         display: "inline-flex",
         alignItems: "center",
         gap: 12,
-        background: `linear-gradient(135deg, ${card}, #201530)`,
-        border: `1px solid ${amber}66`,
+        background: `linear-gradient(135deg, ${card}, #FFF1D6)`,
+        border: `1px solid ${resolvedAmber}88`,
         borderRadius: 16,
         padding: "12px 20px",
         marginBottom: 24,
-        boxShadow: celebrate ? `0 0 24px ${amber}55` : "none",
+        boxShadow: celebrate ? `0 0 24px ${resolvedAmber}55` : "none",
         transition: "box-shadow 0.4s ease",
       }}
     >
@@ -53,7 +59,7 @@ export function StreakBadge() {
           fontSize: 32,
           lineHeight: 1,
           animation: celebrate ? "streakPop 0.7s ease" : undefined,
-          filter: `drop-shadow(0 0 ${celebrate ? 12 : 5}px ${amber}aa)`,
+          filter: `drop-shadow(0 0 ${celebrate ? 12 : 5}px ${resolvedAmber}aa)`,
           transition: "filter 0.4s ease",
         }}
       >
@@ -65,7 +71,7 @@ export function StreakBadge() {
             fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 24,
             fontWeight: 700,
-            color: amber,
+            color: "#8A5A00",
             lineHeight: 1.1,
           }}
         >

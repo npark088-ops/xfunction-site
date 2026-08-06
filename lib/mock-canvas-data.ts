@@ -1,4 +1,5 @@
 import { CanvasAssignmentGroup } from "./canvas-types";
+import { GradingScale, SIMPLE_GRADING_SCALE } from "./grading-scale";
 
 // Fake data shaped exactly like what Canvas's real API returns.
 // This lets us build and test the whole grade-calculator pipeline
@@ -22,6 +23,19 @@ export interface MockCourse {
   id: string;
   name: string;
   assignmentGroups: CanvasAssignmentGroup[];
+  // Used to weight this course's contribution to the overall grade —
+  // see lib/grade-calculator.ts's calculateWeightedOverallGrade().
+  // Defaults to 1.0 (getCreditHours() below) for any course that
+  // doesn't set one explicitly.
+  creditHours?: number;
+  // Percentage → letter grade mapping. Defaults to
+  // STANDARD_GRADING_SCALE (see lib/grading-scale.ts) if omitted —
+  // not every course has to grade on the same scale.
+  gradingScale?: GradingScale;
+}
+
+export function getCreditHours(course: MockCourse): number {
+  return course.creditHours ?? 1.0;
 }
 
 // "AP Biology" — weighted grading: Homework 20%, Quizzes 30%, Tests 50%
@@ -246,9 +260,30 @@ const algebra2Groups: CanvasAssignmentGroup[] = [
 ];
 
 export const mockCourses: Record<string, MockCourse> = {
-  "ap-biology": { id: "ap-biology", name: "AP Biology", assignmentGroups: apBiologyGroups },
-  "us-history": { id: "us-history", name: "US History", assignmentGroups: usHistoryGroups },
-  "algebra-2": { id: "algebra-2", name: "Algebra II", assignmentGroups: algebra2Groups },
+  // AP courses commonly carry extra weight toward a student's overall
+  // average — 1.5 credit hours here vs. the standard 1.0, so the
+  // credit-weighted overall grade isn't just a plain average anymore.
+  "ap-biology": {
+    id: "ap-biology",
+    name: "AP Biology",
+    assignmentGroups: apBiologyGroups,
+    creditHours: 1.5,
+  },
+  "us-history": {
+    id: "us-history",
+    name: "US History",
+    assignmentGroups: usHistoryGroups,
+    creditHours: 1.0,
+  },
+  // Uses a simplified (no +/-) grading scale, unlike the other two
+  // courses — demonstrates that a course can define its own scale.
+  "algebra-2": {
+    id: "algebra-2",
+    name: "Algebra II",
+    assignmentGroups: algebra2Groups,
+    creditHours: 1.0,
+    gradingScale: SIMPLE_GRADING_SCALE,
+  },
 };
 
 // Kept for lib/test-calculator.ts, which exercises the calculator against a single course.

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { mockCourses } from "../../../lib/mock-canvas-data";
-import { calculateCurrentGrade } from "../../../lib/grade-calculator";
+import { mockCourses, getCreditHours } from "../../../lib/mock-canvas-data";
+import { calculateCurrentGrade, calculateWeightedOverallGrade } from "../../../lib/grade-calculator";
 import { Gauge, gradeColor } from "../../../components/Gauge";
 import { getOverallGradeHistory, trendDirection } from "../../../lib/grade-history";
 import { TrendChart } from "../../../components/TrendChart";
@@ -11,14 +11,14 @@ import { getUpcomingAssignments, URGENT_WITHIN_DAYS } from "../../../lib/upcomin
 import { UpgradePrompt } from "../../../components/UpgradePrompt";
 import { StreakBadge } from "../../../components/StreakBadge";
 
-const amber = "#F5A623";
-
-const bg = "#0B1120";
-const card = "#141B2E";
-const border = "#232C45";
-const cyan = "#5EEAD4";
-const red = "#F16565";
-const textDim = "#8B94AC";
+const bg = "var(--bg)";
+const card = "var(--card)";
+const border = "var(--border)";
+const blue = "var(--blue)";
+const green = "var(--green)";
+const red = "var(--red)";
+const text = "var(--text)";
+const textDim = "var(--text-dim)";
 
 function daysAwayLabel(daysAway: number) {
   if (daysAway <= 0) return "Due today";
@@ -31,15 +31,14 @@ export default function OverviewPage() {
     id: course.id,
     name: course.name,
     grade: calculateCurrentGrade(course.assignmentGroups),
+    creditHours: getCreditHours(course),
   }));
 
-  // Overall grade across all courses, reusing each course's existing
-  // calculateCurrentGrade() result. This is a simple unweighted average —
-  // if courses ever carry different credit weights (e.g. an AP class
-  // worth more than a regular one), this should become a weighted
-  // average instead. For now, every course counts equally.
-  const overallGrade =
-    courses.length > 0 ? courses.reduce((sum, c) => sum + c.grade, 0) / courses.length : 0;
+  // Weighted by each course's credit hours (an AP/Honors course
+  // carrying 1.5 credits pulls the overall grade more than a
+  // 1.0-credit course) instead of a plain average across courses.
+  const overallGrade = calculateWeightedOverallGrade(courses);
+  const totalCredits = courses.reduce((sum, c) => sum + c.creditHours, 0);
 
   const overallGradeHistory = getOverallGradeHistory(overallGrade);
   const overallTrend = trendDirection(overallGradeHistory);
@@ -129,7 +128,7 @@ export default function OverviewPage() {
     <div
       style={{
         minHeight: "100vh",
-        color: "white",
+        color: text,
         fontFamily: "Inter, sans-serif",
         padding: "48px 40px",
       }}
@@ -139,7 +138,7 @@ export default function OverviewPage() {
         <div style={{ marginBottom: 8, color: textDim, fontSize: 13, letterSpacing: "0.04em", textTransform: "uppercase" }}>
           xFunction · Overview
         </div>
-        <h1 style={{ fontSize: 34, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em" }}>
+        <h1 style={{ fontSize: 34, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em", color: text }}>
           Welcome back
         </h1>
         <p style={{ color: textDim, marginBottom: 24, fontSize: 15 }}>
@@ -181,7 +180,7 @@ export default function OverviewPage() {
               {overallGrade.toFixed(1)}%
             </div>
             <div style={{ fontSize: 13, color: textDim }}>
-              Simple average across {courses.map((c) => c.name).join(", ")}
+              Weighted by credit hours across {courses.map((c) => c.name).join(", ")} ({totalCredits} total credits)
             </div>
           </div>
         </div>
@@ -206,12 +205,12 @@ export default function OverviewPage() {
               gap: 8,
             }}
           >
-            <h2 style={{ fontSize: 19, fontWeight: 600, margin: 0 }}>Overall grade trend</h2>
+            <h2 style={{ fontSize: 19, fontWeight: 600, margin: 0, color: text }}>Overall grade trend</h2>
             <div
               style={{
                 fontSize: 13,
                 fontWeight: 700,
-                color: overallTrend === "up" ? cyan : overallTrend === "down" ? red : amber,
+                color: overallTrend === "up" ? green : overallTrend === "down" ? red : textDim,
               }}
             >
               {overallTrend === "up"
@@ -262,7 +261,7 @@ export default function OverviewPage() {
                 style={{
                   background: "none",
                   border: "none",
-                  color: cyan,
+                  color: blue,
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: "pointer",
@@ -284,7 +283,7 @@ export default function OverviewPage() {
             <div style={{ fontSize: 14, color: red }}>{coachError.message}</div>
           )}
           {!coachLoading && !coachError && coachInsight && (
-            <p style={{ fontSize: 15, lineHeight: 1.6, margin: 0 }}>{coachInsight}</p>
+            <p style={{ fontSize: 15, lineHeight: 1.6, margin: 0, color: text }}>{coachInsight}</p>
           )}
         </div>
 
@@ -307,7 +306,7 @@ export default function OverviewPage() {
               marginBottom: upcoming.length > 0 ? 14 : 0,
             }}
           >
-            <div style={{ fontSize: 14, fontWeight: 600 }}>Coming up</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: text }}>Coming up</div>
             {upcoming.some((a) => a.daysAway <= URGENT_WITHIN_DAYS) && (
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button
@@ -333,8 +332,8 @@ export default function OverviewPage() {
                     padding: "6px 14px",
                     borderRadius: 8,
                     background: "transparent",
-                    border: `1px solid ${amber}`,
-                    color: amber,
+                    border: `1px solid ${blue}`,
+                    color: blue,
                     fontSize: 12,
                     fontWeight: 600,
                     cursor: smsStatus?.kind === "sending" ? "default" : "pointer",
@@ -346,7 +345,7 @@ export default function OverviewPage() {
             )}
           </div>
           {reminderStatus?.kind === "sent" && (
-            <div style={{ fontSize: 12, color: cyan, marginBottom: 12 }}>
+            <div style={{ fontSize: 12, color: green, marginBottom: 12 }}>
               Sent — {reminderStatus.count} urgent item{reminderStatus.count === 1 ? "" : "s"} emailed to you.
             </div>
           )}
@@ -356,7 +355,7 @@ export default function OverviewPage() {
             </div>
           )}
           {smsStatus?.kind === "sent" && (
-            <div style={{ fontSize: 12, color: cyan, marginBottom: 12 }}>
+            <div style={{ fontSize: 12, color: green, marginBottom: 12 }}>
               Sent — {smsStatus.count} urgent item{smsStatus.count === 1 ? "" : "s"} texted to you.
             </div>
           )}
@@ -387,21 +386,21 @@ export default function OverviewPage() {
                       borderRadius: 10,
                       background: urgent
                         ? hovered
-                          ? "rgba(241, 101, 101, 0.14)"
-                          : "rgba(241, 101, 101, 0.08)"
+                          ? "rgba(241, 101, 101, 0.12)"
+                          : "rgba(241, 101, 101, 0.06)"
                         : hovered
-                          ? "#1A2338"
+                          ? "#EEF2F7"
                           : bg,
-                      border: `1px solid ${urgent ? red : hovered ? cyan : border}`,
+                      border: `1px solid ${urgent ? red : hovered ? blue : border}`,
                       textDecoration: "none",
-                      color: "white",
+                      color: text,
                       cursor: "pointer",
                       transform: hovered ? "translateY(-2px)" : "translateY(0)",
                       transition: "transform 0.15s ease, border-color 0.15s ease, background 0.15s ease",
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: 12, color: cyan, marginBottom: 2 }}>
+                      <div style={{ fontSize: 12, color: blue, marginBottom: 2 }}>
                         {item.courseName}
                       </div>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>{item.assignmentName}</div>

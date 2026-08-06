@@ -1,7 +1,7 @@
 import { getCachedUser } from "../../lib/supabase/server";
 import { Sidebar } from "../../components/Sidebar";
 
-const bg = "#0B1120";
+const bg = "var(--bg)";
 
 // Shared shell for every signed-in page (Overview, Courses, Tasks,
 // Settings, Grades). Fetching the user here — once, server-side —

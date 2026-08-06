@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { mockCourses } from "../../../lib/mock-canvas-data";
+import { mockCourses, getCreditHours } from "../../../lib/mock-canvas-data";
 import { calculateCurrentGrade } from "../../../lib/grade-calculator";
+import { letterGradeFor } from "../../../lib/grading-scale";
 import { gradeColor } from "../../../components/Gauge";
 import { getCachedUser, createClient } from "../../../lib/supabase/server";
 import { getCanvasConnection } from "../../../lib/canvas-token-store";
 import { CanvasConnectionCard } from "../../../components/CanvasConnectionCard";
 
-const card = "#141B2E";
-const border = "#232C45";
-const textDim = "#8B94AC";
+const card = "var(--card)";
+const border = "var(--border)";
+const text = "var(--text)";
+const textDim = "var(--text-dim)";
 
 function bannerFor(canvas?: string) {
   if (canvas === "connected") return "Canvas connected.";
@@ -36,6 +38,8 @@ export default async function CoursesPage({
     id: course.id,
     name: course.name,
     grade: calculateCurrentGrade(course.assignmentGroups),
+    creditHours: getCreditHours(course),
+    letter: letterGradeFor(calculateCurrentGrade(course.assignmentGroups), course.gradingScale),
   }));
 
   const user = await getCachedUser();
@@ -59,7 +63,7 @@ export default async function CoursesPage({
     <div
       style={{
         minHeight: "100vh",
-        color: "white",
+        color: text,
         fontFamily: "Inter, sans-serif",
         padding: "48px 40px",
       }}
@@ -76,7 +80,7 @@ export default async function CoursesPage({
         >
           xFunction · Courses
         </div>
-        <h1 style={{ fontSize: 34, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em" }}>
+        <h1 style={{ fontSize: 34, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em", color: text }}>
           Your courses
         </h1>
         <p style={{ color: textDim, marginBottom: 24, fontSize: 15 }}>
@@ -97,6 +101,7 @@ export default async function CoursesPage({
             <Link
               key={c.id}
               href={`/grades/${c.id}`}
+              className="course-card"
               style={{
                 display: "block",
                 background: card,
@@ -104,21 +109,26 @@ export default async function CoursesPage({
                 borderRadius: 16,
                 padding: 24,
                 textDecoration: "none",
-                color: "white",
+                color: text,
               }}
             >
-              <div style={{ fontSize: 13, color: textDim, marginBottom: 10 }}>Course</div>
-              <h2 style={{ fontSize: 19, fontWeight: 600, marginBottom: 18 }}>{c.name}</h2>
+              <div style={{ fontSize: 13, color: textDim, marginBottom: 10 }}>
+                Course · {c.creditHours} credit{c.creditHours === 1 ? "" : "s"}
+              </div>
+              <h2 style={{ fontSize: 19, fontWeight: 600, marginBottom: 18, color: text }}>{c.name}</h2>
               <div style={{ fontSize: 13, color: textDim, marginBottom: 2 }}>Current grade</div>
-              <div
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 26,
-                  fontWeight: 600,
-                  color: gradeColor(c.grade),
-                }}
-              >
-                {c.grade.toFixed(1)}%
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                <div
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 26,
+                    fontWeight: 600,
+                    color: gradeColor(c.grade),
+                  }}
+                >
+                  {c.grade.toFixed(1)}%
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: textDim }}>{c.letter}</div>
               </div>
             </Link>
           ))}
