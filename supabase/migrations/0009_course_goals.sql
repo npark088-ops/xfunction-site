@@ -1,4 +1,4 @@
--- xFunction: per-user, per-course grade goals
+-- XFunction: per-user, per-course grade goals
 -- Run this once in the Supabase dashboard's SQL Editor, same as the other migrations.
 
 create table if not exists course_goals (

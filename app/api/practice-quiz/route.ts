@@ -3,6 +3,7 @@ import { mockCourses } from "../../../lib/mock-canvas-data";
 import { findTargetAssignment, relevantContextAssignmentNames } from "../../../lib/study-target";
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/ai-usage";
+import { captureServerEvent } from "../../../lib/posthog-server";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
   const contextAssignmentNames = relevantContextAssignmentNames(course.assignmentGroups, target);
 
   const prompt = `
-You are xFunction AI, writing a short practice quiz to help a student prepare for a specific upcoming test or assignment.
+You are XFunction AI, writing a short practice quiz to help a student prepare for a specific upcoming test or assignment.
 
 Course: ${course.name}
 Assignment to study for: "${target.assignment.name}" (${target.group.name} category)
@@ -91,6 +92,8 @@ Rules:
         question: String(q.question ?? ""),
         answer: String(q.answer ?? ""),
       }));
+
+    captureServerEvent(user.id, "ai_feature_used", { feature: "practice_quiz" });
 
     return Response.json({
       courseName: course.name,

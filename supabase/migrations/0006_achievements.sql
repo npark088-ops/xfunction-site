@@ -1,4 +1,4 @@
--- xFunction: achievement tracking
+-- XFunction: achievement tracking
 -- Run this once in the Supabase dashboard's SQL Editor, same as the other migrations.
 --
 -- Records when a user first generated an AI study plan — used to

@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { captureServerEvent } from "../../../../lib/posthog-server";
 
 // No signed-in user hits this route — Stripe calls it directly — so it
 // uses the plain anon-key client and the SECURITY DEFINER RPCs from
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
         p_subscription_id: subscriptionId ?? null,
       });
       if (error) console.error("set_pro_on_checkout failed:", error);
+      else captureServerEvent(userId, "pro_upgraded");
     }
   }
 

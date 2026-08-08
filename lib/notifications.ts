@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type NotificationType = "achievement" | "deadline" | "ai-limit";
+export type NotificationType = "achievement" | "deadline" | "ai-limit" | "digest";
 
 export interface NotificationRow {
   id: string;

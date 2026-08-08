@@ -1,4 +1,4 @@
--- xFunction: saved/edited study plans per course
+-- XFunction: saved/edited study plans per course
 -- Run this once in the Supabase dashboard's SQL Editor, same as the other migrations.
 --
 -- A study plan starts as AI-generated (see app/api/study-plan) but the

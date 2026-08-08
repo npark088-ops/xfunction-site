@@ -1,4 +1,4 @@
--- xFunction: user data tables
+-- XFunction: user data tables
 -- Run this once in the Supabase dashboard's SQL Editor (Project → SQL Editor → New query).
 -- Every row is scoped to auth.uid() via Row Level Security, so users can
 -- only ever read or write their own data — enforced by the database

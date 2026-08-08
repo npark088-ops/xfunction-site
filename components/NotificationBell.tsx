@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bell, Trophy, Clock, AlertTriangle, type LucideIcon } from "lucide-react";
+import { Bell, Trophy, Clock, AlertTriangle, CalendarClock, type LucideIcon } from "lucide-react";
 import { createClient } from "../lib/supabase/client";
 import type { NotificationRow } from "../lib/notifications";
 
@@ -16,6 +16,7 @@ const TYPE_ICON: Record<string, LucideIcon> = {
   achievement: Trophy,
   deadline: Clock,
   "ai-limit": AlertTriangle,
+  digest: CalendarClock,
 };
 
 function timeAgo(iso: string): string {

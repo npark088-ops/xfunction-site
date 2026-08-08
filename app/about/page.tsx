@@ -38,52 +38,33 @@ export default function About() {
           zIndex: 100
         }}
       >
-        <h2 style={{ color: blue }}>XFunction</h2>
+        <Link href="/" style={{ textDecoration: "none" }}>
+          <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
+        </Link>
 
-        <div style={{ display: "flex", gap: "30px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
 
-          <Link
-  href="/"
-  style={navLink}
-  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
->
+          <Link href="/" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
   Home
 </Link>
 
-         <Link
-  href="/about"
-  style={navLink}
-  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
->
+         <Link href="/about" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
   About
 </Link>
 
-          <Link
-  href="/pricing"
-  style={navLink}
-  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
->
+          <Link href="/pricing" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
   Pricing
 </Link>
 
-          <Link
-  href="/help"
-  style={navLink}
-  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
->
+          <Link href="/help" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
   Help
 </Link>
 
-          <Link
-  href="/overview"
-  style={navLink}
-  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
->
+          <Link href="/changelog" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
+  What&apos;s New
+</Link>
+
+          <Link href="/overview" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
   App
 </Link>
 
@@ -247,7 +228,20 @@ export default function About() {
 const navLink = {
   textDecoration: "none",
   color: "var(--text)",
-  fontSize: "16px",
+  fontSize: "15px",
+  fontWeight: 600,
   cursor: "pointer",
-  transition: "opacity 0.3s"
+  paddingBottom: 4,
+  borderBottom: "2px solid transparent",
+  transition: "color var(--transition-fast), border-color var(--transition-fast)",
 };
+
+function navLinkHoverOn(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.currentTarget.style.color = "var(--blue)";
+  e.currentTarget.style.borderBottomColor = "var(--blue)";
+}
+
+function navLinkHoverOff(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.currentTarget.style.color = "var(--text)";
+  e.currentTarget.style.borderBottomColor = "transparent";
+}

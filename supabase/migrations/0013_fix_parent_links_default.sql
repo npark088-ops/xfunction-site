@@ -1,4 +1,4 @@
--- xFunction: fix missing default on parent_links.student_id
+-- XFunction: fix missing default on parent_links.student_id
 -- Run this once in the Supabase dashboard's SQL Editor, after 0012_parent_links.sql.
 --
 -- Every other per-user table in this app (tasks, course_notes,

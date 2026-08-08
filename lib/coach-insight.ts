@@ -26,7 +26,7 @@ export async function generateCoachInsight(): Promise<string> {
     .join("\n");
 
   const prompt = `
-You are xFunction AI, giving a student a quick, specific coaching check-in based on their real current grades. Not generic encouragement — say something concrete and grounded in the numbers below.
+You are XFunction AI, giving a student a quick, specific coaching check-in based on their real current grades. Not generic encouragement — say something concrete and grounded in the numbers below.
 
 Courses:
 ${courseSummaries}

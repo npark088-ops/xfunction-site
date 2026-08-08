@@ -6,16 +6,18 @@ import { gradeColor } from "../../../components/Gauge";
 import { getCachedUser, createClient } from "../../../lib/supabase/server";
 import { getCanvasConnection } from "../../../lib/canvas-token-store";
 import { CanvasConnectionCard } from "../../../components/CanvasConnectionCard";
+import { DemoDataBadge } from "../../../components/DemoDataBadge";
+import { courseColor } from "../../../lib/course-colors";
 
 const card = "var(--card)";
 const border = "var(--border)";
 const text = "var(--text)";
 const textDim = "var(--text-dim)";
 
-function bannerFor(canvas?: string) {
-  if (canvas === "connected") return "Canvas connected.";
-  if (canvas === "denied") return "Canvas connection was declined.";
-  if (canvas === "error") return "Something went wrong connecting Canvas.";
+function bannerFor(canvas?: string): { message: string; kind: "success" | "error" } | null {
+  if (canvas === "connected") return { message: "Canvas connected.", kind: "success" };
+  if (canvas === "denied") return { message: "Canvas connection was declined.", kind: "error" };
+  if (canvas === "error") return { message: "Something went wrong connecting Canvas. Please try again.", kind: "error" };
   return null;
 }
 
@@ -79,13 +81,16 @@ export default async function CoursesPage({
             textTransform: "uppercase",
           }}
         >
-          xFunction · Courses
+          XFunction · Courses
         </div>
-        <h1 style={{ fontSize: 34, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em", color: text }}>
-          Your courses
-        </h1>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 4 }}>
+          <h1 style={{ fontSize: 34, fontWeight: 700, margin: 0, letterSpacing: "-0.02em", color: text }}>
+            Your courses
+          </h1>
+          <DemoDataBadge />
+        </div>
         <p style={{ color: textDim, marginBottom: 24, fontSize: 15 }}>
-          Linked from Canvas · updated just now
+          Sample courses for preview — Canvas sync isn&apos;t live yet.
         </p>
 
         <CanvasConnectionCard initialStatus={initialStatus} banner={banner} />
@@ -107,7 +112,8 @@ export default async function CoursesPage({
                 display: "block",
                 background: card,
                 border: `1px solid ${border}`,
-                borderRadius: 16,
+                borderLeft: `4px solid ${courseColor(c.id)}`,
+                borderRadius: "var(--radius-lg)",
                 padding: 24,
                 textDecoration: "none",
                 color: text,

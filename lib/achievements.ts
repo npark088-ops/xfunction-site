@@ -19,7 +19,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "week-streak",
     name: "7-day streak",
-    description: "Use xFunction 7 days in a row.",
+    description: "Use XFunction 7 days in a row.",
     icon: Flame,
   },
   {

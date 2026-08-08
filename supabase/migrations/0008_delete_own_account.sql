@@ -1,4 +1,4 @@
--- xFunction: self-service account deletion
+-- XFunction: self-service account deletion
 -- Run this once in the Supabase dashboard's SQL Editor, after 0007_notifications.sql.
 --
 -- Deleting a row from auth.users isn't something a normal authenticated

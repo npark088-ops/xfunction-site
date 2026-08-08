@@ -12,6 +12,17 @@
   --green: #16A34A;
   --red: #F16565;
   --amber: #F5A623;
+
+  /* Course color-coding palette (lib/course-colors.ts) — deliberately
+     separate from the semantic tokens above. --red and --amber already
+     mean "urgent"/"warning" elsewhere (overdue badges, delete buttons,
+     AI-limit warnings), so reusing them for a course's identity color
+     would make an unrelated class visually read as "in trouble." These
+     three are new, purely categorical hues that stay legible on light
+     backgrounds without colliding with that existing meaning. */
+  --course-purple: #7C3AED;
+  --course-teal: #0D9488;
+  --course-pink: #DB2777;
 }
 
 :root[data-theme="dark"] {
@@ -24,6 +35,12 @@
   --green: #4ADE80;
   --red: #F16565;
   --amber: #F5A623;
+
+  /* Lightened for contrast against the dark background, same treatment
+     as --blue/--green above. */
+  --course-purple: #A78BFA;
+  --course-teal: #2DD4BF;
+  --course-pink: #F472B6;
 }
 
 /* Depth + shape system — one radius/shadow scale used everywhere
@@ -156,9 +173,45 @@ button:disabled {
   animation: xf-shimmer 1.4s ease-in-out infinite;
 }
 
+/* Encouragement toasts (see components/ToastProvider.tsx) — brief,
+   auto-dismissing pop-ups at natural moments (assignment completed,
+   streak milestone, grade goal reached). Slide+fade in, then slide+fade
+   out on their own; never require a manual dismiss. */
+@keyframes xf-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes xf-toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+.xf-toast-in {
+  animation: xf-toast-in 0.25s var(--ease) both;
+}
+
+.xf-toast-out {
+  animation: xf-toast-out 0.3s var(--ease) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .xf-page-enter,
-  .xf-skeleton {
+  .xf-skeleton,
+  .xf-toast-in,
+  .xf-toast-out {
     animation: none;
   }
   a, button, .course-card, .xf-card {

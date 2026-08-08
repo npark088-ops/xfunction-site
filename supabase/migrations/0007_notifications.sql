@@ -1,4 +1,4 @@
--- xFunction: in-app notifications (achievement unlocks, urgent
+-- XFunction: in-app notifications (achievement unlocks, urgent
 -- deadlines, AI generation limit reached)
 -- Run this once in the Supabase dashboard's SQL Editor, after 0006_achievements.sql.
 

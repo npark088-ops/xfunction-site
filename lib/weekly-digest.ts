@@ -53,7 +53,7 @@ export function buildDigestEmail(data: DigestData): { subject: string; html: str
     : "";
 
   const html = `
-    <h1>Your weekly xFunction digest</h1>
+    <h1>Your weekly XFunction digest</h1>
     <h2>Overall grade</h2>
     <p>${data.overallGrade.toFixed(1)}% (${trendLabel(data.trend)})</p>
     <h2>Coming up this week</h2>
@@ -92,7 +92,7 @@ export async function sendDigestEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "xFunction <onboarding@resend.dev>",
+        from: "XFunction <onboarding@resend.dev>",
         to,
         subject,
         html,

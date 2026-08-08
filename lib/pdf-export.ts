@@ -48,7 +48,7 @@ export async function downloadGradePdf({
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(110, 110, 110);
-  doc.text(`xFunction · exported ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`, marginX, y);
+  doc.text(`XFunction · exported ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`, marginX, y);
   y += 12;
 
   doc.setTextColor(20, 20, 20);

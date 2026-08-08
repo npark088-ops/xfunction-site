@@ -71,9 +71,16 @@ const stepperButton = {
 export function FocusTimer({
   taskLabel,
   onClose,
+  onSessionComplete,
 }: {
   taskLabel: string | null;
   onClose: () => void;
+  // Fired once a focus phase (not a break) runs all the way to zero,
+  // with the focus duration in minutes — the caller logs this as a
+  // completed study session (see app/(dashboard)/grades/[courseId]/page.tsx).
+  // Skipping or resetting before zero never fires this, since the
+  // configured duration wasn't actually spent studying.
+  onSessionComplete?: (durationMinutes: number) => void;
 }) {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
@@ -83,6 +90,18 @@ export function FocusTimer({
 
   const phaseMinutes = phase === "focus" ? focusMinutes : breakMinutes;
   const done = secondsLeft <= 0;
+
+  // Fires exactly once per natural completion: secondsLeft only reaches
+  // 0 via the interval countdown, and stays there until the user starts
+  // a break, resets, or nudges the focus-minutes stepper — all of which
+  // change these dependencies away from (0, "focus") before this could
+  // re-run for the same completion.
+  useEffect(() => {
+    if (secondsLeft === 0 && phase === "focus") {
+      onSessionComplete?.(focusMinutes);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [secondsLeft, phase]);
 
   // Stopping at zero happens inside the interval callback (an async
   // timer tick, not the effect's own synchronous execution) rather

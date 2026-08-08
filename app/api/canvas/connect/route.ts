@@ -12,7 +12,7 @@ import { createClient } from "../../../../lib/supabase/server";
 // authorization endpoint. This is the "Connect Canvas" button's target.
 //
 // We need to know *whose* Canvas connection this is before we save a
-// token, so this route requires an xFunction session (Supabase) first.
+// token, so this route requires an XFunction session (Supabase) first.
 export async function GET(request: Request) {
   const supabase = await createClient();
   const {

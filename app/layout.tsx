@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Script from "next/script";
 import { Inter, Sora } from "next/font/google";
+import { PostHogAppProvider } from "../components/PostHogProvider";
 import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "XFunction",
+  description:
+    "Turn your Canvas grades into a clear plan — track courses, get AI-powered study help, and stay ahead of deadlines.",
+};
 
 // Body copy uses Inter (already referenced everywhere as the fallback
 // string "Inter, sans-serif" — this actually loads it as a web font
@@ -63,7 +71,7 @@ export default function RootLayout({
       </Script>
 
       <body>
-        {children}
+        <PostHogAppProvider>{children}</PostHogAppProvider>
       </body>
 
     </html>

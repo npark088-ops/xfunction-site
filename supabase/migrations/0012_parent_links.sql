@@ -1,4 +1,4 @@
--- xFunction: parent/guardian read-only access
+-- XFunction: parent/guardian read-only access
 -- Run this once in the Supabase dashboard's SQL Editor, same as the other migrations.
 --
 -- One row per invite/link. student_id is set at creation time (the

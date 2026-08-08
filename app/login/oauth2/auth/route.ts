@@ -10,9 +10,9 @@ import { issueAuthorizationCode } from "../../../../lib/mock-canvas-server-store
 // Canvas domain. Point it at instructure.com and this file becomes dead
 // code you can delete; nothing else changes.
 //
-// Real Canvas shows a login + "Authorize xFunction to access your
+// Real Canvas shows a login + "Authorize XFunction to access your
 // account?" consent screen here. We fake that with a plain HTML page
-// (deliberately styled nothing like xFunction, so it's obvious this
+// (deliberately styled nothing like XFunction, so it's obvious this
 // isn't a real part of the app) with Allow/Deny buttons.
 
 function escapeHtml(value: string): string {

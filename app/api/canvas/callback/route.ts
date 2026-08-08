@@ -10,7 +10,7 @@ import { createClient } from "../../../../lib/supabase/server";
 // and ?state back from the authorization step, verifies state against
 // the cookie set in /api/canvas/connect (CSRF check), and exchanges the
 // code for an access token exactly the way Canvas's OAuth2 docs say to.
-// The token then gets saved against the signed-in xFunction user (real
+// The token then gets saved against the signed-in XFunction user (real
 // Supabase-backed storage — see lib/canvas-token-store.ts).
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");

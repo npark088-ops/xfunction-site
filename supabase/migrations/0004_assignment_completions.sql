@@ -1,4 +1,4 @@
--- xFunction: per-user assignment "done" tracking
+-- XFunction: per-user assignment "done" tracking
 -- Run this once in the Supabase dashboard's SQL Editor, same as the other migrations.
 --
 -- Separate from Canvas's own graded/ungraded state (assignment.submission

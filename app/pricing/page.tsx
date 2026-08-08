@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Check } from "lucide-react";
+import posthog from "posthog-js";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -17,10 +18,23 @@ const textDim = "var(--text-dim)";
 const navLink = {
   textDecoration: "none",
   color: text,
-  fontSize: "16px",
+  fontSize: "15px",
+  fontWeight: 600,
   cursor: "pointer",
-  transition: "opacity 0.3s",
+  paddingBottom: 4,
+  borderBottom: "2px solid transparent",
+  transition: "color var(--transition-fast), border-color var(--transition-fast)",
 };
+
+function navLinkHoverOn(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.currentTarget.style.color = blue;
+  e.currentTarget.style.borderBottomColor = blue;
+}
+
+function navLinkHoverOff(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.currentTarget.style.color = text;
+  e.currentTarget.style.borderBottomColor = "transparent";
+}
 
 const FREE_FEATURES = [
   "Unlimited grade tracking across all your courses",
@@ -45,6 +59,7 @@ export default function PricingPage() {
   const startCheckout = () => {
     setLoading(true);
     setError(null);
+    posthog.capture("checkout_started", { source: "pricing_page" });
     fetch("/api/stripe/checkout", { method: "POST" })
       .then((res) => res.json().then((data) => ({ ok: res.ok, status: res.status, data })))
       .then(({ ok, status, data }) => {
@@ -84,47 +99,27 @@ export default function PricingPage() {
           zIndex: 100,
         }}
       >
-        <h2 style={{ color: blue }}>XFunction</h2>
+        <Link href="/" style={{ textDecoration: "none" }}>
+          <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
+        </Link>
 
-        <div style={{ display: "flex", gap: "30px" }}>
-          <Link
-            href="/"
-            style={navLink}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
+        <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+          <Link href="/" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             Home
           </Link>
-          <Link
-            href="/about"
-            style={navLink}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
+          <Link href="/about" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             About
           </Link>
-          <Link
-            href="/pricing"
-            style={navLink}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
+          <Link href="/pricing" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             Pricing
           </Link>
-          <Link
-            href="/help"
-            style={navLink}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
+          <Link href="/help" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             Help
           </Link>
-          <Link
-            href="/overview"
-            style={navLink}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
+          <Link href="/changelog" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
+            What&apos;s New
+          </Link>
+          <Link href="/overview" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             App
           </Link>
         </div>
@@ -241,7 +236,7 @@ export default function PricingPage() {
           </div>
 
           <div style={{ fontSize: 14, color: "#8A5A00", fontWeight: 600, marginBottom: 8 }}>
-            xFunction Pro
+            XFunction Pro
           </div>
           <div style={{ fontSize: 40, fontWeight: 700, marginBottom: 4, color: text }}>
             $7

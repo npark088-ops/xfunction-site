@@ -1,4 +1,4 @@
--- xFunction: per-user profile data (billing + streak)
+-- XFunction: per-user profile data (billing + streak)
 -- Run this once in the Supabase dashboard's SQL Editor (Project → SQL Editor → New query),
 -- same as 0001_init.sql.
 

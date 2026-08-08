@@ -1,4 +1,4 @@
--- xFunction: student-entered weekly class schedule
+-- XFunction: student-entered weekly class schedule
 -- Run this once in the Supabase dashboard's SQL Editor, same as the other migrations.
 --
 -- Canvas (real or mocked) has no concept of class meeting times — it's

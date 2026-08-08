@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       mode: "subscription",
       line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
       // Lets the webhook (which has no user session of its own) know
-      // which xFunction account just paid — see app/api/stripe/webhook.
+      // which XFunction account just paid — see app/api/stripe/webhook.
       client_reference_id: user.id,
       customer_email: user.email,
       success_url: `${origin}/settings?upgraded=1`,

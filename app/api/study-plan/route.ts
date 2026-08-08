@@ -5,6 +5,7 @@ import { findTargetAssignment } from "../../../lib/study-target";
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/ai-usage";
 import { markFirstStudyPlanGenerated } from "../../../lib/achievements";
+import { captureServerEvent } from "../../../lib/posthog-server";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -80,7 +81,7 @@ export async function POST(req: Request) {
     .join("; ");
 
   const prompt = `
-You are xFunction AI, helping a student prepare for an upcoming test or assignment.
+You are XFunction AI, helping a student prepare for an upcoming test or assignment.
 
 Course: ${course.name}
 Current overall grade: ${currentGrade.toFixed(1)}%
@@ -123,6 +124,7 @@ Rules:
     }));
 
     await markFirstStudyPlanGenerated(supabase, user.id);
+    captureServerEvent(user.id, "ai_feature_used", { feature: "study_plan" });
 
     return Response.json({
       courseName: course.name,

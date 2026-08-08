@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BookOpen, CalendarDays, ListTodo, Settings as SettingsIcon, HelpCircle, LogOut, Users } from "lucide-react";
+import { useEffect } from "react";
+import posthog from "posthog-js";
+import { LayoutDashboard, BookOpen, CalendarDays, ListTodo, Settings as SettingsIcon, HelpCircle, LogOut, Users, Columns3, Search, Bot, TrendingUp, Sun } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import type { NotificationRow } from "../lib/notifications";
 
@@ -14,9 +16,14 @@ const text = "var(--text)";
 const textDim = "var(--text-dim)";
 
 const NAV_ITEMS = [
+  { href: "/today", label: "Today", icon: Sun },
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
+  { href: "/ask", label: "Your Consultant", icon: Bot },
   { href: "/courses", label: "Courses", icon: BookOpen },
+  { href: "/compare", label: "Compare", icon: Columns3 },
+  { href: "/search", label: "Search", icon: Search },
   { href: "/schedule", label: "Schedule", icon: CalendarDays },
+  { href: "/trends", label: "Trends", icon: TrendingUp },
   { href: "/tasks", label: "Tasks", icon: ListTodo },
   { href: "/settings", label: "Settings", icon: SettingsIcon },
   { href: "/help", label: "Help", icon: HelpCircle },
@@ -27,17 +34,29 @@ const NAV_ITEMS = [
 // flash of a missing email/sign-out button on first paint. Same for
 // the notification snapshot, which also seeds the bell dropdown.
 export function Sidebar({
+  userId,
   userEmail,
   initialNotifications,
   initialUnreadCount,
   hasParentAccess,
 }: {
+  userId: string | null;
   userEmail: string | null;
   initialNotifications: NotificationRow[];
   initialUnreadCount: number;
   hasParentAccess: boolean;
 }) {
   const pathname = usePathname();
+
+  // Ties PostHog's anonymous session to the real account so events (page
+  // views, AI usage, upgrades) captured before and after this point line
+  // up under one person. Cheap to call repeatedly — PostHog no-ops when
+  // the distinct ID hasn't changed — so no need to guard on first-render-only.
+  useEffect(() => {
+    if (userId) {
+      posthog.identify(userId, userEmail ? { email: userEmail } : undefined);
+    }
+  }, [userId, userEmail]);
 
   return (
     <div
@@ -73,7 +92,7 @@ export function Sidebar({
             display: "inline-block",
           }}
         >
-          xFunction
+          XFunction
         </Link>
         <NotificationBell
           initialNotifications={initialNotifications}

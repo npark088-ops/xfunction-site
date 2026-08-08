@@ -1,4 +1,4 @@
--- xFunction: per-user, per-course notes/journal
+-- XFunction: per-user, per-course notes/journal
 -- Run this once in the Supabase dashboard's SQL Editor, same as the other migrations.
 
 create table if not exists course_notes (

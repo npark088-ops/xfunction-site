@@ -25,7 +25,7 @@ export default async function ParentLayout({ children }: { children: React.React
         }}
       >
         <Link href="/parent" style={{ color: blue, fontSize: 18, fontWeight: 700, textDecoration: "none" }}>
-          xFunction <span style={{ color: textDim, fontWeight: 500, fontSize: 13 }}>· Parent view</span>
+          XFunction <span style={{ color: textDim, fontWeight: 500, fontSize: 13 }}>· Parent view</span>
         </Link>
         {user?.email && (
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>

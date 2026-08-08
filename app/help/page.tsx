@@ -12,15 +12,28 @@ const textDim = "var(--text-dim)";
 const navLink = {
   textDecoration: "none",
   color: text,
-  fontSize: "16px",
+  fontSize: "15px",
+  fontWeight: 600,
   cursor: "pointer",
-  transition: "opacity 0.3s",
+  paddingBottom: 4,
+  borderBottom: "2px solid transparent",
+  transition: "color var(--transition-fast), border-color var(--transition-fast)",
 };
+
+function navLinkHoverOn(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.currentTarget.style.color = blue;
+  e.currentTarget.style.borderBottomColor = blue;
+}
+
+function navLinkHoverOff(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.currentTarget.style.color = text;
+  e.currentTarget.style.borderBottomColor = "transparent";
+}
 
 const FAQS = [
   {
-    q: "What is xFunction?",
-    a: "xFunction is a grade-tracking and study-planning app for students. It pulls your courses and assignments in from Canvas, shows your current grade and how it's trending, and uses AI to generate study plans, study guides, practice quizzes, and quick coach check-ins so you always know what to work on next.",
+    q: "What is XFunction?",
+    a: "XFunction is a grade-tracking and study-planning app for students. It pulls your courses and assignments in from Canvas, shows your current grade and how it's trending, and uses AI to generate study plans, study guides, practice quizzes, and quick coach check-ins so you always know what to work on next.",
   },
   {
     q: "How does Canvas connect work?",
@@ -60,47 +73,27 @@ export default function HelpPage() {
           zIndex: 100,
         }}
       >
-        <h2 style={{ color: blue }}>XFunction</h2>
+        <Link href="/" style={{ textDecoration: "none" }}>
+          <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
+        </Link>
 
-        <div style={{ display: "flex", gap: "30px" }}>
-          <Link
-            href="/"
-            style={navLink}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
+        <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+          <Link href="/" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             Home
           </Link>
-          <Link
-            href="/about"
-            style={navLink}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
+          <Link href="/about" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             About
           </Link>
-          <Link
-            href="/pricing"
-            style={navLink}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
+          <Link href="/pricing" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             Pricing
           </Link>
-          <Link
-            href="/help"
-            style={navLink}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
+          <Link href="/help" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             Help
           </Link>
-          <Link
-            href="/overview"
-            style={navLink}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.6")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
+          <Link href="/changelog" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
+            What&apos;s New
+          </Link>
+          <Link href="/overview" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             App
           </Link>
         </div>
@@ -112,7 +105,7 @@ export default function HelpPage() {
           Help & FAQ
         </h1>
         <p style={{ color: textDim, fontSize: 17, maxWidth: 500, margin: "0 auto" }}>
-          Common questions about how xFunction works.
+          Common questions about how XFunction works.
         </p>
       </div>
 

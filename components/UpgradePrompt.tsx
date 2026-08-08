@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Zap } from "lucide-react";
+import posthog from "posthog-js";
 
 const card = "#FFF8EB";
 const amber = "var(--amber)";
@@ -11,14 +12,24 @@ const text = "var(--text)";
 
 // Shown wherever an AI generation request comes back 402 upgrade_required
 // (see lib/ai-usage.ts). "Upgrade to Pro" kicks off a real Stripe
-// Checkout session and redirects there.
-export function UpgradePrompt({ message }: { message?: string }) {
+// Checkout session and redirects there. `context` picks which of the two
+// separate free-tier quotas (see lib/ai-usage.ts) the explanatory copy
+// below refers to, so it's never ambiguous which limit was actually hit —
+// "chat" for Your Consultant, "generations" for everything else.
+export function UpgradePrompt({
+  message,
+  context = "generations",
+}: {
+  message?: string;
+  context?: "chat" | "generations";
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const startCheckout = () => {
     setLoading(true);
     setError(null);
+    posthog.capture("checkout_started", { source: `upgrade_prompt_${context}` });
     fetch("/api/stripe/checkout", { method: "POST" })
       .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
@@ -60,8 +71,10 @@ export function UpgradePrompt({ message }: { message?: string }) {
         Free plan limit reached
       </div>
       <p style={{ fontSize: 13, color: text, margin: 0, marginBottom: 14, lineHeight: 1.5 }}>
-        {message ?? "You've used all your free AI generations this month."} Upgrade to xFunction
-        Pro for unlimited study plans, study guides, practice quizzes, and coach check-ins — $7/month.
+        {message ?? "You've used all your free AI generations this month."}{" "}
+        {context === "chat"
+          ? "Upgrade to XFunction Pro for unlimited messages to Your Consultant — $7/month."
+          : "Upgrade to XFunction Pro for unlimited study plans, study guides, practice quizzes, and coach check-ins — $7/month."}
       </p>
       <button
         onClick={startCheckout}

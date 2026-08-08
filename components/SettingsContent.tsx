@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import posthog from "posthog-js";
 import {
   PartyPopper,
   CreditCard,
@@ -84,6 +85,8 @@ export function SettingsContent({
   isPro,
   used,
   limit,
+  chatUsed,
+  chatLimit,
   justUpgraded,
   unlockedAchievementIds,
 }: {
@@ -91,6 +94,8 @@ export function SettingsContent({
   isPro: boolean;
   used: number;
   limit: number;
+  chatUsed: number;
+  chatLimit: number;
   justUpgraded: boolean;
   unlockedAchievementIds: string[];
 }) {
@@ -140,6 +145,7 @@ export function SettingsContent({
   const startCheckout = () => {
     setUpgrading(true);
     setUpgradeError(null);
+    posthog.capture("checkout_started", { source: "settings" });
     fetch("/api/stripe/checkout", { method: "POST" })
       .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
@@ -229,7 +235,7 @@ export function SettingsContent({
           }}
         >
           <PartyPopper size={18} strokeWidth={2} />
-          You&apos;re on xFunction Pro now — unlimited AI generations.
+          You&apos;re on XFunction Pro now — unlimited AI generations.
         </div>
       )}
 
@@ -262,10 +268,11 @@ export function SettingsContent({
         {isPro ? (
           <>
             <div style={{ fontSize: 16, fontWeight: 700, color: "#8A5A00", marginBottom: 4 }}>
-              xFunction Pro
+              XFunction Pro
             </div>
             <div style={{ fontSize: 13, color: textDim, marginBottom: 16 }}>
-              Unlimited study plans, study guides, practice quizzes, and coach check-ins.
+              Unlimited study plans, study guides, practice quizzes, coach check-ins, and messages
+              to Your Consultant.
             </div>
             <button
               onClick={openBillingPortal}
@@ -300,9 +307,13 @@ export function SettingsContent({
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4, color: text }}>
               Free plan
             </div>
-            <div style={{ fontSize: 13, color: textDim, marginBottom: 16 }}>
+            <div style={{ fontSize: 13, color: textDim, marginBottom: 6 }}>
               {used} / {limit} AI generations used this month (study plans, study guides,
               practice quizzes, and coach check-ins combined).
+            </div>
+            <div style={{ fontSize: 13, color: textDim, marginBottom: 16 }}>
+              {chatUsed} / {chatLimit} messages to Your Consultant used this month — a separate
+              limit from the AI generations above.
             </div>
             <button
               onClick={startCheckout}
@@ -384,7 +395,7 @@ export function SettingsContent({
           Your data
         </h2>
         <p style={{ fontSize: 12, color: textDim, marginBottom: 18 }}>
-          Export everything xFunction has stored for you, or permanently delete your account.
+          Export everything XFunction has stored for you, or permanently delete your account.
         </p>
 
         <a
@@ -528,7 +539,7 @@ export function SettingsContent({
           Appearance
         </h2>
         <p style={{ fontSize: 12, color: textDim, marginBottom: 20 }}>
-          Choose how xFunction looks.
+          Choose how XFunction looks.
         </p>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

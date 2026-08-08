@@ -3,9 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Flame, Sparkle } from "lucide-react";
 import { resolveCssVar } from "../lib/theme-color";
+import { useEncouragement } from "./ToastProvider";
 
 const card = "#FFF8EB";
 const textDim = "var(--text-dim)";
+
+// Milestones worth a separate encouragement toast on top of the
+// built-in pop/particle animation below — deliberately sparse so it
+// stays a "you hit something real" moment, not one every day.
+const STREAK_MILESTONES = new Set([3, 7, 14, 30, 60, 100, 180, 365]);
 
 // Pings /api/streak once on mount to record today's visit and get back
 // the current count. `increased` only comes back true the first time
@@ -14,15 +20,25 @@ const textDim = "var(--text-dim)";
 export function StreakBadge() {
   const [streak, setStreak] = useState<number | null>(null);
   const [celebrate, setCelebrate] = useState(false);
+  const showEncouragement = useEncouragement();
 
   useEffect(() => {
     fetch("/api/streak", { method: "POST" })
       .then((res) => res.json())
       .then((data) => {
-        setStreak(typeof data.streak === "number" ? data.streak : 0);
-        if (data.increased) setCelebrate(true);
+        const nextStreak = typeof data.streak === "number" ? data.streak : 0;
+        setStreak(nextStreak);
+        if (data.increased) {
+          setCelebrate(true);
+          if (STREAK_MILESTONES.has(nextStreak)) {
+            showEncouragement(`🔥 ${nextStreak}-day streak! You're on fire.`);
+          }
+        }
       })
       .catch(() => setStreak(0));
+    // Only ever fires once, on mount — showEncouragement is a stable
+    // function identity from context, not a changing dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

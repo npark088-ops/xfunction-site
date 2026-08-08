@@ -48,15 +48,18 @@ export default function Home() {
   boxSizing: "border-box",
   display: "flex",
   justifyContent: "space-between",
-  padding: "24px",
+  alignItems: "center",
+  padding: "20px 40px",
   background: bg,
   borderBottom: `1px solid ${border}`,
   color: text,
   zIndex: 100
 }}>
-  <h2 style={{ color: blue }}>XFunction</h2>
+  <Link href="/" style={{ textDecoration: "none" }}>
+    <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
+  </Link>
 
-<div style={{ display: "flex", gap: "32px" }}>
+<div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
 
   <span
     onClick={() => {
@@ -65,7 +68,7 @@ export default function Home() {
       }
     }}
   >
-    <Link href="/" style={navBtn}>
+    <Link href="/" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
       Home
     </Link>
   </span>
@@ -77,7 +80,7 @@ export default function Home() {
       }
     }}
   >
-    <Link href="/about" style={navBtn}>
+    <Link href="/about" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
       About
     </Link>
   </span>
@@ -89,7 +92,7 @@ export default function Home() {
       }
     }}
   >
-    <Link href="/pricing" style={navBtn}>
+    <Link href="/pricing" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
       Pricing
     </Link>
   </span>
@@ -101,8 +104,20 @@ export default function Home() {
       }
     }}
   >
-    <Link href="/help" style={navBtn}>
+    <Link href="/help" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
       Help
+    </Link>
+  </span>
+
+  <span
+    onClick={() => {
+      if (typeof window !== "undefined") {
+        (window as any).gtag?.("event", "click_changelog");
+      }
+    }}
+  >
+    <Link href="/changelog" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
+      What&apos;s New
     </Link>
   </span>
 
@@ -113,7 +128,7 @@ export default function Home() {
       }
     }}
   >
-    <Link href="/overview" style={navBtn}>
+    <Link href="/overview" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
       App
     </Link>
   </span>
@@ -444,6 +459,22 @@ export default function Home() {
 const navBtn = {
   background: "none",
   border: "none",
+  textDecoration: "none",
   color: text,
-  cursor: "pointer"
+  fontSize: "15px",
+  fontWeight: 600,
+  cursor: "pointer",
+  paddingBottom: 4,
+  borderBottom: "2px solid transparent",
+  transition: "color var(--transition-fast), border-color var(--transition-fast)",
 };
+
+function navLinkHoverOn(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.currentTarget.style.color = blue;
+  e.currentTarget.style.borderBottomColor = blue;
+}
+
+function navLinkHoverOff(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.currentTarget.style.color = text;
+  e.currentTarget.style.borderBottomColor = "transparent";
+}

@@ -1,4 +1,4 @@
--- xFunction: Stripe webhook support functions
+-- XFunction: Stripe webhook support functions
 -- Run this once in the Supabase dashboard's SQL Editor, after 0002_profiles.sql.
 --
 -- The Stripe webhook (app/api/stripe/webhook) has no signed-in user

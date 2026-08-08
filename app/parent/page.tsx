@@ -50,7 +50,7 @@ export default async function ParentDashboardPage({
           No students have shared access with you yet
         </h1>
         <p style={{ fontSize: 14, color: textDim, lineHeight: 1.6 }}>
-          Ask the student to go to Settings → Parent access in their xFunction account and send
+          Ask the student to go to Settings → Parent access in their XFunction account and send
           you an invite link.
         </p>
       </div>

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Link2 } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Link2 } from "lucide-react";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
 const border = "var(--border)";
 const blue = "var(--blue)";
 const green = "var(--green)";
+const red = "var(--red)";
 const text = "var(--text)";
 const textDim = "var(--text-dim)";
 
@@ -15,6 +16,8 @@ type CanvasStatus = {
   connected: boolean;
   user: { id: number; name: string } | null;
 };
+
+type ConnectionBanner = { message: string; kind: "success" | "error" };
 
 // Seeded with the connection status the server already looked up (see
 // app/(dashboard)/courses/page.tsx) — no fetch on mount, no loading
@@ -24,7 +27,7 @@ export function CanvasConnectionCard({
   banner,
 }: {
   initialStatus: CanvasStatus;
-  banner: string | null;
+  banner: ConnectionBanner | null;
 }) {
   const [canvasStatus, setCanvasStatus] = useState<CanvasStatus>(initialStatus);
 
@@ -73,7 +76,8 @@ export function CanvasConnectionCard({
               Canvas connected
             </div>
             <div style={{ fontSize: 13, color: textDim }}>
-              Signed in as {canvasStatus.user?.name}
+              Signed in as {canvasStatus.user?.name}. The course data shown below is still sample data —
+              this connection doesn&apos;t sync real grades yet.
             </div>
           </>
         ) : (
@@ -87,7 +91,25 @@ export function CanvasConnectionCard({
             </div>
           </>
         )}
-        {banner && <div style={{ fontSize: 13, color: green, marginTop: 6 }}>{banner}</div>}
+        {banner && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 13,
+              color: banner.kind === "success" ? green : red,
+              marginTop: 6,
+            }}
+          >
+            {banner.kind === "success" ? (
+              <CheckCircle2 size={13} strokeWidth={2} />
+            ) : (
+              <AlertTriangle size={13} strokeWidth={2} />
+            )}
+            {banner.message}
+          </div>
+        )}
       </div>
 
       {canvasStatus.connected ? (

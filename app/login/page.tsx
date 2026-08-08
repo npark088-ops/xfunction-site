@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ArrowLeft } from "lucide-react";
+import posthog from "posthog-js";
 import { createClient } from "../../lib/supabase/client";
 
 const bg = "var(--bg)";
@@ -74,6 +75,9 @@ function LoginForm() {
         return;
       }
       console.log("Sign in succeeded, session:", data.session ? "present" : "MISSING");
+      if (data.user) {
+        posthog.identify(data.user.id, { email: data.user.email });
+      }
       // A hard navigation (not router.push) so the request that loads
       // /app is guaranteed to carry the just-written session cookie —
       // router.push can fire before the browser client's async cookie
@@ -103,8 +107,15 @@ function LoginForm() {
       setError(error.message);
       return;
     }
+    if (data.user) {
+      posthog.identify(data.user.id, { email: data.user.email });
+      posthog.capture("sign_up", { method: "email" });
+    }
     if (data.session) {
       // Email confirmation is disabled on this project — session starts immediately.
+      // Fire-and-forget: the welcome email shouldn't block getting the
+      // student into the app (see app/api/onboarding/welcome).
+      fetch("/api/onboarding/welcome", { method: "POST" }).catch(() => {});
       window.location.href = next;
       return;
     }
