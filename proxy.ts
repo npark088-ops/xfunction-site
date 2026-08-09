@@ -6,15 +6,24 @@ import { NextResponse, type NextRequest } from "next/server";
 //   1. Refresh the Supabase session cookie, so it doesn't silently expire.
 //   2. Gate the signed-in parts of the app (/today, /overview, /ask,
 //      /courses, /compare, /search, /schedule, /trends, /tasks, /grades,
-//      /settings, /parent — /app is a compat redirect to /overview)
-//      behind auth, redirecting to /login when there's no session.
+//      /settings, /parent, /connect (Moodle's credential-collection
+//      page — see app/connect/moodle) — /app is a compat redirect to
+//      /overview) behind auth, redirecting to /login when there's no
+//      session.
 //   3. Redirect an already-signed-in user away from /login.
 //
 // This is an "optimistic" check (cookie-only, no DB round trip) per
 // Next.js's auth guidance — real authorization for data access still
 // happens at the database via Row Level Security policies.
+//
+// Deliberately NOT protected: the mock provider stand-in pages
+// (/login/oauth2/*, /o/oauth2/v2/auth, /token, /oauth/authorize,
+// /v1/oauth/*, /v1/users/me, /login/token.php, /webservice/rest/server.php,
+// /learn/api/public/v1/*) — those play the role of Canvas/Google/
+// Schoology/Moodle/Blackboard's OWN servers, which obviously don't
+// check for an XFunction session.
 
-const PROTECTED_PREFIXES = ["/app", "/today", "/overview", "/ask", "/courses", "/compare", "/search", "/schedule", "/trends", "/tasks", "/grades", "/settings", "/parent"];
+const PROTECTED_PREFIXES = ["/app", "/today", "/overview", "/ask", "/courses", "/compare", "/search", "/schedule", "/trends", "/tasks", "/grades", "/settings", "/parent", "/connect"];
 
 export default async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

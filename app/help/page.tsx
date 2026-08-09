@@ -36,8 +36,8 @@ const FAQS = [
     a: "XFunction is a grade-tracking and study-planning app for students. It pulls your courses and assignments in from Canvas, shows your current grade and how it's trending, and uses AI to generate study plans, study guides, practice quizzes, and quick coach check-ins so you always know what to work on next.",
   },
   {
-    q: "How does Canvas connect work?",
-    a: "Go to the Courses page and click \"Connect Canvas.\" Right now this app runs on a local mock Canvas stand-in for demo purposes — no real Canvas login or credentials are needed. Once connected, your courses and assignments show up across Overview, Courses, and each course's Grades page.",
+    q: "How does connecting my platform work?",
+    a: "Go to the Courses page and find \"Connect your platform.\" Pick whichever your school actually uses — Canvas, Google Classroom, and Schoology all work today; PowerSchool is coming soon and needs district-level approval first. Right now every platform runs on a local mock stand-in for demo purposes — no real login or credentials are needed. Once connected, your courses and assignments show up across Overview, Courses, and each course's Grades page.",
   },
   {
     q: "What's free vs. Pro?",
