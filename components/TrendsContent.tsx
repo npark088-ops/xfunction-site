@@ -195,7 +195,7 @@ export function TrendsContent({
               <strong>{peakBucket.label.toLowerCase()}</strong>.
             </p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }}>
+            <div className="xf-grid-collapse" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }}>
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: textDim, marginBottom: 10 }}>By day of week</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

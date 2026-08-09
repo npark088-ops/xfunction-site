@@ -3,6 +3,7 @@ import { Sidebar } from "../../components/Sidebar";
 import { ToastProvider } from "../../components/ToastProvider";
 import { ToastWatcher } from "../../components/ToastWatcher";
 import { OnboardingTour } from "../../components/OnboardingTour";
+import { ConsultantPanelProvider } from "../../components/ConsultantPanel";
 import { getNotificationsSnapshot } from "../../lib/notifications";
 
 const bg = "var(--bg)";
@@ -54,16 +55,22 @@ export default async function DashboardLayout({
     <ToastProvider>
       {user && <ToastWatcher />}
       {user && <OnboardingTour />}
-      <div style={{ display: "flex", minHeight: "100vh", background: bg }}>
-        <Sidebar
-          userId={user?.id ?? null}
-          userEmail={user?.email ?? null}
-          initialNotifications={notifications.notifications}
-          initialUnreadCount={notifications.unreadCount}
-          hasParentAccess={hasParentAccess}
-        />
-        <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-      </div>
+      {/* Wraps Sidebar (not just page content) so the sidebar's "Your
+          Consultant" nav item can open the same panel instance as the
+          floating button — see components/Sidebar.tsx's use of
+          useConsultantPanel(). */}
+      <ConsultantPanelProvider>
+        <div style={{ display: "flex", minHeight: "100vh", background: bg }}>
+          <Sidebar
+            userId={user?.id ?? null}
+            userEmail={user?.email ?? null}
+            initialNotifications={notifications.notifications}
+            initialUnreadCount={notifications.unreadCount}
+            hasParentAccess={hasParentAccess}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+        </div>
+      </ConsultantPanelProvider>
     </ToastProvider>
   );
 }

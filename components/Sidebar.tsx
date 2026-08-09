@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import posthog from "posthog-js";
-import { LayoutDashboard, BookOpen, CalendarDays, ListTodo, Settings as SettingsIcon, HelpCircle, LogOut, Users, Columns3, Search, Bot, TrendingUp, Sun } from "lucide-react";
+import { LayoutDashboard, BookOpen, CalendarDays, ListTodo, Settings as SettingsIcon, HelpCircle, LogOut, Users, Columns3, Search, Bot, TrendingUp, Sun, Menu, X, type LucideIcon } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
+import { useConsultantPanel } from "./ConsultantPanel";
 import type { NotificationRow } from "../lib/notifications";
 
 const bg = "var(--bg)";
@@ -15,10 +16,16 @@ const blue = "var(--blue)";
 const text = "var(--text)";
 const textDim = "var(--text-dim)";
 
-const NAV_ITEMS = [
+type NavItem =
+  | { href: string; label: string; icon: LucideIcon; panel?: false }
+  | { href: null; label: string; icon: LucideIcon; panel: true };
+
+const NAV_ITEMS: NavItem[] = [
   { href: "/today", label: "Today", icon: Sun },
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/ask", label: "Your Consultant", icon: Bot },
+  // Not a route — opens the slide-out panel in place (see
+  // components/ConsultantPanel.tsx) instead of navigating away.
+  { href: null, label: "Your Consultant", icon: Bot, panel: true },
   { href: "/courses", label: "Courses", icon: BookOpen },
   { href: "/compare", label: "Compare", icon: Columns3 },
   { href: "/search", label: "Search", icon: Search },
@@ -47,6 +54,8 @@ export function Sidebar({
   hasParentAccess: boolean;
 }) {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { open: consultantOpen, openPanel } = useConsultantPanel();
 
   // Ties PostHog's anonymous session to the real account so events (page
   // views, AI usage, upgrades) captured before and after this point line
@@ -58,40 +67,117 @@ export function Sidebar({
     }
   }, [userId, userEmail]);
 
-  return (
-    <div
-      style={{
-        width: 240,
-        flexShrink: 0,
-        background: card,
-        borderRight: `1px solid ${border}`,
-        minHeight: "100vh",
-        padding: "28px 20px",
-        display: "flex",
-        flexDirection: "column",
-        position: "sticky",
-        top: 0,
-        alignSelf: "flex-start",
-      }}
-    >
-      <div
-        style={{
+  // Closes the mobile drawer on navigation — without this, tapping a nav
+  // link would leave the overlay open on top of the new page.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Prevents the page underneath from scrolling while the mobile drawer
+  // is open, same as the FocusTimer/OnboardingTour overlay pattern.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [mobileOpen]);
+
+  const nav = (
+    <nav style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+      {NAV_ITEMS.map((item) => {
+        const active = item.panel
+          ? consultantOpen
+          : pathname === item.href ||
+            pathname.startsWith(`${item.href}/`) ||
+            (item.href === "/courses" && pathname.startsWith("/grades"));
+        const Icon = item.icon;
+        const itemStyle = {
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 36,
-        }}
-      >
-        <Link
-          href="/"
+          gap: 10,
+          padding: "12px 14px",
+          borderRadius: "var(--radius-sm)",
+          fontSize: 14,
+          fontWeight: 600,
+          textDecoration: "none",
+          color: active ? "white" : text,
+          background: active ? blue : "transparent",
+          transition: "background var(--transition-fast), color var(--transition-fast)",
+        } as const;
+
+        if (item.panel) {
+          return (
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                openPanel();
+              }}
+              onMouseEnter={(e) => {
+                if (!active) e.currentTarget.style.background = "var(--border)";
+              }}
+              onMouseLeave={(e) => {
+                if (!active) e.currentTarget.style.background = "transparent";
+              }}
+              style={{ ...itemStyle, border: "none", cursor: "pointer", width: "100%", textAlign: "left" }}
+            >
+              <Icon size={17} strokeWidth={2} />
+              {item.label}
+            </button>
+          );
+        }
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onMouseEnter={(e) => {
+              if (!active) e.currentTarget.style.background = "var(--border)";
+            }}
+            onMouseLeave={(e) => {
+              if (!active) e.currentTarget.style.background = "transparent";
+            }}
+            style={itemStyle}
+          >
+            <Icon size={17} strokeWidth={2} />
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+
+  return (
+    <>
+      {/* Mobile-only top bar — hamburger + wordmark + notification bell,
+          always reachable without opening the nav drawer. Hidden on
+          desktop via CSS (see .xf-mobile-topbar in globals.css). */}
+      <div className="xf-mobile-topbar">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+          className="xf-tap-target"
           style={{
-            color: blue,
-            fontSize: 18,
-            fontWeight: 700,
-            textDecoration: "none",
-            display: "inline-block",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 36,
+            height: 36,
+            borderRadius: "var(--radius-sm)",
+            border: `1px solid ${border}`,
+            background: bg,
+            color: text,
+            cursor: "pointer",
+            flexShrink: 0,
           }}
         >
+          <Menu size={18} strokeWidth={2} />
+        </button>
+        <Link href="/" style={{ color: blue, fontSize: 17, fontWeight: 700, textDecoration: "none" }}>
           XFunction
         </Link>
         <NotificationBell
@@ -100,43 +186,77 @@ export function Sidebar({
         />
       </div>
 
-      <nav style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-        {NAV_ITEMS.map((item) => {
-          const active =
-            pathname === item.href ||
-            pathname.startsWith(`${item.href}/`) ||
-            (item.href === "/courses" && pathname.startsWith("/grades"));
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onMouseEnter={(e) => {
-                if (!active) e.currentTarget.style.background = "var(--border)";
-              }}
-              onMouseLeave={(e) => {
-                if (!active) e.currentTarget.style.background = "transparent";
-              }}
+      {/* Backdrop — tapping it closes the drawer, same as the class of
+          overlay already used by FocusTimer/OnboardingTour. */}
+      <div
+        className={`xf-sidebar-backdrop${mobileOpen ? " xf-sidebar-open" : ""}`}
+        onClick={() => setMobileOpen(false)}
+      />
+
+      <div
+        className={`xf-sidebar${mobileOpen ? " xf-sidebar-open" : ""}`}
+        style={{
+          width: 240,
+          flexShrink: 0,
+          background: card,
+          borderRight: `1px solid ${border}`,
+          minHeight: "100vh",
+          padding: "28px 20px",
+          display: "flex",
+          flexDirection: "column",
+          position: "sticky",
+          top: 0,
+          alignSelf: "flex-start",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 36,
+          }}
+        >
+          <Link
+            href="/"
+            style={{
+              color: blue,
+              fontSize: 18,
+              fontWeight: 700,
+              textDecoration: "none",
+              display: "inline-block",
+            }}
+          >
+            XFunction
+          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <NotificationBell
+              initialNotifications={initialNotifications}
+              initialUnreadCount={initialUnreadCount}
+            />
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close menu"
+              className="xf-sidebar-close xf-tap-target"
               style={{
-                display: "flex",
                 alignItems: "center",
-                gap: 10,
-                padding: "10px 14px",
+                justifyContent: "center",
+                width: 36,
+                height: 36,
                 borderRadius: "var(--radius-sm)",
-                fontSize: 14,
-                fontWeight: 600,
-                textDecoration: "none",
-                color: active ? "white" : text,
-                background: active ? blue : "transparent",
-                transition: "background var(--transition-fast), color var(--transition-fast)",
+                border: "none",
+                background: "transparent",
+                color: textDim,
+                cursor: "pointer",
               }}
             >
-              <Icon size={17} strokeWidth={2} />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+              <X size={18} strokeWidth={2} />
+            </button>
+          </div>
+        </div>
+
+        {nav}
 
       {hasParentAccess && (
         <Link
@@ -197,6 +317,7 @@ export function Sidebar({
           </form>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

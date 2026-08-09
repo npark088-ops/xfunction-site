@@ -50,6 +50,7 @@ import { downloadGradePdf } from "../../../../lib/pdf-export";
 import { DemoDataBadge } from "../../../../components/DemoDataBadge";
 import { courseColor } from "../../../../lib/course-colors";
 import { useEncouragement } from "../../../../components/ToastProvider";
+import { alreadyShownToday, markShownToday } from "../../../../lib/toast-dedupe";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -112,6 +113,13 @@ const ASSIGNMENT_DONE_MESSAGES = [
   "Assignment complete. Keep that momentum going.",
   "That's progress. Nice job.",
   "Done and dusted — on to the next one.",
+];
+
+const STUDY_SESSION_DONE_MESSAGES = [
+  "Focus session complete — nice work! 💪",
+  "That's time well spent. Keep it up.",
+  "Session done. Your future self says thanks.",
+  "Nice focus. That adds up fast.",
 ];
 
 function randomEncouragement(pool: string[]) {
@@ -622,7 +630,13 @@ export default function GradesPage({
   // Fire-and-forget, same pattern as the other mutations on this page —
   // a failed log shouldn't interrupt the student's flow right after
   // finishing a focus session. See supabase/migrations/0018_study_sessions.sql.
+  // The celebration toast fires immediately (same optimistic pattern as
+  // toggleAssignmentDone below) rather than waiting on the insert — the
+  // moment worth celebrating is finishing the session, not the save
+  // succeeding.
   const logStudySession = (durationMinutes: number) => {
+    celebrate(randomEncouragement(STUDY_SESSION_DONE_MESSAGES));
+
     const supabase = createClient();
     supabase
       .from("study_sessions")
@@ -704,6 +718,22 @@ export default function GradesPage({
   );
   const trend = useMemo(() => trendDirection(gradeHistory), [gradeHistory]);
 
+  // Celebrates an improving grade — same "up" computation already
+  // driving the trend badge above, not a separate/fabricated signal.
+  // Capped to once per course per day (localStorage) since trend is
+  // recalculated on every visit and would otherwise re-fire the toast
+  // on every single page load while it stays "up".
+  useEffect(() => {
+    if (trend !== "up" || !course) return;
+    const key = `xf-toast-grade-up-${courseId}`;
+    if (alreadyShownToday(key)) return;
+    markShownToday(key);
+    celebrate(`Your grade in ${course.name} is trending up! 📈`);
+    // celebrate is a stable function identity from context; only the
+    // trend/course actually changing should re-evaluate this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trend, course, courseId]);
+
   // Find the next ungraded assignment to build the "what do I need" calculator around
   const nextUngraded = useMemo(() => {
     if (!course) return null;
@@ -760,7 +790,7 @@ export default function GradesPage({
 
   return (
     <div
-      className="xf-page-enter"
+      className="xf-page-enter xf-dashboard-page"
       style={{
         minHeight: "100vh",
         color: text,
@@ -827,7 +857,7 @@ export default function GradesPage({
         </p>
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 4, borderBottom: `1px solid ${border}`, marginBottom: 28 }}>
+        <div className="xf-tabs-row" style={{ display: "flex", gap: 4, borderBottom: `1px solid ${border}`, marginBottom: 28 }}>
           {TABS.map((tab) => {
             const active = activeTab === tab.id;
             const Icon = tab.icon;
@@ -855,6 +885,8 @@ export default function GradesPage({
                   fontSize: 14,
                   fontWeight: 600,
                   cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
                   marginBottom: -1,
                 }}
               >

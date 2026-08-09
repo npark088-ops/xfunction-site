@@ -44,7 +44,7 @@ export default function LoginPage() {
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/overview";
+  const next = searchParams.get("next") || "/today";
 
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");

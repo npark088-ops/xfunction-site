@@ -51,7 +51,7 @@ const STEPS: TourStep[] = [
   {
     icon: Bot,
     title: "Ask Your Consultant",
-    body: "A chat advisor grounded in your real grades — ask things like \"am I going to pass this class?\" and get a specific, honest answer.",
+    body: "A chat advisor grounded in your real grades — open it from the sidebar or the chat button in the bottom-right corner, from anywhere in the app, to ask things like \"am I going to pass this class?\" and get a specific, honest answer.",
   },
   {
     icon: CalendarDays,

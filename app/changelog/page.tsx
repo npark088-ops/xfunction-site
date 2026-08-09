@@ -121,7 +121,7 @@ export default function ChangelogPage() {
           <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
         </Link>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+        <div className="xf-public-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
           <Link href="/" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             Home
           </Link>
@@ -151,7 +151,7 @@ export default function ChangelogPage() {
           background: `radial-gradient(circle at center, ${card}, transparent 70%)`,
         }}
       >
-        <h1 style={{ fontSize: "48px", fontWeight: 700, color: text, margin: 0 }}>What&apos;s new</h1>
+        <h1 className="xf-marketing-heading" style={{ fontSize: "48px", fontWeight: 700, color: text, margin: 0 }}>What&apos;s new</h1>
         <p style={{ marginTop: 16, fontSize: 18, color: textDim, maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
           A running list of what&apos;s shipped in XFunction, in plain language — newest first.
         </p>

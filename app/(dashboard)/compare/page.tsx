@@ -36,7 +36,7 @@ export default function ComparePage() {
 
   return (
     <div
-      className="xf-page-enter"
+      className="xf-page-enter xf-dashboard-page"
       style={{
         minHeight: "100vh",
         color: text,
@@ -71,7 +71,7 @@ export default function ComparePage() {
             <Link
               key={c.id}
               href={`/grades/${c.id}`}
-              className="xf-card xf-card-hover"
+              className="xf-card xf-card-hover xf-grid-collapse"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1.4fr 0.9fr 0.7fr 1.6fr",

@@ -130,7 +130,7 @@ export function ScheduleMonthView({
 
   return (
     <div
-      className="xf-card"
+      className="xf-card xf-schedule-card"
       style={{
         background: card,
         border: `1px solid ${border}`,
@@ -157,7 +157,7 @@ export function ScheduleMonthView({
           >
             <ChevronRight size={16} strokeWidth={2.25} />
           </button>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: text, margin: "0 4px" }}>{monthLabel}</h2>
+          <h2 className="xf-month-nav-label" style={{ fontSize: 16, fontWeight: 700, color: text, margin: "0 4px" }}>{monthLabel}</h2>
         </div>
         <button
           type="button"
@@ -178,7 +178,7 @@ export function ScheduleMonthView({
       </div>
 
       {/* Weekday header */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", minWidth: 560 }}>
+      <div className="xf-schedule-month-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", minWidth: 560 }}>
         {WEEKDAY_LABELS.map((label) => (
           <div
             key={label}
@@ -218,6 +218,7 @@ export function ScheduleMonthView({
           return (
             <div
               key={cell.date.toISOString()}
+              className="xf-month-cell"
               style={{
                 minHeight: 92,
                 border: `1px solid ${border}`,
@@ -276,7 +277,7 @@ export function ScheduleMonthView({
                       title={`Studied ${courseName(item.session.course_id)} for ${item.session.duration_minutes} min`}
                     >
                       <Timer size={9} strokeWidth={2.5} style={{ flexShrink: 0 }} />
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", fontWeight: 700 }}>
+                      <span className="xf-month-chip-label" style={{ overflow: "hidden", textOverflow: "ellipsis", fontWeight: 700 }}>
                         {courseName(item.session.course_id)}
                       </span>
                     </div>
@@ -301,8 +302,8 @@ export function ScheduleMonthView({
                     }}
                     title={`${courseName(item.block.course_id)} — ${formatTime12h(item.block.start_time)}–${formatTime12h(item.block.end_time)}`}
                   >
-                    <strong style={{ fontWeight: 700 }}>{courseName(item.block.course_id)}</strong>
-                    <div style={{ color: textDim, fontSize: 9 }}>{formatTime12h(item.block.start_time)}</div>
+                    <strong className="xf-month-chip-label" style={{ fontWeight: 700 }}>{courseName(item.block.course_id)}</strong>
+                    <div className="xf-month-chip-label" style={{ color: textDim, fontSize: 9 }}>{formatTime12h(item.block.start_time)}</div>
                     <button
                       type="button"
                       onClick={() => onRemoveBlock(item.block.id)}
@@ -343,7 +344,7 @@ export function ScheduleMonthView({
                     title={`Due: ${item.assignment.name} (${item.assignment.courseName})`}
                   >
                     <Pin size={9} strokeWidth={2} style={{ flexShrink: 0, opacity: 0.75 }} />
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{item.assignment.name}</span>
+                    <span className="xf-month-chip-label" style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{item.assignment.name}</span>
                   </div>
                 );
               })}

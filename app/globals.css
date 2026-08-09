@@ -207,14 +207,274 @@ button:disabled {
   animation: xf-toast-out 0.3s var(--ease) both;
 }
 
+/* Celebration toasts (useEncouragement — assignment done, streak
+   milestone, grade trending up, achievement unlocked, focus session
+   finished) get a livelier overshoot-and-settle "pop" instead of the
+   plain slide used by reminder toasts (useReminderToast) — the
+   entrance motion itself is part of what should read as "upbeat and
+   distinct," not just the color. */
+@keyframes xf-toast-celebrate-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.xf-toast-celebrate-in {
+  animation: xf-toast-celebrate-in 0.4s var(--ease) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .xf-page-enter,
   .xf-skeleton,
   .xf-toast-in,
-  .xf-toast-out {
+  .xf-toast-out,
+  .xf-toast-celebrate-in {
     animation: none;
   }
   a, button, .course-card, .xf-card {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   Mobile responsiveness (phones ~375-430px, up through ~640px)
+   ============================================================ */
+
+/* Every dashboard page (Overview, Courses, Schedule, Trends, Today,
+   Tasks, Settings, Search, Ask, Compare, Grades) shares this exact
+   "padding: 48px 40px" wrapper — one rule here instead of touching
+   each page's inline style. 40px of horizontal padding alone eats
+   over a fifth of a 375px viewport for nothing. Same breakpoint as
+   the sidebar's mobile top bar below (860px) — the extra top padding
+   clears that fixed bar, so they have to switch on together or the
+   bar overlaps content in the gap between two different breakpoints. */
+@media (max-width: 860px) {
+  .xf-dashboard-page {
+    padding: 76px 16px 24px !important;
+  }
+}
+
+/* Marketing hero/section headings (Home, About, Pricing, Changelog,
+   Help) that are deliberately larger than a normal heading — a
+   64px hero title badly overflows a phone. Scoped to its own class
+   rather than a blanket h1/h2 rule, since that would also shrink
+   small card headers elsewhere that are already sized correctly. */
+@media (max-width: 640px) {
+  .xf-marketing-heading {
+    font-size: 28px !important;
+    line-height: 1.3 !important;
+  }
+}
+
+/* Fixed-ratio / fixed-column grids sized for desktop — collapse to a
+   single column on phones instead of squeezing every column into an
+   unreadable sliver (Compare's course rows, Trends' day/time-of-day
+   panels). */
+@media (max-width: 640px) {
+  .xf-grid-collapse {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Schedule week grid (components/ScheduleGrid.tsx) — was a fixed
+   minWidth: 560 flex row that forced horizontal scrolling on a phone.
+   Dropping the minWidths lets the 5 day columns (already flex: 1)
+   compress to fit the viewport instead — cramped, but no scrollbar.
+   Event blocks inside already truncate with ellipsis at this width. */
+@media (max-width: 640px) {
+  .xf-schedule-card {
+    padding: 12px !important;
+  }
+  .xf-schedule-week-row {
+    min-width: 0 !important;
+  }
+  .xf-schedule-time-col {
+    width: 32px !important;
+  }
+  .xf-schedule-day-col {
+    min-width: 0 !important;
+  }
+  .xf-schedule-day-label {
+    font-size: 10px !important;
+    letter-spacing: 0 !important;
+  }
+}
+
+/* Schedule month grid (components/ScheduleMonthView.tsx) — same fix,
+   a fixed minWidth: 560 seven-column grid. On mobile, chip text
+   drops to just the course-color dot (see the component's
+   .xf-month-chip-label span) so the day number and a few dots still
+   fit a ~45px-wide cell instead of illegible squashed text. */
+@media (max-width: 640px) {
+  .xf-schedule-month-grid {
+    min-width: 0 !important;
+  }
+  .xf-month-cell {
+    min-height: 56px !important;
+    padding: 3px !important;
+  }
+  .xf-month-chip-label {
+    display: none !important;
+  }
+  .xf-month-nav-label {
+    font-size: 13px !important;
+  }
+}
+
+/* Sidebar → slide-in drawer on tablets/phones, see components/Sidebar.tsx.
+   Desktop keeps the static in-flow sidebar untouched. */
+.xf-mobile-topbar {
+  display: none;
+}
+.xf-sidebar-backdrop {
+  display: none;
+}
+.xf-sidebar-close {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  /* position: fixed (not sticky) is deliberate — Sidebar renders this
+     as a fragment sibling next to the flex-row page content
+     (app/(dashboard)/layout.tsx), so anything less than fixed/absolute
+     would still be laid out as a flex item beside the content instead
+     of spanning the full viewport width at the top. */
+  .xf-mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 250;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+  }
+
+  .xf-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100vh !important;
+    min-height: 0 !important;
+    width: 260px !important;
+    max-width: 80vw;
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+    z-index: 300;
+    box-shadow: var(--shadow-lg);
+  }
+  .xf-sidebar.xf-sidebar-open {
+    transform: translateX(0);
+  }
+  .xf-sidebar-close {
+    display: flex;
+  }
+  .xf-sidebar-backdrop.xf-sidebar-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    z-index: 290;
+  }
+}
+
+/* Public marketing navbar (Home, About, Pricing, Help, Changelog) —
+   6 links plus the wordmark badly overflow a phone's width in one
+   row. Rather than building a second hamburger-menu system just for
+   these 5 pages, the link row becomes its own small horizontally
+   scrollable strip — same links, same order, no new interaction
+   pattern, just contained so the whole PAGE never needs to scroll
+   sideways. */
+@media (max-width: 640px) {
+  .xf-public-nav {
+    gap: 18px !important;
+    overflow-x: auto;
+    max-width: 60vw;
+    scrollbar-width: none;
+  }
+  .xf-public-nav::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Grades page section tabs (Overview/Assignments/Study/Notes) — 4
+   tabs with icon+label don't fit a phone's width in one row. Shrinks
+   first; overflow-x is just a safety net if a course/tab label is
+   still too long, same contained-scroll approach as .xf-public-nav. */
+@media (max-width: 640px) {
+  .xf-tabs-row {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .xf-tabs-row::-webkit-scrollbar {
+    display: none;
+  }
+  .xf-tabs-row button {
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* Comfortable tap targets on touch screens — nudges up anything that
+   was sized tight for a mouse cursor (small icon-only buttons, close
+   buttons) without changing desktop's denser layout. */
+@media (max-width: 640px) {
+  .xf-tap-target {
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+}
+
+/* Your Consultant floating panel (components/ConsultantPanel.tsx) —
+   slides in from the right over whatever page is currently showing,
+   rather than navigating to a dedicated route. Closed by default
+   (off-screen via translateX), same show/hide-by-class pattern as the
+   mobile sidebar drawer above. On phones the panel takes the full
+   viewport width instead of a fixed 400px, since a narrow slice of a
+   375px screen isn't usable for a chat thread. */
+.xf-consultant-panel {
+  transform: translateX(100%);
+  transition: transform var(--transition);
+}
+.xf-consultant-panel-open {
+  transform: translateX(0);
+}
+.xf-consultant-backdrop {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .xf-consultant-panel {
+    width: 100vw !important;
+  }
+  /* Full-width on phones means the panel fully covers the page behind
+     it, so — unlike the desktop width where the page stays visible and
+     clickable to the left — add a backdrop that closes it on tap,
+     matching the mobile sidebar drawer's affordance. */
+  .xf-consultant-backdrop.xf-consultant-backdrop-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    z-index: 890;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xf-consultant-panel {
     transition: none;
   }
 }

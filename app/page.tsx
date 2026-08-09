@@ -59,7 +59,7 @@ export default function Home() {
     <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
   </Link>
 
-<div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+<div className="xf-public-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
 
   <span
     onClick={() => {
@@ -128,7 +128,7 @@ export default function Home() {
       }
     }}
   >
-    <Link href="/overview" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
+    <Link href="/today" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
       App
     </Link>
   </span>
@@ -201,6 +201,7 @@ export default function Home() {
     }}
   >
     <h1
+      className="xf-marketing-heading"
       style={{
         fontSize: "64px",
         fontWeight: "600",
@@ -243,7 +244,7 @@ export default function Home() {
     border: `1px solid ${border}`
   }}>
 
-    <h2 style={{
+    <h2 className="xf-marketing-heading" style={{
       fontSize: "40px",
       fontWeight: "700",
       color: text
@@ -298,7 +299,7 @@ export default function Home() {
     background: card,
     border: `1px solid ${border}`
   }}>
-    <h2 style={{
+    <h2 className="xf-marketing-heading" style={{
   fontSize: "40px",
   fontWeight: "700",
   color: text
@@ -347,7 +348,7 @@ export default function Home() {
             borderTop: `1px solid ${border}`,
             color: text
           }}>
-            <h2 style={{ fontSize: "44px" }}>
+            <h2 className="xf-marketing-heading" style={{ fontSize: "44px" }}>
               Reduce complexity. Build momentum.
             </h2>
 

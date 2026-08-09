@@ -77,7 +77,7 @@ export default function HelpPage() {
           <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
         </Link>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+        <div className="xf-public-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
           <Link href="/" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
             Home
           </Link>
@@ -101,7 +101,7 @@ export default function HelpPage() {
 
       {/* HERO */}
       <div style={{ padding: "160px 20px 60px", textAlign: "center" }}>
-        <h1 style={{ fontSize: 44, fontWeight: 700, marginBottom: 12, letterSpacing: "-0.02em", color: text }}>
+        <h1 className="xf-marketing-heading" style={{ fontSize: 44, fontWeight: 700, marginBottom: 12, letterSpacing: "-0.02em", color: text }}>
           Help & FAQ
         </h1>
         <p style={{ color: textDim, fontSize: 17, maxWidth: 500, margin: "0 auto" }}>

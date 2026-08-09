@@ -41,7 +41,7 @@ export default async function SchedulePage() {
 
   return (
     <div
-      className="xf-page-enter"
+      className="xf-page-enter xf-dashboard-page"
       style={{
         minHeight: "100vh",
         color: text,

@@ -33,7 +33,7 @@ export default async function TrendsPage() {
 
   return (
     <div
-      className="xf-page-enter"
+      className="xf-page-enter xf-dashboard-page"
       style={{
         minHeight: "100vh",
         color: text,

@@ -15,10 +15,16 @@ interface StoredStudyPlan {
 //
 // Both checks here are self-deduping so the watcher can just call this
 // once per app load without its own server-side dedup logic:
-//   - newAchievements only ever lists an achievement once, ever — this
-//     route records it in the notifications table (same dedupe_key
-//     scheme as lib/activity-notifications.ts) the moment it reports it,
-//     so a second call the same day or any later day won't repeat it.
+//   - newAchievements uses its own "toast-achievement:" dedupe_key
+//     prefix — deliberately NOT the plain "achievement:" prefix that
+//     lib/activity-notifications.ts writes for the bell entry. Both
+//     that sync and this route can fire on the same initial page load
+//     (Overview's effect and this one, mounted in the layout, aren't
+//     ordered relative to each other); sharing one dedupe key meant
+//     whichever request happened to resolve first "claimed" it, so the
+//     bell entry would appear but the celebration toast would silently
+//     never fire whenever the sync request won the race. Separate
+//     prefixes mean the two can never race each other.
 //   - plannedNotStarted is naturally self-limiting: once a session is
 //     logged for a course today, that course stops appearing.
 export async function GET() {
@@ -43,7 +49,7 @@ export async function GET() {
         .eq("user_id", user.id)
         .maybeSingle(),
       getCanvasConnection(supabase, user.id),
-      supabase.from("notifications").select("dedupe_key").like("dedupe_key", "achievement:%"),
+      supabase.from("notifications").select("dedupe_key").like("dedupe_key", "toast-achievement:%"),
       supabase.from("study_plans").select("course_id, plan"),
       supabase
         .from("study_sessions")
@@ -57,18 +63,25 @@ export async function GET() {
     hasGeneratedStudyPlan: Boolean(profileRow.data?.first_study_plan_at),
     canvasConnected: Boolean(canvasConnection),
   });
-  const alreadyNotified = new Set(
-    (existingAchievementNotifs.data ?? []).map((n) => n.dedupe_key.replace("achievement:", ""))
+  const alreadyToasted = new Set(
+    (existingAchievementNotifs.data ?? []).map((n) => n.dedupe_key.replace("toast-achievement:", ""))
   );
-  const newlyUnlocked = ACHIEVEMENTS.filter((a) => unlocked.has(a.id) && !alreadyNotified.has(a.id));
+  const newlyUnlocked = ACHIEVEMENTS.filter((a) => unlocked.has(a.id) && !alreadyToasted.has(a.id));
 
+  // Records that this achievement's celebration toast has been shown —
+  // a separate row from the bell notification (see
+  // lib/activity-notifications.ts), not a replacement for it. The bell
+  // entry is still the persistent history; this is only "has the
+  // pop-up fired," and reuses the notifications table purely because
+  // it already has the right shape (per-user, dedupe_key-unique), not
+  // because it's meant to show up in the bell dropdown itself.
   await Promise.all(
     newlyUnlocked.map((a) =>
       ensureNotification(supabase, {
         type: "achievement",
         message: `Achievement unlocked: ${a.name}`,
         link: "/settings",
-        dedupeKey: `achievement:${a.id}`,
+        dedupeKey: `toast-achievement:${a.id}`,
       })
     )
   );

@@ -342,7 +342,7 @@ export function ScheduleGrid({
           an empty-state message. */}
       {view === "week" && (
       <div
-        className="xf-card"
+        className="xf-card xf-schedule-card"
         style={{
           background: card,
           border: `1px solid ${border}`,
@@ -371,9 +371,9 @@ export function ScheduleGrid({
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", minWidth: 560 }}>
+        <div className="xf-schedule-week-row" style={{ display: "flex", minWidth: 560 }}>
           {/* Time labels */}
-          <div style={{ width: 56, flexShrink: 0 }}>
+          <div className="xf-schedule-time-col" style={{ width: 56, flexShrink: 0 }}>
             <div style={{ height: 28 }} />
             {hours.map((h) => (
               <div
@@ -397,8 +397,9 @@ export function ScheduleGrid({
             const dayBlocks = blocks.filter((b) => b.day_of_week === day.value);
             const daySessions = thisWeekSessions.filter((s) => sessionTimeRange(s).dayOfWeek === day.value);
             return (
-              <div key={day.value} style={{ flex: 1, minWidth: 90 }}>
+              <div key={day.value} className="xf-schedule-day-col" style={{ flex: 1, minWidth: 90 }}>
                 <div
+                  className="xf-schedule-day-label"
                   style={{
                     height: 28,
                     textAlign: "center",

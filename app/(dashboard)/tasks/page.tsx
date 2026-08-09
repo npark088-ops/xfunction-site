@@ -186,7 +186,7 @@ Tell me:
 
   return (
   <div
-    className="xf-page-enter"
+    className="xf-page-enter xf-dashboard-page"
     style={{
       color: text,
       minHeight: "100vh",

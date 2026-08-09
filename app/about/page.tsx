@@ -42,7 +42,7 @@ export default function About() {
           <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
         </Link>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+        <div className="xf-public-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
 
           <Link href="/" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
   Home
@@ -85,7 +85,7 @@ export default function About() {
   }}
 >
         <div style={{ maxWidth: "800px" }}>
-          <h1 style={{
+          <h1 className="xf-marketing-heading" style={{
   fontSize: "64px",
   fontWeight: "600",
   color: text
@@ -120,7 +120,7 @@ export default function About() {
           background: card,
           border: `1px solid ${border}`
         }}>
-          <h2 style={{ fontSize: "40px", fontWeight: "700", color: text }}>
+          <h2 className="xf-marketing-heading" style={{ fontSize: "40px", fontWeight: "700", color: text }}>
             The problem
           </h2>
 
@@ -150,7 +150,7 @@ export default function About() {
           background: card,
           border: `1px solid ${border}`
         }}>
-          <h2 style={{ fontSize: "40px", fontWeight: "700", color: text }}>
+          <h2 className="xf-marketing-heading" style={{ fontSize: "40px", fontWeight: "700", color: text }}>
             What XFunction does
           </h2>
 
@@ -180,7 +180,7 @@ export default function About() {
           background: card,
           border: `1px solid ${border}`
         }}>
-          <h2 style={{ fontSize: "40px", fontWeight: "700", color: text }}>
+          <h2 className="xf-marketing-heading" style={{ fontSize: "40px", fontWeight: "700", color: text }}>
             Our approach
           </h2>
 
@@ -204,7 +204,7 @@ export default function About() {
         borderTop: `1px solid ${border}`,
         color: text
       }}>
-        <h2 style={{ fontSize: "44px" }}>
+        <h2 className="xf-marketing-heading" style={{ fontSize: "44px" }}>
           Designed for real progress
         </h2>
 

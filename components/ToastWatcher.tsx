@@ -3,27 +3,7 @@
 import { useEffect } from "react";
 import { useEncouragement, useReminderToast } from "./ToastProvider";
 import { getUrgentWithin24Hours } from "../lib/upcoming-assignments";
-
-function todayKey(prefix: string): string {
-  return `${prefix}-${new Date().toISOString().slice(0, 10)}`;
-}
-
-function alreadyShownToday(prefix: string): boolean {
-  try {
-    return localStorage.getItem(todayKey(prefix)) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function markShownToday(prefix: string) {
-  try {
-    localStorage.setItem(todayKey(prefix), "1");
-  } catch {
-    // Private browsing or storage disabled — worst case this toast can
-    // reappear next load, which is harmless.
-  }
-}
+import { alreadyShownToday, markShownToday } from "../lib/toast-dedupe";
 
 // Mounted once inside ToastProvider (see app/(dashboard)/layout.tsx),
 // not per-page — layouts don't remount on client-side navigation

@@ -32,8 +32,10 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 // motion/timing/positioning, different accent so they read differently
 // at a glance:
 //   - "celebration" (useEncouragement) — positive moments: completing an
-//     assignment, a streak milestone, reaching a grade goal, unlocking
-//     an achievement. Green, Sparkles icon.
+//     assignment, finishing a focus session, a streak milestone,
+//     reaching a grade goal, a grade trending up, unlocking an
+//     achievement. Green, Sparkles icon, a livelier "pop" entrance
+//     (xf-toast-celebrate-in) than the reminder kind below.
 //   - "reminder" (useReminderToast) — genuinely time-sensitive nudges
 //     only: an assignment due within 24h, a planned study session not
 //     yet started (see components/ToastWatcher.tsx). Amber, Clock icon.
@@ -66,7 +68,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div
         style={{
           position: "fixed",
-          bottom: 24,
+          bottom: 92,
           right: 24,
           zIndex: 1000,
           display: "flex",
@@ -76,12 +78,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         }}
       >
         {toasts.map((t) => {
-          const accent = t.kind === "reminder" ? amber : green;
-          const Icon = t.kind === "reminder" ? Clock : Sparkles;
+          const isCelebration = t.kind === "celebration";
+          const accent = isCelebration ? green : amber;
+          const Icon = isCelebration ? Sparkles : Clock;
+          const enterClass = isCelebration ? "xf-toast-celebrate-in" : "xf-toast-in";
           return (
             <div
               key={t.id}
-              className={t.leaving ? "xf-toast-out" : "xf-toast-in"}
+              className={t.leaving ? "xf-toast-out" : enterClass}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -89,6 +93,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 maxWidth: 320,
                 background: card,
                 border: `1px solid ${accent}`,
+                borderLeft: isCelebration ? `4px solid ${accent}` : `1px solid ${accent}`,
                 borderRadius: "var(--radius-md)",
                 boxShadow: "var(--shadow-md)",
                 padding: "12px 16px",

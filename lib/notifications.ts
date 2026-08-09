@@ -41,13 +41,24 @@ export async function getNotificationsSnapshot(
   supabase: SupabaseClient,
   limit = 15
 ): Promise<{ notifications: NotificationRow[]; unreadCount: number }> {
+  // Rows with a "toast-" dedupe_key prefix (see app/api/toast-check)
+  // are pure bookkeeping — "has this celebration pop-up been shown
+  // yet" — not a real notification. They intentionally reuse this
+  // table's (user_id, dedupe_key) uniqueness instead of a dedicated
+  // one, so they need to be filtered out here or they'd show up as a
+  // confusing duplicate of the real bell entry for the same event.
   const [{ data: notifications, error: listError }, { count, error: countError }] = await Promise.all([
     supabase
       .from("notifications")
       .select("id, type, message, link, read, created_at")
+      .not("dedupe_key", "like", "toast-%")
       .order("created_at", { ascending: false })
       .limit(limit),
-    supabase.from("notifications").select("id", { count: "exact", head: true }).eq("read", false),
+    supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("read", false)
+      .not("dedupe_key", "like", "toast-%"),
   ]);
 
   if (listError) {
