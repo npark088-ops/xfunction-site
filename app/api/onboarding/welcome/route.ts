@@ -1,4 +1,5 @@
 import { createClient } from "../../../../lib/supabase/server";
+import { createAdminClient } from "../../../../lib/supabase/admin";
 import { ONBOARDING_STEPS, sendOnboardingEmail } from "../../../../lib/onboarding-emails";
 
 // Fired once, fire-and-forget, right after a successful signup (see
@@ -25,11 +26,21 @@ export async function POST() {
     return Response.json({ error: result.error }, { status: 500 });
   }
 
-  const { error } = await supabase.rpc("mark_onboarding_email_sent", {
-    p_user_id: user.id,
-    p_email_key: step.key,
-  });
-  if (error) console.error("mark_onboarding_email_sent (welcome) failed:", error);
+  // The signed-in session above only proves who the caller is — the
+  // function itself is service_role-only, so the write goes through the
+  // admin client. user.id comes from the verified session, never from
+  // the request body, so a caller can only mark their own welcome email.
+  try {
+    const { error } = await createAdminClient().rpc("mark_onboarding_email_sent", {
+      p_user_id: user.id,
+      p_email_key: step.key,
+    });
+    if (error) console.error("mark_onboarding_email_sent (welcome) failed:", error);
+  } catch (error) {
+    // The email already went out; the daily cron will pick this user up
+    // as a "welcome" candidate and dedupe, so don't fail the request.
+    console.error("mark_onboarding_email_sent (welcome): admin client unavailable:", error);
+  }
 
   return Response.json({ sent: true });
 }

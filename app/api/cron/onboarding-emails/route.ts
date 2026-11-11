@@ -1,11 +1,13 @@
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "../../../../lib/supabase/admin";
 import { ONBOARDING_STEPS, sendOnboardingEmail, type OnboardingCandidate } from "../../../../lib/onboarding-emails";
 
 // Triggered daily by Vercel Cron (see vercel.json). No signed-in user
 // exists in this context — same as app/api/cron/weekly-digest — so
 // candidates come from the SECURITY DEFINER RPCs in
-// supabase/migrations/0017_onboarding_emails.sql instead of a normal
-// cookie-scoped query.
+// supabase/migrations/0017_onboarding_emails.sql, called through the
+// server-only service-role client (those functions are executable by
+// service_role only — they return user emails, so they must never be
+// reachable with the public anon key).
 //
 // IMPORTANT: like the weekly digest, this sends through Resend's shared
 // onboarding@resend.dev sender, which can only deliver to the address
@@ -22,10 +24,13 @@ export async function GET(req: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  let supabase: ReturnType<typeof createAdminClient>;
+  try {
+    supabase = createAdminClient();
+  } catch (error) {
+    console.error("Onboarding cron: admin client unavailable:", error);
+    return Response.json({ error: "Server not configured" }, { status: 500 });
+  }
 
   const results: Record<string, { sent: number; skipped: number; failed: number }> = {};
 

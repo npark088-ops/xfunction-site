@@ -82,6 +82,9 @@ begin
 end;
 $$;
 
+-- Signed-in users only. Postgres grants EXECUTE to PUBLIC by default (and
+-- Supabase also grants anon), so those are revoked explicitly.
+revoke all on function accept_parent_invite(text) from public, anon;
 grant execute on function accept_parent_invite(text) to authenticated;
 
 -- Read-only preview so the join page can show "you're about to link
