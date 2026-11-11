@@ -1,6 +1,7 @@
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/ai-usage";
 import { generateCoachInsight } from "../../../lib/coach-insight";
+import { getUserCourses } from "../../../lib/user-courses";
 
 export async function GET() {
   const supabase = await createClient();
@@ -24,7 +25,8 @@ export async function GET() {
   }
 
   try {
-    const insight = await generateCoachInsight();
+    const courses = await getUserCourses(supabase, user.id);
+    const insight = await generateCoachInsight(courses, usage.isPro);
     return Response.json({ insight });
   } catch (error) {
     console.error("Coach overview generation failed:", error);

@@ -1,5 +1,6 @@
 import { createClient } from "../../../../lib/supabase/server";
 import { syncActivityNotifications } from "../../../../lib/activity-notifications";
+import { getUserCourses } from "../../../../lib/user-courses";
 
 // Fired once per visit from the Overview page (the natural "check the
 // dashboard" landing spot) instead of running on every dashboard
@@ -15,6 +16,7 @@ export async function POST() {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
-  await syncActivityNotifications(supabase, user.id);
+  const courses = await getUserCourses(supabase, user.id);
+  await syncActivityNotifications(supabase, user.id, courses);
   return Response.json({ ok: true });
 }

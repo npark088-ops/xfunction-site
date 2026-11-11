@@ -1,5 +1,6 @@
 import { getUpcomingAssignments, getDigestAssignments, URGENT_WITHIN_DAYS } from "../../../lib/upcoming-assignments";
 import { createClient } from "../../../lib/supabase/server";
+import { getUserCourses } from "../../../lib/user-courses";
 
 function daysAwayLabel(daysAway: number) {
   if (daysAway <= 0) return "due today";
@@ -31,8 +32,9 @@ export async function POST() {
     );
   }
 
-  const urgent = getUpcomingAssignments(URGENT_WITHIN_DAYS);
-  const digestItems = getDigestAssignments();
+  const courses = await getUserCourses(supabase, user.id);
+  const urgent = getUpcomingAssignments(courses, URGENT_WITHIN_DAYS);
+  const digestItems = getDigestAssignments(courses);
   const totalCount = urgent.length + digestItems.length;
 
   if (totalCount === 0) {

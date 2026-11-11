@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, X, Pin, Timer } from "lucide-react";
-import { mockCourses } from "../lib/mock-canvas-data";
 import { formatTime12h, type ScheduleBlock } from "./ScheduleGrid";
 import type { StudySession } from "../lib/study-sessions";
 
@@ -29,25 +28,6 @@ interface AssignmentDue {
 
 function sameDate(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
-// Every assignment across every course that has a due date — a
-// traditional calendar shows what's due when, not just what's still
-// pending, so this deliberately doesn't filter by submission status
-// the way lib/upcoming-assignments.ts does.
-function getAllAssignmentsWithDueDates(): AssignmentDue[] {
-  return Object.values(mockCourses).flatMap((c) =>
-    c.assignmentGroups.flatMap((g) =>
-      g.assignments
-        .filter((a) => a.due_at)
-        .map((a) => ({
-          courseId: c.id,
-          courseName: c.name,
-          name: a.name,
-          dueAt: new Date(a.due_at as string),
-        }))
-    )
-  );
 }
 
 interface DayCell {
@@ -91,12 +71,14 @@ function buildMonthGrid(monthCursor: Date): DayCell[] {
 export function ScheduleMonthView({
   blocks,
   sessions,
+  assignmentsDue,
   courseColor,
   courseName,
   onRemoveBlock,
 }: {
   blocks: ScheduleBlock[];
   sessions: StudySession[];
+  assignmentsDue: { courseId: string; courseName: string; name: string; dueAt: string }[];
   courseColor: (courseId: string) => string;
   courseName: (courseId: string) => string;
   onRemoveBlock: (id: string) => void;
@@ -108,7 +90,10 @@ export function ScheduleMonthView({
     return d;
   });
 
-  const assignments = useMemo(() => getAllAssignmentsWithDueDates(), []);
+  const assignments = useMemo<AssignmentDue[]>(
+    () => assignmentsDue.map((a) => ({ ...a, dueAt: new Date(a.dueAt) })),
+    [assignmentsDue]
+  );
   const cells = useMemo(() => buildMonthGrid(monthCursor), [monthCursor]);
 
   const monthLabel = monthCursor.toLocaleDateString("en-US", { month: "long", year: "numeric" });

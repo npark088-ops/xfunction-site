@@ -1,17 +1,22 @@
-// SIMULATED DATA — NOT REAL CANVAS HISTORY
+// SIMULATED DATA FOR DEMO COURSES ONLY — NOT REAL HISTORY
 // ---------------------------------------------------------------------
-// Canvas's real API can provide grade history, but this app's mock
-// Canvas integration only has a single current snapshot of each
-// course's assignments — there's no historical feed to pull from yet.
-// These are hand-authored fake weekly percentages standing in for what
-// a real history endpoint would eventually provide, so the trend UI has
-// something real to render and demo. Every place this data is shown
-// must label it as simulated (see the trend chart components).
+// Real per-user courses (see lib/user-courses.ts) have no historical
+// snapshots — there's no daily/weekly grade feed being recorded, so
+// there's genuinely nothing to show but the current live grade. These
+// hand-authored fake weekly percentages exist ONLY to make "Load demo
+// data"'s 3 seeded courses ("ap-biology", "us-history", "algebra-2" —
+// see lib/mock-canvas-data.ts) demo well, since they keep those exact
+// original ids when seeded (see the migration file's comment for why).
+// getCourseGradeHistory() below already degrades correctly for any
+// other id (empty `past`, so it returns just the live current point) —
+// getOverallGradeHistory() needs the same "is this actually the demo
+// set" check made explicit, since it used to derive its course list
+// from this dict directly rather than from whatever the caller passed.
 //
 // The most recent point in every returned series is always the LIVE
 // calculated grade (passed in by the caller), not a hardcoded number —
-// so history never drifts out of sync with the actual mock assignment
-// data if that changes.
+// so history never drifts out of sync with the actual assignment data
+// if that changes.
 
 import { mockCourses, getCreditHours } from "./mock-canvas-data";
 
@@ -50,8 +55,22 @@ export function getCourseGradeHistory(courseId: string, currentGrade: number): G
 // calculateWeightedOverallGrade in lib/grade-calculator.ts) — otherwise
 // the trend line would visibly kink where simulated history (unweighted)
 // meets the live current-week point (weighted).
-export function getOverallGradeHistory(currentOverallGrade: number): GradePoint[] {
-  const courseIds = Object.keys(PAST_WEEKS_BY_COURSE);
+//
+// `courseIds` is the caller's REAL current course list. The fabricated
+// multi-week trend below only ever applies when every one of those ids
+// is a known demo id (i.e. the account is exactly the seeded demo set,
+// or a subset of it) — any genuinely manual course breaks that, and the
+// function falls back to an honest single point instead of blending
+// real data into a fake trend line.
+export function getOverallGradeHistory(
+  currentOverallGrade: number,
+  courseIds: string[]
+): GradePoint[] {
+  const isDemoSet = courseIds.length > 0 && courseIds.every((id) => id in PAST_WEEKS_BY_COURSE);
+  if (!isDemoSet) {
+    return [{ label: weekLabel(0), percentage: Math.round(currentOverallGrade * 10) / 10 }];
+  }
+
   const weekCount = PAST_WEEKS_BY_COURSE[courseIds[0]].length;
   const credits = courseIds.map((id) => getCreditHours(mockCourses[id]));
   const totalCredits = credits.reduce((sum, c) => sum + c, 0);

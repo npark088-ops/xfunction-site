@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { mockCourses } from "./mock-canvas-data";
+import type { MockCourse } from "./mock-canvas-data";
 import { calculateCategoryBreakdown, calculateCurrentGrade } from "./grade-calculator";
+import { getAiModel } from "./ai-model";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -10,8 +11,15 @@ const anthropic = new Anthropic({
 // app/api/weekly-digest (one highlight embedded in the email) — same
 // prompt, same grounding in real grade numbers, so the two never say
 // contradictory things about the same data.
-export async function generateCoachInsight(): Promise<string> {
-  const courseSummaries = Object.values(mockCourses)
+export async function generateCoachInsight(
+  courses: Record<string, MockCourse>,
+  isPro: boolean
+): Promise<string> {
+  if (Object.keys(courses).length === 0) {
+    return "You haven't added any courses yet — add one (or load demo data) on the Courses page to get a real check-in here.";
+  }
+
+  const courseSummaries = Object.values(courses)
     .map((course) => {
       const grade = calculateCurrentGrade(course.assignmentGroups);
       const breakdown = calculateCategoryBreakdown(course.assignmentGroups);
@@ -43,7 +51,7 @@ Rules:
 `;
 
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-5",
+    model: getAiModel(isPro),
     max_tokens: 300,
     messages: [{ role: "user", content: prompt }],
   });

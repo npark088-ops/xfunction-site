@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useEncouragement, useReminderToast } from "./ToastProvider";
 import { getUrgentWithin24Hours } from "../lib/upcoming-assignments";
 import { alreadyShownToday, markShownToday } from "../lib/toast-dedupe";
+import { createClient } from "../lib/supabase/client";
+import { getUserCourses } from "../lib/user-courses";
 
 // Mounted once inside ToastProvider (see app/(dashboard)/layout.tsx),
 // not per-page — layouts don't remount on client-side navigation
@@ -14,8 +16,8 @@ import { alreadyShownToday, markShownToday } from "../lib/toast-dedupe";
 //
 // Three triggers, each capped to at most one toast per calendar day so
 // this can never turn into a stream of pop-ups:
-//   1. An assignment due within 24 hours (checked client-side — static
-//      mock data, no request needed).
+//   1. An assignment due within 24 hours (this student's real courses,
+//      fetched client-side on mount).
 //   2. A newly unlocked achievement (server-computed, self-deduping —
 //      see app/api/toast-check).
 //   3. A planned study session for today with nothing logged yet —
@@ -26,15 +28,21 @@ export function ToastWatcher() {
   const remind = useReminderToast();
 
   useEffect(() => {
-    const urgent = getUrgentWithin24Hours();
-    if (urgent.length > 0 && !alreadyShownToday("xf-toast-urgent")) {
-      markShownToday("xf-toast-urgent");
-      remind(
-        urgent.length === 1
-          ? `"${urgent[0].assignmentName}" (${urgent[0].courseName}) is due within 24 hours.`
-          : `${urgent.length} assignments are due within 24 hours.`
-      );
-    }
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      getUserCourses(supabase, user.id).then((courses) => {
+        const urgent = getUrgentWithin24Hours(courses);
+        if (urgent.length > 0 && !alreadyShownToday("xf-toast-urgent")) {
+          markShownToday("xf-toast-urgent");
+          remind(
+            urgent.length === 1
+              ? `"${urgent[0].assignmentName}" (${urgent[0].courseName}) is due within 24 hours.`
+              : `${urgent.length} assignments are due within 24 hours.`
+          );
+        }
+      });
+    });
 
     fetch("/api/toast-check")
       .then((res) => (res.ok ? res.json() : null))

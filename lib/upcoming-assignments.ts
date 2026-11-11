@@ -1,4 +1,4 @@
-import { mockCourses } from "./mock-canvas-data";
+import type { MockCourse } from "./mock-canvas-data";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -24,14 +24,17 @@ export interface UpcomingAssignment {
 }
 
 // Ungraded assignments due within `withinDays`, across all courses,
-// sorted soonest-first. Shared by app/app/page.tsx (7-day "Coming up"
-// list) and app/api/send-reminders (2-day "urgent" window), so both
-// always agree on what counts as upcoming/urgent.
-export function getUpcomingAssignments(withinDays: number): UpcomingAssignment[] {
+// sorted soonest-first. `courses` is the caller's real per-user data
+// (see lib/user-courses.ts) — this function is otherwise fully generic,
+// it just walks whatever assignmentGroups/assignments it's handed.
+export function getUpcomingAssignments(
+  courses: Record<string, MockCourse>,
+  withinDays: number
+): UpcomingAssignment[] {
   const now = new Date();
   const windowEnd = new Date(now.getTime() + withinDays * MS_PER_DAY);
 
-  return Object.values(mockCourses)
+  return Object.values(courses)
     .flatMap((c) =>
       c.assignmentGroups.flatMap((g) =>
         g.assignments
@@ -57,17 +60,19 @@ export function getUpcomingAssignments(withinDays: number): UpcomingAssignment[]
 // URGENT_WITHIN_DAYS but within DIGEST_WITHIN_DAYS. Urgent items are
 // excluded here on purpose: they're surfaced individually and
 // immediately elsewhere, not folded into the digest.
-export function getDigestAssignments(): UpcomingAssignment[] {
-  return getUpcomingAssignments(DIGEST_WITHIN_DAYS).filter((a) => a.daysAway > URGENT_WITHIN_DAYS);
+export function getDigestAssignments(courses: Record<string, MockCourse>): UpcomingAssignment[] {
+  return getUpcomingAssignments(courses, DIGEST_WITHIN_DAYS).filter(
+    (a) => a.daysAway > URGENT_WITHIN_DAYS
+  );
 }
 
 // Exact calendar-day match rather than the daysAway heuristic — a
 // "due in 6 hours" assignment and a "due in 26 hours" assignment can
 // both round to daysAway 0 or 1 depending on time of day, which isn't
 // precise enough for "what's due today" on the Today page.
-export function getAssignmentsDueToday(): UpcomingAssignment[] {
+export function getAssignmentsDueToday(courses: Record<string, MockCourse>): UpcomingAssignment[] {
   const now = new Date();
-  return getUpcomingAssignments(1).filter(
+  return getUpcomingAssignments(courses, 1).filter(
     (a) =>
       a.dueAt.getFullYear() === now.getFullYear() &&
       a.dueAt.getMonth() === now.getMonth() &&
@@ -81,7 +86,7 @@ export function getAssignmentsDueToday(): UpcomingAssignment[] {
 // and email digest). A toast interrupts what the student's doing right
 // now, so it's reserved for "due in the next 24 hours," not "due in
 // the next two days."
-export function getUrgentWithin24Hours(): UpcomingAssignment[] {
+export function getUrgentWithin24Hours(courses: Record<string, MockCourse>): UpcomingAssignment[] {
   const now = Date.now();
-  return getUpcomingAssignments(2).filter((a) => a.dueAt.getTime() - now <= 24 * 60 * 60 * 1000);
+  return getUpcomingAssignments(courses, 2).filter((a) => a.dueAt.getTime() - now <= 24 * 60 * 60 * 1000);
 }

@@ -1,6 +1,7 @@
 import { getCachedUser, createClient } from "../../../lib/supabase/server";
-import { mockCourses } from "../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../lib/user-courses";
 import { getAssignmentsDueToday } from "../../../lib/upcoming-assignments";
+import type { MockCourse } from "../../../lib/mock-canvas-data";
 import { TodayContent, type TodayClassBlock, type TodayPlannedTask } from "../../../components/TodayContent";
 
 const text = "var(--text)";
@@ -26,16 +27,18 @@ export default async function TodayPage() {
 
   let classesToday: TodayClassBlock[] = [];
   let plannedToday: TodayPlannedTask[] = [];
+  let userCourses: Record<string, MockCourse> = {};
 
   if (user) {
     const supabase = await createClient();
-    const [blocksResult, plansResult] = await Promise.all([
+    const [blocksResult, plansResult, coursesResult] = await Promise.all([
       supabase
         .from("course_schedule_blocks")
         .select("id, course_id, day_of_week, start_time, end_time")
         .eq("day_of_week", todayWeekday)
         .order("start_time", { ascending: true }),
       supabase.from("study_plans").select("course_id, plan"),
+      getUserCourses(supabase, user.id),
     ]);
 
     if (blocksResult.error) console.error(blocksResult.error);
@@ -55,11 +58,13 @@ export default async function TodayPage() {
         return { courseId: row.course_id as string, tasks: day.tasks };
       })
       .filter((x): x is TodayPlannedTask => x !== null);
+
+    userCourses = coursesResult;
   }
 
-  const dueToday = getAssignmentsDueToday();
+  const dueToday = getAssignmentsDueToday(userCourses);
 
-  const courses = Object.values(mockCourses).map((c) => ({ id: c.id, name: c.name }));
+  const courses = Object.values(userCourses).map((c) => ({ id: c.id, name: c.name }));
 
   const dateLabel = todayDate.toLocaleDateString("en-US", {
     weekday: "long",

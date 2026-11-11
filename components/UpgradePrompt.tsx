@@ -12,16 +12,17 @@ const text = "var(--text)";
 
 // Shown wherever an AI generation request comes back 402 upgrade_required
 // (see lib/ai-usage.ts). "Upgrade to Pro" kicks off a real Stripe
-// Checkout session and redirects there. `context` picks which of the two
-// separate free-tier quotas (see lib/ai-usage.ts) the explanatory copy
-// below refers to, so it's never ambiguous which limit was actually hit —
-// "chat" for Your Consultant, "generations" for everything else.
+// Checkout session and redirects there. `context` picks which of the
+// three separate free-tier quotas (see lib/ai-usage.ts) the explanatory
+// copy below refers to, so it's never ambiguous which limit was actually
+// hit — "chat" for Your Consultant, "support" for the Support chat,
+// "generations" for everything else.
 export function UpgradePrompt({
   message,
   context = "generations",
 }: {
   message?: string;
-  context?: "chat" | "generations";
+  context?: "chat" | "support" | "generations";
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +75,9 @@ export function UpgradePrompt({
         {message ?? "You've used all your free AI generations this month."}{" "}
         {context === "chat"
           ? "Upgrade to XFunction Pro for unlimited messages to Your Consultant — $7/month."
-          : "Upgrade to XFunction Pro for unlimited study plans, study guides, practice quizzes, and coach check-ins — $7/month."}
+          : context === "support"
+            ? "Upgrade to XFunction Pro for unlimited Support messages — $7/month."
+            : "Upgrade to XFunction Pro for unlimited study plans, study guides, practice quizzes, and coach check-ins — $7/month."}
       </p>
       <button
         onClick={startCheckout}

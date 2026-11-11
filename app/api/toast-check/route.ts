@@ -1,5 +1,5 @@
 import { createClient } from "../../../lib/supabase/server";
-import { mockCourses } from "../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../lib/user-courses";
 import { getCanvasConnection } from "../../../lib/canvas-token-store";
 import { ACHIEVEMENTS, getUnlockedAchievementIds } from "../../../lib/achievements";
 import { ensureNotification } from "../../../lib/notifications";
@@ -41,7 +41,7 @@ export async function GET() {
   todayStart.setHours(0, 0, 0, 0);
   const todayStr = todayStart.toISOString().slice(0, 10);
 
-  const [profileRow, canvasConnection, existingAchievementNotifs, plansResult, sessionsResult] =
+  const [profileRow, canvasConnection, existingAchievementNotifs, plansResult, sessionsResult, courses] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -55,6 +55,7 @@ export async function GET() {
         .from("study_sessions")
         .select("course_id")
         .gte("occurred_at", todayStart.toISOString()),
+      getUserCourses(supabase, user.id),
     ]);
 
   // --- Newly unlocked achievements ---
@@ -62,6 +63,7 @@ export async function GET() {
     longestStreak: profileRow.data?.longest_streak ?? 0,
     hasGeneratedStudyPlan: Boolean(profileRow.data?.first_study_plan_at),
     canvasConnected: Boolean(canvasConnection),
+    courses,
   });
   const alreadyToasted = new Set(
     (existingAchievementNotifs.data ?? []).map((n) => n.dedupe_key.replace("toast-achievement:", ""))
@@ -94,7 +96,7 @@ export async function GET() {
       const day = plan?.days?.find((d) => d.date === todayStr);
       if (!day || !day.tasks || day.tasks.length === 0) return null;
       if (sessionCourseIdsToday.has(row.course_id)) return null;
-      return { courseId: row.course_id as string, courseName: mockCourses[row.course_id]?.name ?? row.course_id };
+      return { courseId: row.course_id as string, courseName: courses[row.course_id]?.name ?? row.course_id };
     })
     .filter((x): x is { courseId: string; courseName: string } => x !== null);
 

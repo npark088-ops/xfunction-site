@@ -1,5 +1,5 @@
 import { getCachedUser, createClient } from "../../../lib/supabase/server";
-import { mockCourses } from "../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../lib/user-courses";
 import { calculateCurrentGrade } from "../../../lib/grade-calculator";
 import { TrendsContent, type CourseSummary } from "../../../components/TrendsContent";
 import type { StudySession } from "../../../lib/study-sessions";
@@ -14,22 +14,25 @@ export default async function TrendsPage() {
   const user = await getCachedUser();
 
   let sessions: StudySession[] = [];
+  let courses: CourseSummary[] = [];
   if (user) {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("study_sessions")
-      .select("id, course_id, duration_minutes, occurred_at")
-      .order("occurred_at", { ascending: false })
-      .limit(500);
+    const [{ data, error }, userCourses] = await Promise.all([
+      supabase
+        .from("study_sessions")
+        .select("id, course_id, duration_minutes, occurred_at")
+        .order("occurred_at", { ascending: false })
+        .limit(500),
+      getUserCourses(supabase, user.id),
+    ]);
     if (error) console.error(error);
     sessions = data ?? [];
+    courses = Object.values(userCourses).map((c) => ({
+      id: c.id,
+      name: c.name,
+      grade: calculateCurrentGrade(c.assignmentGroups),
+    }));
   }
-
-  const courses: CourseSummary[] = Object.values(mockCourses).map((c) => ({
-    id: c.id,
-    name: c.name,
-    grade: calculateCurrentGrade(c.assignmentGroups),
-  }));
 
   return (
     <div

@@ -2,7 +2,9 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "../../../lib/supabase/server";
 import { consumeChatMessage } from "../../../lib/ai-usage";
 import { buildAcademicContext } from "../../../lib/academic-context";
+import { getUserCourses } from "../../../lib/user-courses";
 import { captureServerEvent } from "../../../lib/posthog-server";
+import { getAiModel } from "../../../lib/ai-model";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -53,7 +55,8 @@ export async function POST(req: Request) {
       content: String(m.content ?? ""),
     }));
 
-  const context = buildAcademicContext();
+  const courses = await getUserCourses(supabase, user.id);
+  const context = buildAcademicContext(courses);
 
   const systemPrompt = `
 You are Your Consultant, the student's personal AI academic advisor inside XFunction, chatting with them about their actual grades and coursework. This is a live chat, not a report — answer naturally and conversationally.
@@ -71,7 +74,7 @@ Rules:
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
+      model: getAiModel(usage.isPro),
       max_tokens: 800,
       system: systemPrompt,
       messages: history,

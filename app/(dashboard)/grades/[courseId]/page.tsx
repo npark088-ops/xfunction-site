@@ -30,7 +30,9 @@ import {
   Star,
   Gauge as GaugeIcon,
 } from "lucide-react";
-import { mockCourses } from "../../../../lib/mock-canvas-data";
+import { DEMO_COURSE_IDS, type MockCourse } from "../../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../../lib/user-courses";
+import { GradebookEditor } from "../../../../components/GradebookEditor";
 import {
   calculateCategoryBreakdown,
   calculateCurrentGrade,
@@ -102,6 +104,7 @@ type PracticeQuiz = {
 const TABS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "assignments", label: "Assignments", icon: ListChecks },
+  { id: "manage", label: "Manage", icon: Pencil },
   { id: "study", label: "Study tools", icon: Sparkles },
   { id: "notes", label: "Notes", icon: NotebookPen },
 ] as const;
@@ -158,8 +161,33 @@ export default function GradesPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = use(params);
-  const course = mockCourses[courseId];
   const celebrate = useEncouragement();
+
+  // Real per-user course data (see lib/user-courses.ts) — this page
+  // used to do a synchronous `mockCourses[courseId]` lookup; now it's a
+  // client-side fetch, same "own useEffect per Supabase table" pattern
+  // already used everywhere else on this page (goals, notes, teacher
+  // ratings, etc.), rather than restructuring the whole page into a
+  // server+client split. courseLoaded gates the "not found" branch so
+  // it doesn't flash before the real fetch has had a chance to resolve.
+  const [course, setCourse] = useState<MockCourse | undefined>(undefined);
+  const [courseLoaded, setCourseLoaded] = useState(false);
+  const [refreshToken, setRefreshToken] = useState(0);
+  const refreshCourse = () => setRefreshToken((t) => t + 1);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        setCourseLoaded(true);
+        return;
+      }
+      getUserCourses(supabase, user.id).then((courses) => {
+        setCourse(courses[courseId]);
+        setCourseLoaded(true);
+      });
+    });
+  }, [courseId, refreshToken]);
 
   const [activeTab, setActiveTab] = useState<TabId>("overview");
 
@@ -509,7 +537,7 @@ export default function GradesPage({
         setGoal(value);
         setEditingGoal(false);
         if (currentGrade >= value) {
-          celebrate(`You're already hitting your ${value}% goal in ${course.name}! 🎯`);
+          celebrate(`You're already hitting your ${value}% goal in ${course?.name ?? courseId}! 🎯`);
         }
       });
   };
@@ -767,6 +795,16 @@ export default function GradesPage({
     }
   }, [course, targetGrade, nextUngraded]);
 
+  if (!courseLoaded) {
+    return (
+      <div style={{ minHeight: "100vh", padding: "48px 40px" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <div className="xf-skeleton" style={{ height: 200, borderRadius: "var(--radius-lg)" }} />
+        </div>
+      </div>
+    );
+  }
+
   if (!course) {
     return (
       <div
@@ -781,7 +819,8 @@ export default function GradesPage({
           {backLink}
           <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12, color: text }}>Course not found</h1>
           <p style={{ color: textDim, marginBottom: 24 }}>
-            We don't have grade data for &ldquo;{courseId}&rdquo;.
+            We don&apos;t have grade data for &ldquo;{courseId}&rdquo;. It may have been deleted, or you
+            haven&apos;t added it yet.
           </p>
         </div>
       </div>
@@ -826,7 +865,7 @@ export default function GradesPage({
             <h1 style={{ fontSize: 34, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em", color: text }}>
               {course.name}
             </h1>
-            <DemoDataBadge />
+            {DEMO_COURSE_IDS.has(courseId) && <DemoDataBadge />}
           </div>
           <button
             onClick={handleDownloadPdf}
@@ -853,7 +892,9 @@ export default function GradesPage({
           </button>
         </div>
         <p style={{ color: textDim, marginBottom: 28, fontSize: 15 }}>
-          Sample data for preview — Canvas sync isn&apos;t live yet.
+          {DEMO_COURSE_IDS.has(courseId)
+            ? "Sample data for preview — platform sync isn't live yet."
+            : "Manage this course's categories and assignments from the Manage tab below."}
         </p>
 
         {/* Tabs */}
@@ -1710,6 +1751,19 @@ export default function GradesPage({
               </div>
             </div>
           </>
+        )}
+
+        {/* MANAGE TAB — add/edit/delete this course's grading categories
+            and assignments. Every course is manually-entered data now
+            (see lib/user-courses.ts) — there's no real platform sync
+            yet regardless of connection status — so this is how a
+            student actually keeps a course's grades accurate. */}
+        {activeTab === "manage" && (
+          <GradebookEditor
+            courseId={courseId}
+            groups={course.assignmentGroups}
+            onChange={refreshCourse}
+          />
         )}
 
         {/* STUDY TOOLS TAB */}

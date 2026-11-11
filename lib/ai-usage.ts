@@ -13,6 +13,13 @@ export const FREE_AI_GENERATIONS_PER_MONTH = 3;
 // exchange.
 export const FREE_CHAT_MESSAGES_PER_MONTH = 10;
 
+// Support chat (see app/api/support-chat) also gets its own quota,
+// separate from both pools above — it's a different feature for a
+// different purpose (account/app help, not academic help), so heavy use
+// of one shouldn't eat into the other. Same size as Your Consultant's
+// allowance since both are open-ended chats.
+export const FREE_SUPPORT_MESSAGES_PER_MONTH = 10;
+
 export type AiUsageResult = {
   allowed: boolean;
   used: number;
@@ -196,6 +203,89 @@ export async function getChatUsageSnapshot(
     allowed: true,
     used: usedThisPeriod,
     limit: FREE_CHAT_MESSAGES_PER_MONTH,
+    isPro: profile?.is_pro ?? false,
+  };
+}
+
+// Same shape and logic as consumeChatMessage above, but reads/writes
+// support_messages_used / support_usage_period_start instead — a
+// completely separate counter, see FREE_SUPPORT_MESSAGES_PER_MONTH.
+export async function consumeSupportMessage(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<AiUsageResult> {
+  const periodStart = currentMonthStart();
+
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("is_pro, support_messages_used, support_usage_period_start")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const profile =
+    existing ??
+    (
+      await supabase
+        .from("profiles")
+        .insert({ user_id: userId, support_usage_period_start: periodStart })
+        .select("is_pro, support_messages_used, support_usage_period_start")
+        .single()
+    ).data;
+
+  if (!profile) {
+    return { allowed: true, used: 0, limit: FREE_SUPPORT_MESSAGES_PER_MONTH, isPro: false };
+  }
+
+  const usedThisPeriod =
+    profile.support_usage_period_start === periodStart ? profile.support_messages_used : 0;
+
+  if (profile.is_pro) {
+    return { allowed: true, used: usedThisPeriod, limit: FREE_SUPPORT_MESSAGES_PER_MONTH, isPro: true };
+  }
+
+  if (usedThisPeriod >= FREE_SUPPORT_MESSAGES_PER_MONTH) {
+    await ensureNotification(supabase, {
+      type: "ai-limit",
+      message: `You've used all ${FREE_SUPPORT_MESSAGES_PER_MONTH} free messages to Support this month. Upgrade to Pro for unlimited access.`,
+      link: "/settings",
+      dedupeKey: `support-limit:${periodStart}`,
+    });
+    return { allowed: false, used: usedThisPeriod, limit: FREE_SUPPORT_MESSAGES_PER_MONTH, isPro: false };
+  }
+
+  const nextUsed = usedThisPeriod + 1;
+  await supabase
+    .from("profiles")
+    .update({
+      support_messages_used: nextUsed,
+      support_usage_period_start: periodStart,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId);
+
+  return { allowed: true, used: nextUsed, limit: FREE_SUPPORT_MESSAGES_PER_MONTH, isPro: false };
+}
+
+// Read-only counterpart, same pattern as getChatUsageSnapshot.
+export async function getSupportUsageSnapshot(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<AiUsageResult> {
+  const periodStart = currentMonthStart();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_pro, support_messages_used, support_usage_period_start")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const usedThisPeriod =
+    profile && profile.support_usage_period_start === periodStart ? profile.support_messages_used : 0;
+
+  return {
+    allowed: true,
+    used: usedThisPeriod,
+    limit: FREE_SUPPORT_MESSAGES_PER_MONTH,
     isPro: profile?.is_pro ?? false,
   };
 }

@@ -1,5 +1,5 @@
 import { getCachedUser, createClient } from "../../../lib/supabase/server";
-import { mockCourses } from "../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../lib/user-courses";
 import { ScheduleGrid, type ScheduleBlock } from "../../../components/ScheduleGrid";
 import type { StudySession } from "../../../lib/study-sessions";
 
@@ -14,9 +14,11 @@ export default async function SchedulePage() {
 
   let initialBlocks: ScheduleBlock[] = [];
   let initialSessions: StudySession[] = [];
+  let courses: { id: string; name: string }[] = [];
+  let assignmentsDue: { courseId: string; courseName: string; name: string; dueAt: string }[] = [];
   if (user) {
     const supabase = await createClient();
-    const [blocksResult, sessionsResult] = await Promise.all([
+    const [blocksResult, sessionsResult, userCourses] = await Promise.all([
       supabase
         .from("course_schedule_blocks")
         .select("id, course_id, day_of_week, start_time, end_time")
@@ -30,14 +32,21 @@ export default async function SchedulePage() {
         .select("id, course_id, duration_minutes, occurred_at")
         .order("occurred_at", { ascending: false })
         .limit(500),
+      getUserCourses(supabase, user.id),
     ]);
     if (blocksResult.error) console.error(blocksResult.error);
     if (sessionsResult.error) console.error(sessionsResult.error);
     initialBlocks = blocksResult.data ?? [];
     initialSessions = sessionsResult.data ?? [];
+    courses = Object.values(userCourses).map((c) => ({ id: c.id, name: c.name }));
+    assignmentsDue = Object.values(userCourses).flatMap((c) =>
+      c.assignmentGroups.flatMap((g) =>
+        g.assignments
+          .filter((a) => a.due_at)
+          .map((a) => ({ courseId: c.id, courseName: c.name, name: a.name, dueAt: a.due_at as string }))
+      )
+    );
   }
-
-  const courses = Object.values(mockCourses).map((c) => ({ id: c.id, name: c.name }));
 
   return (
     <div
@@ -69,7 +78,12 @@ export default async function SchedulePage() {
           class&apos;s day and time below and it&apos;ll lay out on the grid.
         </p>
 
-        <ScheduleGrid courses={courses} initialBlocks={initialBlocks} initialSessions={initialSessions} />
+        <ScheduleGrid
+          courses={courses}
+          initialBlocks={initialBlocks}
+          initialSessions={initialSessions}
+          assignmentsDue={assignmentsDue}
+        />
       </div>
     </div>
   );

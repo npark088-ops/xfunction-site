@@ -1,4 +1,5 @@
-import { mockCourses, getCreditHours } from "./mock-canvas-data";
+import type { MockCourse } from "./mock-canvas-data";
+import { getCreditHours } from "./mock-canvas-data";
 import { calculateCurrentGrade, calculateWeightedOverallGrade } from "./grade-calculator";
 import { getOverallGradeHistory, trendDirection, type GradePoint } from "./grade-history";
 import { getUpcomingAssignments, type UpcomingAssignment } from "./upcoming-assignments";
@@ -18,15 +19,18 @@ function daysAwayLabel(daysAway: number) {
 
 // Shared by both digest routes (on-demand and cron) so they never
 // disagree on what "this week's" grade/trend/upcoming numbers are.
-export function composeDigestData(coachHighlight: string | null): DigestData {
-  const courses = Object.values(mockCourses).map((course) => ({
+export function composeDigestData(
+  coachHighlight: string | null,
+  courseMap: Record<string, MockCourse>
+): DigestData {
+  const courses = Object.values(courseMap).map((course) => ({
     grade: calculateCurrentGrade(course.assignmentGroups),
     creditHours: getCreditHours(course),
   }));
   const overallGrade = calculateWeightedOverallGrade(courses);
-  const history: GradePoint[] = getOverallGradeHistory(overallGrade);
+  const history: GradePoint[] = getOverallGradeHistory(overallGrade, Object.keys(courseMap));
   const trend = trendDirection(history);
-  const upcoming = getUpcomingAssignments(7);
+  const upcoming = getUpcomingAssignments(courseMap, 7);
 
   return { overallGrade, trend, upcoming, coachHighlight };
 }

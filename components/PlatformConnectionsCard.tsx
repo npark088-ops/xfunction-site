@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, AlertTriangle, Link2, Clock, BookOpen, GraduationCap } from "lucide-react";
-import { LMS_PLATFORMS, SIS_PLATFORMS, PlatformConfig, PlatformId } from "../lib/platforms";
+import { CheckCircle2, AlertTriangle, Link2, Clock, BookOpen, GraduationCap, Sparkles } from "lucide-react";
+import { LMS_PLATFORMS, SIS_PLATFORMS, PlatformConfig, PlatformId, PlatformPreference } from "../lib/platforms";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -41,18 +41,27 @@ const selectStyle = {
 export function PlatformConnectionsCard({
   initialStatuses,
   banner,
+  preferredPlatform = null,
 }: {
   initialStatuses: Partial<Record<PlatformId, PlatformStatus>>;
   banner: PlatformBanner | null;
+  preferredPlatform?: PlatformPreference;
 }) {
   const [statuses, setStatuses] = useState(initialStatuses);
 
+  const preferredLms = LMS_PLATFORMS.find((p) => p.id === preferredPlatform);
+  const preferredSis = SIS_PLATFORMS.find((p) => p.id === preferredPlatform);
+
+  // Priority: an explicit banner (just came back from a connect flow)
+  // beats the signup answer, which beats "already connected," which
+  // beats the plain first-in-list default.
   const [selectedLms, setSelectedLms] = useState<PlatformId>(() => {
     if (banner && LMS_PLATFORMS.some((p) => p.id === banner.platform)) return banner.platform;
+    if (preferredLms) return preferredLms.id;
     const connected = LMS_PLATFORMS.find((p) => initialStatuses[p.id]?.connected);
     return connected?.id ?? LMS_PLATFORMS[0].id;
   });
-  const [selectedSis, setSelectedSis] = useState<PlatformId>(SIS_PLATFORMS[0].id);
+  const [selectedSis, setSelectedSis] = useState<PlatformId>(preferredSis?.id ?? SIS_PLATFORMS[0].id);
 
   const refreshStatus = (platform: PlatformConfig) => {
     if (!platform.statusHref) return;
@@ -182,10 +191,21 @@ export function PlatformConnectionsCard({
       <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 2px", color: text }}>
         Connect your platform
       </h2>
-      <p style={{ fontSize: 13, color: textDim, margin: "0 0 20px" }}>
+      <p style={{ fontSize: 13, color: textDim, margin: preferredPlatform ? "0 0 8px" : "0 0 20px" }}>
         Schools often run one system for coursework and a separate one for official grades — pick
         whichever applies to your school in each category below.
       </p>
+      {preferredPlatform === "other" && (
+        <p style={{ fontSize: 12, color: textDim, margin: "0 0 20px", fontStyle: "italic" }}>
+          You told us your school uses something else — pick whichever option below is the closest match.
+        </p>
+      )}
+      {preferredPlatform === "not-sure" && (
+        <p style={{ fontSize: 12, color: textDim, margin: "0 0 20px", fontStyle: "italic" }}>
+          Not sure which one your school uses? Check your school&apos;s login page, or ask a teacher —
+          then pick it below.
+        </p>
+      )}
 
       <div className="xf-grid-collapse" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
         {/* LMS — available */}
@@ -223,7 +243,7 @@ export function PlatformConnectionsCard({
           <select
             value={selectedLms}
             onChange={(e) => setSelectedLms(e.target.value as PlatformId)}
-            style={{ ...selectStyle, marginBottom: 14 }}
+            style={{ ...selectStyle, marginBottom: preferredLms?.id === selectedLms ? 8 : 14 }}
           >
             {LMS_PLATFORMS.map((p) => (
               <option key={p.id} value={p.id}>
@@ -232,6 +252,23 @@ export function PlatformConnectionsCard({
               </option>
             ))}
           </select>
+
+          {preferredLms?.id === selectedLms && !statuses[selectedLms]?.connected && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                fontSize: 11,
+                fontWeight: 700,
+                color: blue,
+                marginBottom: 10,
+              }}
+            >
+              <Sparkles size={11} strokeWidth={2} />
+              Suggested based on what you told us at signup
+            </div>
+          )}
 
           {renderAvailableDetail(lmsPlatform)}
         </div>
@@ -271,7 +308,7 @@ export function PlatformConnectionsCard({
           <select
             value={selectedSis}
             onChange={(e) => setSelectedSis(e.target.value as PlatformId)}
-            style={{ ...selectStyle, marginBottom: 14, color: textDim }}
+            style={{ ...selectStyle, marginBottom: preferredSis?.id === selectedSis ? 8 : 14, color: textDim }}
           >
             {SIS_PLATFORMS.map((p) => (
               <option key={p.id} value={p.id}>
@@ -279,6 +316,23 @@ export function PlatformConnectionsCard({
               </option>
             ))}
           </select>
+
+          {preferredSis?.id === selectedSis && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                fontSize: 11,
+                fontWeight: 700,
+                color: blue,
+                marginBottom: 10,
+              }}
+            >
+              <Sparkles size={11} strokeWidth={2} />
+              Suggested based on what you told us at signup
+            </div>
+          )}
 
           {renderComingSoonDetail(sisPlatform)}
         </div>

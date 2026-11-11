@@ -1,9 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { mockCourses } from "../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../lib/user-courses";
 import { calculateCategoryBreakdown } from "../../../lib/grade-calculator";
 import { getUpcomingAssignments } from "../../../lib/upcoming-assignments";
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/ai-usage";
+import { getAiModel } from "../../../lib/ai-model";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -43,7 +44,8 @@ export async function POST() {
     );
   }
 
-  const upcoming = getUpcomingAssignments(WINDOW_DAYS);
+  const courses = await getUserCourses(supabase, user.id);
+  const upcoming = getUpcomingAssignments(courses, WINDOW_DAYS);
   if (upcoming.length === 0) {
     return Response.json(
       { error: "Nothing due in the next two weeks — no plan needed yet." },
@@ -55,7 +57,7 @@ export async function POST() {
   // model can weigh urgency (daysAway) against impact (category weight%
   // and how weak that category already is), not just due-date order.
   const items = upcoming.map((item) => {
-    const course = mockCourses[item.courseId];
+    const course = courses[item.courseId];
     const group = course?.assignmentGroups.find((g) =>
       g.assignments.some((a) => a.id === item.assignmentId)
     );
@@ -118,7 +120,7 @@ Rules:
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
+      model: getAiModel(usage.isPro),
       max_tokens: 2000,
       messages: [{ role: "user", content: prompt }],
     });

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, ListChecks, NotebookPen } from "lucide-react";
-import { mockCourses } from "../lib/mock-canvas-data";
+import type { MockCourse } from "../lib/mock-canvas-data";
 import { courseColor } from "../lib/course-colors";
 
 const card = "var(--card)";
@@ -30,14 +30,16 @@ interface NoteHit {
 
 export function SearchResults({
   initialNotes,
+  courses,
 }: {
   initialNotes: { course_id: string; content: string }[];
+  courses: Record<string, MockCourse>;
 }) {
   const [query, setQuery] = useState("");
 
   const assignments = useMemo<AssignmentHit[]>(
     () =>
-      Object.values(mockCourses).flatMap((course) =>
+      Object.values(courses).flatMap((course) =>
         course.assignmentGroups.flatMap((group) =>
           group.assignments.map((a) => ({
             type: "assignment" as const,
@@ -49,7 +51,7 @@ export function SearchResults({
           }))
         )
       ),
-    []
+    [courses]
   );
 
   const notes = useMemo<NoteHit[]>(
@@ -59,10 +61,10 @@ export function SearchResults({
         .map((n) => ({
           type: "note" as const,
           courseId: n.course_id,
-          courseName: mockCourses[n.course_id]?.name ?? n.course_id,
+          courseName: courses[n.course_id]?.name ?? n.course_id,
           content: n.content,
         })),
-    [initialNotes]
+    [initialNotes, courses]
   );
 
   const q = query.trim().toLowerCase();

@@ -2,6 +2,7 @@ import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/ai-usage";
 import { generateCoachInsight } from "../../../lib/coach-insight";
 import { composeDigestData, sendDigestEmail } from "../../../lib/weekly-digest";
+import { getUserCourses } from "../../../lib/user-courses";
 
 // Authenticated, on-demand send — this is what the "Send me a test
 // digest now" button in Settings calls, and is also a template for
@@ -19,6 +20,8 @@ export async function POST() {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
+  const courses = await getUserCourses(supabase, user.id);
+
   // The coach highlight draws from the same monthly AI quota as study
   // plans/guides/check-ins. If the user's out for the month, the
   // digest still sends — just without that one section — rather than
@@ -27,13 +30,13 @@ export async function POST() {
   const usage = await consumeAiGeneration(supabase, user.id);
   if (usage.allowed) {
     try {
-      coachHighlight = await generateCoachInsight();
+      coachHighlight = await generateCoachInsight(courses, usage.isPro);
     } catch (error) {
       console.error("Digest coach highlight failed:", error);
     }
   }
 
-  const data = composeDigestData(coachHighlight);
+  const data = composeDigestData(coachHighlight, courses);
   const result = await sendDigestEmail(user.email, data);
 
   if (!result.ok) {

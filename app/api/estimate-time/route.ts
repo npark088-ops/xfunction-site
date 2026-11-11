@@ -1,7 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { mockCourses } from "../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../lib/user-courses";
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/ai-usage";
+import { getAiModel } from "../../../lib/ai-model";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -33,7 +34,8 @@ export async function POST(req: Request) {
   }
 
   const { courseId } = await req.json();
-  const course = mockCourses[courseId];
+  const courses = await getUserCourses(supabase, user.id);
+  const course = courses[courseId];
   if (!course) {
     return Response.json({ error: "Course not found" }, { status: 404 });
   }
@@ -72,7 +74,7 @@ The "estimates" array must have exactly one entry per assignment id listed above
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
+      model: getAiModel(usage.isPro),
       max_tokens: 1000,
       messages: [{ role: "user", content: prompt }],
     });

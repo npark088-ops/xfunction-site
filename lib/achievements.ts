@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ClipboardList, Flame, Award, Link2, type LucideIcon } from "lucide-react";
-import { mockCourses } from "./mock-canvas-data";
+import type { MockCourse } from "./mock-canvas-data";
 
 export interface Achievement {
   id: string;
@@ -40,13 +40,16 @@ export interface AchievementContext {
   longestStreak: number;
   hasGeneratedStudyPlan: boolean;
   canvasConnected: boolean;
+  courses: Record<string, MockCourse>;
 }
 
-// "First A" is derived live from the (shared, mock) grade data rather
-// than persisted — there's no per-user Canvas data yet, so whether
-// this is unlocked is the same fact for every account right now.
-export function hasScoredAtOrAbove(threshold: number): boolean {
-  for (const course of Object.values(mockCourses)) {
+// "First A" is derived live from the student's real course data (see
+// lib/user-courses.ts) rather than persisted — checked fresh every time
+// instead of stored, since it can flip from unlocked back to "would no
+// longer qualify" if a course/assignment is edited or deleted, and
+// there's no need to reconcile that — just recompute.
+export function hasScoredAtOrAbove(courses: Record<string, MockCourse>, threshold: number): boolean {
+  for (const course of Object.values(courses)) {
     for (const group of course.assignmentGroups) {
       for (const assignment of group.assignments) {
         const score = assignment.submission?.score;
@@ -64,7 +67,7 @@ export function getUnlockedAchievementIds(ctx: AchievementContext): Set<string> 
   const unlocked = new Set<string>();
   if (ctx.hasGeneratedStudyPlan) unlocked.add("first-study-plan");
   if (ctx.longestStreak >= 7) unlocked.add("week-streak");
-  if (hasScoredAtOrAbove(90)) unlocked.add("first-a");
+  if (hasScoredAtOrAbove(ctx.courses, 90)) unlocked.add("first-a");
   if (ctx.canvasConnected) unlocked.add("canvas-connected");
   return unlocked;
 }
