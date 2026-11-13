@@ -27,6 +27,10 @@
 # runtime data written by app/api/events while the app runs
 /events.json
 
+# scratch work: original (uncompressed) downloads and local tooling —
+# only the compressed files in public/videos/ are meant to be committed
+/scratch/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

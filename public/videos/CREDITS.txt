@@ -1,0 +1,28 @@
+Hero background video — credits and license
+============================================
+
+Title:            Roofs in a modern city, aerial shot
+Creator:          Mixkit contributor "vreel" (profile: https://mixkit.co/@vreel/)
+                  (the clip page shows only this profile link, no display name)
+Source page:      https://mixkit.co/free-stock-video/roofs-in-a-modern-city-aerial-shot-5020/
+File downloaded:  https://assets.mixkit.co/videos/5020/5020-1080.mp4  (1920x1080, 8.3 s)
+Downloaded on:    2026-11-12
+
+License:          Mixkit Stock Video Free License
+License page:     https://mixkit.co/license/#videoFree
+                  (the license text itself is served at https://mixkit.co/license/modal/videoFree/)
+User Terms:       https://mixkit.co/terms/
+
+The license states the clip may be used in commercial and non-commercial
+projects for free, and that attribution is not required (crediting Mixkit
+is appreciated, hence this file). Terms checked on 2026-11-12.
+
+Modifications made for this site (city-drone.mp4 / city-drone.webm):
+  - audio removed (the source has none)
+  - the 8.3 s clip is played twice with a 1 s crossfade between passes, and
+    the end is crossfaded into the start so the file loops without a jump
+    (final length about 14.7 s)
+  - re-encoded to H.264 (mp4) and VP9 (webm), 1920x1080, 30 fps, with
+    ffmpeg 9.0.2
+
+The original download is NOT stored in this repository.
