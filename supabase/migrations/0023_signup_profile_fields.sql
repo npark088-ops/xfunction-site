@@ -30,12 +30,19 @@ security definer
 set search_path = public
 as $$
 begin
+  -- raw_user_meta_data is whatever the signup request sent, so only the
+  -- exact allowed values are kept; anything else becomes null. Without
+  -- this, a bad value would violate the CHECK constraints above and abort
+  -- the whole auth.users insert (i.e. fail that signup).
   insert into profiles (user_id, created_at, grade_level, platform_preference)
   values (
     new.id,
     now(),
-    nullif(new.raw_user_meta_data ->> 'grade_level', ''),
-    nullif(new.raw_user_meta_data ->> 'platform_preference', '')
+    case when new.raw_user_meta_data ->> 'grade_level' in ('9', '10', '11', '12')
+         then new.raw_user_meta_data ->> 'grade_level' end,
+    case when new.raw_user_meta_data ->> 'platform_preference'
+              in ('canvas', 'google-classroom', 'schoology', 'powerschool', 'other', 'not-sure')
+         then new.raw_user_meta_data ->> 'platform_preference' end
   )
   on conflict (user_id) do nothing;
   return new;

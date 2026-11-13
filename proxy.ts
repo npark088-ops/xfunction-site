@@ -58,7 +58,9 @@ export default async function proxy(request: NextRequest) {
 
   if (isProtected && !user) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", path);
+    // Keep the query string too — /parent/join?code=ABC123 must survive
+    // login/signup, or a logged-out parent lands on "Missing invite code".
+    loginUrl.searchParams.set("next", path + request.nextUrl.search);
     return NextResponse.redirect(loginUrl);
   }
 

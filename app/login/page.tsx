@@ -6,6 +6,7 @@ import { Suspense, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import posthog from "posthog-js";
 import { createClient } from "../../lib/supabase/client";
+import { safeNextPath } from "../../lib/safe-redirect";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -65,7 +66,9 @@ export default function LoginPage() {
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/today";
+  // Validated: ?next= is attacker-controllable, so only same-site paths
+  // (query string included, e.g. /parent/join?code=...) are honored.
+  const next = safeNextPath(searchParams.get("next"), "/today");
 
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
