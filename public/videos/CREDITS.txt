@@ -1,28 +1,30 @@
 Hero background video — credits and license
 ============================================
 
-Title:            Roofs in a modern city, aerial shot
-Creator:          Mixkit contributor "vreel" (profile: https://mixkit.co/@vreel/)
-                  (the clip page shows only this profile link, no display name)
-Source page:      https://mixkit.co/free-stock-video/roofs-in-a-modern-city-aerial-shot-5020/
-File downloaded:  https://assets.mixkit.co/videos/5020/5020-1080.mp4  (1920x1080, 8.3 s)
+Title:            Twilight Aerial View of New York City Skyline
+Creator:          Yura Forrat (Pexels profile: https://www.pexels.com/@yuraforrat/)
+Source page:      https://www.pexels.com/video/twilight-aerial-view-of-new-york-city-skyline-36244245/
+Published:        Feb 20, 2026 (as shown on the Pexels page)
+File downloaded:  https://videos.pexels.com/video-files/36244245/15370519_2560_1440_30fps.mp4
+                  (2560x1440, 30 fps, 8.5 s; the page lists the original as 3840x2160)
 Downloaded on:    2026-11-12
 
-License:          Mixkit Stock Video Free License
-License page:     https://mixkit.co/license/#videoFree
-                  (the license text itself is served at https://mixkit.co/license/modal/videoFree/)
-User Terms:       https://mixkit.co/terms/
+License:          Pexels License
+License page:     https://www.pexels.com/license/
 
-The license states the clip may be used in commercial and non-commercial
-projects for free, and that attribution is not required (crediting Mixkit
-is appreciated, hence this file). Terms checked on 2026-11-12.
+Per that page: all photos and videos on Pexels can be downloaded and used for
+free; attribution is not required (credit is appreciated, hence this file);
+you may modify them. Not allowed: selling unaltered copies, redistributing or
+selling them on other stock platforms, implying endorsement by people or
+brands shown, and using them as part of a trademark or business name.
+Terms checked on 2026-11-12.
 
 Modifications made for this site (city-drone.mp4 / city-drone.webm):
-  - audio removed (the source has none)
-  - the 8.3 s clip is played twice with a 1 s crossfade between passes, and
+  - scaled from 2560x1440 to 1920x1080
+  - the 8.5 s clip is played twice with a 1 s crossfade between passes, and
     the end is crossfaded into the start so the file loops without a jump
-    (final length about 14.7 s)
-  - re-encoded to H.264 (mp4) and VP9 (webm), 1920x1080, 30 fps, with
-    ffmpeg 9.0.2
+    (final length about 14.9 s)
+  - audio removed (the source has none)
+  - encoded to H.264 (mp4) and VP9 (webm) with ffmpeg 9.0.2
 
 The original download is NOT stored in this repository.
