@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import { MarketingFooter } from "../../components/MarketingFooter";
 import { MarketingNav } from "../../components/MarketingNav";
-import { Wordmark } from "../../components/Wordmark";
 import "./hero-preview.css";
 
 // The canvas hero is a separate chunk, fetched in the browser only on this
@@ -30,9 +29,7 @@ export default function HeroPreviewClient() {
           <AsciiHeroX href="/today" onActivate={trackApp} />
 
           {/* headline + subtext: exactly as on the landing page (app/page.tsx) */}
-          <h1 className="hx-title">
-            <Wordmark size="xl" tone="light" />
-          </h1>
+          <h1 className="hx-title xf-marketing-heading">XFunction</h1>
           <p className="hx-sub">
             A system designed to transform complexity into clarity, enabling consistent execution and long-term progress.
           </p>

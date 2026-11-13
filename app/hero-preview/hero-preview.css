@@ -26,10 +26,14 @@
   pointer-events: none;
 }
 
+/* same heading as the landing page hero (64px / 600), white on the dark hero */
 .hx-title {
   position: relative;
   margin: 8px 0 0;
-  line-height: 1;
+  font-size: 64px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #fff;
 }
 
 .hx-sub {

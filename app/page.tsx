@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { MarketingNav } from "../components/MarketingNav";
 import { MarketingFooter } from "../components/MarketingFooter";
-import { Wordmark } from "../components/Wordmark";
 import { DroneBackground } from "../components/DroneBackground";
 
 // Hero still image — also the poster/fallback for the optional drone
@@ -92,8 +91,16 @@ export default function Home() {
       transition: "all 1s ease"
     }}
   >
-    <h1 style={{ margin: 0, lineHeight: 1, textShadow: HERO_TEXT_SHADOW }}>
-      <Wordmark size="xl" tone="light" />
+    <h1
+      className="xf-marketing-heading"
+      style={{
+        fontSize: "64px",
+        fontWeight: "600",
+        lineHeight: "1.1",
+        textShadow: HERO_TEXT_SHADOW
+      }}
+    >
+      XFunction
     </h1>
 
     <p
