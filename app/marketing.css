@@ -826,3 +826,133 @@
     transition: none;
   }
 }
+
+/* ============================================================
+   What's New (app/changelog/page.tsx) — vertical timeline
+   ============================================================ */
+.cl-hero {
+  padding: clamp(64px, 10vw, 120px) 0 clamp(40px, 6vw, 72px);
+}
+
+.cl-hero .mk-lead {
+  margin-top: 22px;
+}
+
+.cl-body {
+  padding: 0 0 clamp(72px, 10vw, 128px);
+}
+
+.cl-timeline {
+  --cl-date-w: 200px;
+  --cl-gap: 64px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* The vertical line, centred in the gap between the date and the text. */
+.cl-timeline::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 12px;
+  left: calc(var(--cl-date-w) + var(--cl-gap) / 2);
+  width: 1px;
+  background: var(--mk-line);
+}
+
+.cl-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--cl-date-w) minmax(0, 1fr);
+  column-gap: var(--cl-gap);
+  padding-bottom: clamp(44px, 6vw, 64px);
+}
+
+.cl-entry:last-child {
+  padding-bottom: 0;
+}
+
+/* The dot on the line; the newest entry's is filled blue. */
+.cl-entry::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: calc(var(--cl-date-w) + var(--cl-gap) / 2 - 6px);
+  width: 13px;
+  height: 13px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--mk-paper);
+  border: 2px solid var(--mk-accent);
+}
+
+.cl-entry:first-child::before {
+  background: var(--mk-blue);
+  border-color: var(--mk-blue);
+}
+
+.cl-date {
+  padding-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mk-accent);
+}
+
+.cl-content .mk-h3 {
+  margin: 0 0 16px;
+}
+
+.cl-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 64ch;
+}
+
+.cl-items li {
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 12px;
+  font-size: 16.5px;
+  line-height: 1.7;
+  color: var(--mk-ink-2);
+}
+
+.cl-items li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.78em;
+  width: 10px;
+  height: 1.5px;
+  background: var(--mk-accent);
+}
+
+.cl-items li:last-child {
+  margin-bottom: 0;
+}
+
+/* Phones: date sits above each entry; the line runs down the left edge. */
+@media (max-width: 760px) {
+  .cl-timeline {
+    --cl-dot-x: 6px;
+  }
+  .cl-timeline::before {
+    left: var(--cl-dot-x);
+  }
+  .cl-entry {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
+    padding-left: 34px;
+  }
+  .cl-entry::before {
+    left: 0;
+  }
+  .cl-date {
+    padding-top: 0;
+  }
+}

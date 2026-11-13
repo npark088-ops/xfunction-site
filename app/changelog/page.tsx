@@ -1,34 +1,6 @@
-"use client";
-
-import Link from "next/link";
-
-const bg = "var(--bg)";
-const card = "var(--card)";
-const border = "var(--border)";
-const blue = "var(--blue)";
-const text = "var(--text)";
-const textDim = "var(--text-dim)";
-
-const navLink = {
-  textDecoration: "none",
-  color: text,
-  fontSize: "15px",
-  fontWeight: 600,
-  cursor: "pointer",
-  paddingBottom: 4,
-  borderBottom: "2px solid transparent",
-  transition: "color var(--transition-fast), border-color var(--transition-fast)",
-};
-
-function navLinkHoverOn(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.color = blue;
-  e.currentTarget.style.borderBottomColor = blue;
-}
-
-function navLinkHoverOff(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.color = text;
-  e.currentTarget.style.borderBottomColor = "transparent";
-}
+import { MarketingNav } from "../../components/MarketingNav";
+import { MarketingFooter } from "../../components/MarketingFooter";
+import { Reveal } from "../../components/Reveal";
 
 interface ChangelogEntry {
   date: string;
@@ -39,6 +11,8 @@ interface ChangelogEntry {
 // A genuine, plain-language summary of what's actually shipped, newest
 // first — not raw commit messages. Dates are approximate groupings of
 // real work, not a promise that a feature landed on that exact minute.
+// (Entries are the page's original text, unchanged — only the layout is new;
+// styles: the "What's New" block in app/marketing.css.)
 const ENTRIES: ChangelogEntry[] = [
   {
     date: "August 6, 2026",
@@ -96,97 +70,43 @@ const ENTRIES: ChangelogEntry[] = [
 
 export default function ChangelogPage() {
   return (
-    <div
-      className="xf-page-enter"
-      style={{ fontFamily: "Inter, sans-serif", color: text, background: bg, minHeight: "100vh" }}
-    >
-      {/* NAVBAR */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "20px 40px",
-          background: bg,
-          borderBottom: `1px solid ${border}`,
-          color: text,
-          zIndex: 100,
-        }}
-      >
-        <Link href="/" style={{ color: blue, textDecoration: "none" }}>
-          <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
-        </Link>
+    <div className="mk-page">
+      <MarketingNav />
 
-        <div className="xf-public-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
-          <Link href="/" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            Home
-          </Link>
-          <Link href="/about" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            About
-          </Link>
-          <Link href="/pricing" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            Pricing
-          </Link>
-          <Link href="/help" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            Help
-          </Link>
-          <Link href="/changelog" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            What&apos;s New
-          </Link>
-          <Link href="/overview" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            App
-          </Link>
-        </div>
-      </div>
+      <main className="mk-main">
+        {/* HERO */}
+        <section className="cl-hero">
+          <div className="mk-container">
+            <h1 className="mk-h1">What&apos;s new</h1>
+            <p className="mk-lead">
+              A running list of what&apos;s shipped in XFunction, in plain language — newest first.
+            </p>
+          </div>
+        </section>
 
-      {/* HERO */}
-      <div
-        style={{
-          padding: "160px 20px 60px",
-          textAlign: "center",
-          background: `radial-gradient(circle at center, ${card}, transparent 70%)`,
-        }}
-      >
-        <h1 className="xf-marketing-heading" style={{ fontSize: "48px", fontWeight: 700, color: text, margin: 0 }}>What&apos;s new</h1>
-        <p style={{ marginTop: 16, fontSize: 18, color: textDim, maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
-          A running list of what&apos;s shipped in XFunction, in plain language — newest first.
-        </p>
-      </div>
+        {/* TIMELINE */}
+        <section className="cl-body">
+          <div className="mk-container">
+            <ol className="cl-timeline">
+              {ENTRIES.map((entry) => (
+                <Reveal as="li" className="cl-entry" key={entry.date}>
+                  <div className="cl-date">{entry.date}</div>
+                  <div className="cl-content">
+                    <h2 className="mk-h3">{entry.title}</h2>
+                    <ul className="cl-items">
+                      {entry.items.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
+              ))}
+            </ol>
+          </div>
+        </section>
+      </main>
 
-      {/* TIMELINE */}
-      <div style={{ padding: "20px 20px 120px", display: "flex", justifyContent: "center" }}>
-        <div style={{ maxWidth: 720, width: "100%" }}>
-          {ENTRIES.map((entry) => (
-            <div
-              key={entry.date}
-              className="xf-card"
-              style={{
-                background: card,
-                border: `1px solid ${border}`,
-                borderRadius: "var(--radius-lg)",
-                padding: "28px 32px",
-                marginBottom: 24,
-              }}
-            >
-              <div style={{ fontSize: 13, fontWeight: 700, color: blue, letterSpacing: 0.4, textTransform: "uppercase" }}>
-                {entry.date}
-              </div>
-              <h2 style={{ fontSize: 22, fontWeight: 700, color: text, margin: "6px 0 14px" }}>{entry.title}</h2>
-              <ul style={{ margin: 0, paddingLeft: 20, color: textDim, fontSize: 15, lineHeight: 1.7 }}>
-                {entry.items.map((item) => (
-                  <li key={item} style={{ marginBottom: 6 }}>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
+      <MarketingFooter />
     </div>
   );
 }
