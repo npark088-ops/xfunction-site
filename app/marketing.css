@@ -1,0 +1,551 @@
+/* ============================================================
+   XFunction marketing design system
+   One place for the look of the public pages (landing, About, Help,
+   What's New, Pricing), the XFunction wordmark, and the shared nav and
+   footer. Everything is prefixed `mk-` so it can't collide with the app's
+   own styles in globals.css, and it only reads its own `--mk-*` tokens.
+
+   Palette: built around the app's existing blue (#2563EB). Deep navy ink
+   for text, a warm off-white paper in light mode and a near-black navy in
+   dark mode, and ONE restrained accent — brass — used for hairlines,
+   labels and small details, never for big surfaces. Every text/background
+   pair below was checked against WCAG AA (most reach AAA).
+
+     LIGHT  paper #FAF8F4  surface #FFFFFF  surface-2 #F2EFE8
+            ink #111A2B (16.4:1)   ink-2 #4B5565 (7.1:1)   line #E4DFD4
+            blue #2563EB (button, 5.2:1 with white text)
+            blue-text #1D4ED8 (6.3:1)   accent #8A6420 (5.0:1)
+     DARK   paper #0A0F1C  surface #121A2C  surface-2 #182137
+            ink #F3EFE6 (16.7:1)   ink-2 #A9B3C7 (9.1:1)   line #242E45
+            blue #7CA6FF (button, 8.0:1 with dark text)
+            blue-text #8FB2FF (9.1:1)   accent #D9B76E (10.0:1)
+
+   Fonts (both self-hosted by next/font, see app/layout.tsx):
+     Display  Newsreader (serif) — large headings and the wordmark
+     Body     Inter — everything else
+   ============================================================ */
+
+:root {
+  --mk-paper: #FAF8F4;
+  --mk-surface: #FFFFFF;
+  --mk-surface-2: #F2EFE8;
+  --mk-ink: #111A2B;
+  --mk-ink-2: #4B5565;
+  --mk-line: #E4DFD4;
+  --mk-blue: #2563EB;
+  --mk-blue-text: #1D4ED8;
+  --mk-on-blue: #FFFFFF;
+  --mk-accent: #8A6420;
+  --mk-accent-soft: rgba(138, 100, 32, 0.1);
+
+  /* Thin borders + very soft shadows, one scale for every card. */
+  --mk-shadow: 0 1px 2px rgba(17, 26, 43, 0.04), 0 10px 28px rgba(17, 26, 43, 0.06);
+  --mk-shadow-lift: 0 2px 4px rgba(17, 26, 43, 0.05), 0 18px 40px rgba(17, 26, 43, 0.1);
+
+  --mk-width: 1100px;
+  --mk-gutter: 24px;
+  --mk-radius: 16px;
+  --mk-radius-sm: 10px;
+  --mk-nav-h: 68px;
+}
+
+:root[data-theme="dark"] {
+  --mk-paper: #0A0F1C;
+  --mk-surface: #121A2C;
+  --mk-surface-2: #182137;
+  --mk-ink: #F3EFE6;
+  --mk-ink-2: #A9B3C7;
+  --mk-line: #242E45;
+  --mk-blue: #7CA6FF;
+  --mk-blue-text: #8FB2FF;
+  --mk-on-blue: #0A0F1C;
+  --mk-accent: #D9B76E;
+  --mk-accent-soft: rgba(217, 183, 110, 0.12);
+
+  --mk-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
+  --mk-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.45), 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --mk-gutter: 20px;
+    --mk-nav-h: 60px;
+  }
+}
+
+/* ------------------------------------------------------------
+   Page shell + typography
+   ------------------------------------------------------------ */
+.mk-page {
+  background: var(--mk-paper);
+  color: var(--mk-ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.7;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+.mk-main {
+  padding-top: var(--mk-nav-h);
+}
+
+.mk-page h1,
+.mk-page h2,
+.mk-page h3 {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--mk-ink);
+  margin: 0;
+}
+
+.mk-h1 {
+  font-size: clamp(40px, 6.2vw, 68px);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+}
+
+.mk-h2 {
+  font-size: clamp(30px, 4.2vw, 44px);
+  line-height: 1.12;
+}
+
+.mk-h3 {
+  font-size: clamp(22px, 2.6vw, 28px);
+  line-height: 1.2;
+}
+
+.mk-lead {
+  font-size: clamp(18px, 2vw, 21px);
+  line-height: 1.65;
+  color: var(--mk-ink-2);
+  max-width: 640px;
+  margin: 0;
+}
+
+.mk-eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mk-accent);
+  margin: 0;
+}
+
+/* Italic serif for a single emphasised word in a headline. */
+.mk-em {
+  font-style: italic;
+  color: var(--mk-blue-text);
+}
+
+.mk-prose p {
+  margin: 0 0 18px;
+  max-width: 62ch;
+  color: var(--mk-ink-2);
+}
+
+.mk-prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------
+   Layout
+   ------------------------------------------------------------ */
+.mk-container {
+  width: 100%;
+  max-width: calc(var(--mk-width) + var(--mk-gutter) * 2);
+  margin: 0 auto;
+  padding-left: var(--mk-gutter);
+  padding-right: var(--mk-gutter);
+  box-sizing: border-box;
+}
+
+.mk-section {
+  padding: clamp(64px, 9vw, 112px) 0;
+}
+
+.mk-rule {
+  border: 0;
+  border-top: 1px solid var(--mk-line);
+  margin: 0;
+}
+
+/* ------------------------------------------------------------
+   Cards + buttons
+   ------------------------------------------------------------ */
+.mk-card {
+  background: var(--mk-surface);
+  border: 1px solid var(--mk-line);
+  border-radius: var(--mk-radius);
+  box-shadow: var(--mk-shadow);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.mk-card--hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mk-shadow-lift);
+}
+
+.mk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: var(--mk-radius-sm);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  transition: transform var(--transition-fast), background-color var(--transition-fast),
+    border-color var(--transition-fast), box-shadow var(--transition-fast), color var(--transition-fast);
+}
+
+.mk-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.mk-btn--primary {
+  background: var(--mk-blue);
+  color: var(--mk-on-blue);
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3), 0 8px 20px rgba(37, 99, 235, 0.18);
+}
+
+.mk-btn--primary:hover:not(:disabled) {
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.35), 0 12px 26px rgba(37, 99, 235, 0.24);
+}
+
+.mk-btn--ghost {
+  background: transparent;
+  color: var(--mk-ink);
+  border-color: var(--mk-line);
+}
+
+.mk-btn--ghost:hover:not(:disabled) {
+  border-color: var(--mk-blue);
+  color: var(--mk-blue-text);
+}
+
+.mk-btn--block {
+  display: flex;
+  width: 100%;
+}
+
+.mk-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* Visible keyboard focus everywhere on the marketing pages. */
+.mk-page a:focus-visible,
+.mk-page button:focus-visible,
+.mk-page summary:focus-visible,
+.mk-page input:focus-visible {
+  outline: 2px solid var(--mk-blue);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ------------------------------------------------------------
+   Wordmark — one component (components/Wordmark.tsx), used in the nav,
+   landing hero, footer, login, sidebar and parent header. Serif, with a
+   heavier blue "X" against a lighter, gently tracked "Function". At the
+   large sizes a short brass hairline sits underneath. Colours come from
+   the --mk tokens so it reads on both light and dark; tone="light" is for
+   sitting on top of photos/video.
+   ------------------------------------------------------------ */
+.mk-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  line-height: 1;
+  color: var(--mk-ink);
+  white-space: nowrap;
+  position: relative;
+}
+
+.mk-wordmark__x {
+  font-weight: 700;
+  font-size: 1.1em;
+  color: var(--mk-blue);
+  margin-right: 0.015em;
+  letter-spacing: -0.01em;
+}
+
+.mk-wordmark__rest {
+  font-weight: 500;
+  letter-spacing: 0.012em;
+}
+
+.mk-wordmark--sm { font-size: 20px; }
+.mk-wordmark--md { font-size: 25px; }
+.mk-wordmark--lg { font-size: 34px; }
+.mk-wordmark--xl { font-size: clamp(54px, 10vw, 104px); }
+
+.mk-wordmark--lg::after,
+.mk-wordmark--xl::after {
+  content: "";
+  position: absolute;
+  left: 0.06em;
+  bottom: -0.2em;
+  width: 2.1em;
+  height: 2px;
+  background: var(--mk-accent);
+  opacity: 0.85;
+}
+
+.mk-wordmark--light {
+  color: #FFFFFF;
+}
+
+.mk-wordmark--light .mk-wordmark__x {
+  color: #B9CFFF;
+}
+
+.mk-wordmark--light::after {
+  background: #E4C88C;
+}
+
+/* The logo entrance animation (components/LogoIntro.tsx) scales this
+   wrapper, so it must be a box. */
+.xf-logo-intro {
+  display: inline-block;
+}
+
+/* ------------------------------------------------------------
+   Nav + footer (components/MarketingNav.tsx, MarketingFooter.tsx)
+   ------------------------------------------------------------ */
+.mk-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: var(--mk-nav-h);
+  background: var(--mk-paper);
+  background: color-mix(in srgb, var(--mk-paper) 88%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid var(--mk-line);
+}
+
+.mk-nav__inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.mk-nav__brand {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mk-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.mk-nav__link {
+  position: relative;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--mk-ink-2);
+  text-decoration: none;
+  padding: 6px 0;
+  transition: color var(--transition-fast);
+}
+
+.mk-nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--mk-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition);
+}
+
+.mk-nav__link:hover {
+  color: var(--mk-ink);
+}
+
+.mk-nav__link:hover::after,
+.mk-nav__link[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+.mk-nav__link[aria-current="page"] {
+  color: var(--mk-ink);
+}
+
+.mk-nav__link--app {
+  color: var(--mk-blue-text);
+  font-weight: 600;
+  border: 1px solid var(--mk-line);
+  border-radius: 999px;
+  padding: 7px 18px;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.mk-nav__link--app::after {
+  display: none;
+}
+
+.mk-nav__link--app:hover {
+  border-color: var(--mk-blue);
+  color: var(--mk-blue-text);
+  background: var(--mk-accent-soft);
+}
+
+.mk-nav__menu-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--mk-line);
+  border-radius: var(--mk-radius-sm);
+  color: var(--mk-ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.mk-nav__panel {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .mk-nav__links {
+    display: none;
+  }
+  .mk-nav__menu-btn {
+    display: inline-flex;
+  }
+  .mk-nav__panel {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--mk-paper);
+    border-bottom: 1px solid var(--mk-line);
+    box-shadow: var(--mk-shadow-lift);
+    padding: 8px var(--mk-gutter) 20px;
+    animation: mk-panel-in 0.22s var(--ease) both;
+  }
+  .mk-nav__panel a {
+    display: block;
+    padding: 14px 2px;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--mk-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--mk-line);
+  }
+  .mk-nav__panel a[aria-current="page"] {
+    color: var(--mk-blue-text);
+  }
+  .mk-nav__panel a:last-child {
+    border-bottom: 0;
+  }
+}
+
+@keyframes mk-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mk-footer {
+  background: var(--mk-paper);
+  border-top: 1px solid var(--mk-line);
+  padding: 56px 0 44px;
+}
+
+.mk-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px 64px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.mk-footer__tagline {
+  margin: 14px 0 0;
+  max-width: 320px;
+  font-size: 15px;
+  color: var(--mk-ink-2);
+}
+
+.mk-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+}
+
+.mk-footer__links a {
+  font-size: 15px;
+  color: var(--mk-ink-2);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.mk-footer__links a:hover {
+  color: var(--mk-blue-text);
+}
+
+/* ------------------------------------------------------------
+   Scroll reveal (components/Reveal.tsx): gentle fade + slide-up.
+   Content is visible by default; the component only hides an element
+   that starts BELOW the fold, then lets it in as it scrolls into view —
+   so no-JS and reduced-motion visitors never see hidden content.
+   ------------------------------------------------------------ */
+.mk-reveal {
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+
+.mk-reveal-pending {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-reveal,
+  .mk-card,
+  .mk-btn,
+  .mk-nav__link,
+  .mk-nav__link::after {
+    transition: none;
+  }
+  .mk-reveal-pending {
+    opacity: 1;
+    transform: none;
+  }
+  .mk-nav__panel {
+    animation: none;
+  }
+  .mk-card--hover:hover,
+  .mk-btn:hover:not(:disabled) {
+    transform: none;
+  }
+}

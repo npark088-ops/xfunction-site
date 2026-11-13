@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Inter, Sora } from "next/font/google";
+import { Inter, Newsreader, Sora } from "next/font/google";
 import { PostHogAppProvider } from "../components/PostHogProvider";
 import "./globals.css";
+import "./marketing.css";
 
 export const metadata: Metadata = {
   title: "XFunction",
@@ -26,6 +27,21 @@ const sora = Sora({
   display: "swap",
 });
 
+// Display serif for large marketing headings and the XFunction wordmark
+// (see app/marketing.css). Self-hosted by next/font like the two above —
+// no external requests at runtime. preload is off on purpose: the app
+// pages never use it, so they shouldn't pay to preload it; it's fetched
+// only when a page actually renders text in this family. next/font also
+// generates a size-adjusted fallback so the swap doesn't shift layout.
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  variable: "--font-display",
+  display: "swap",
+  preload: false,
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -38,7 +54,7 @@ export default function RootLayout({
     // server- and client-rendered HTML. That's expected here, not a
     // real bug, so React shouldn't warn about (or try to "fix") it —
     // same recommended pattern as Next.js's own dark-mode docs.
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sora.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sora.variable} ${newsreader.variable}`}>
       <head>
         {/* Sets data-theme before first paint so returning dark-mode
             users don't see a flash of the light theme. A plain <script>
