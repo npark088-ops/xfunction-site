@@ -1,0 +1,136 @@
+/* Dev-only styles for /hero-preview (hx- prefix). The hero is always dark
+   (#05070D) whatever the site theme; the nav and footer keep following it. */
+
+.hx-hero {
+  position: relative;
+  min-height: calc(100vh - var(--mk-nav-h));
+  padding: 24px 20px 112px;
+  background: #05070d;
+  color: #e8edf8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* the soft blue radial glow */
+.hx-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(58% 52% at 50% 38%, rgba(37, 99, 235, 0.3), rgba(37, 99, 235, 0.1) 46%, transparent 74%),
+    radial-gradient(40% 30% at 50% 100%, rgba(37, 99, 235, 0.08), transparent 70%);
+  pointer-events: none;
+}
+
+.hx-title {
+  position: relative;
+  margin: 8px 0 0;
+  line-height: 1;
+}
+
+.hx-sub {
+  position: relative;
+  margin: 18px auto 0;
+  max-width: 700px;
+  font-size: 24px;
+  line-height: 1.5;
+  color: #c3cce0;
+}
+
+@media (max-width: 700px) {
+  .hx-sub {
+    font-size: 18px;
+  }
+}
+
+/* ---- the X: a real button ---- */
+.hx-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(560px, 88vw, 62vh);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 28px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* stronger than ".mk-page button:focus-visible" so the ring is bright on the dark hero */
+.mk-page .hx-btn:focus-visible {
+  outline: 3px solid #8fb2ff;
+  outline-offset: 8px;
+}
+
+.hx-stage {
+  display: block;
+  will-change: transform;
+}
+
+.hx-canvas {
+  display: block;
+  /* the glow around the characters */
+  filter: drop-shadow(0 0 9px rgba(70, 120, 255, 0.42)) drop-shadow(0 0 34px rgba(37, 99, 235, 0.3));
+}
+
+/* ---- click transition: the three fixed boot lines ---- */
+.hx-boot {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  min-width: 24ch;
+  text-align: left;
+  font: 500 15px/1.7 ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  color: #9fc0ff;
+  pointer-events: none;
+}
+
+.hx-line {
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: hx-type 260ms steps(var(--n, 20)) forwards;
+}
+
+.hx-line:last-child {
+  color: #e8edf8;
+}
+
+@keyframes hx-type {
+  to {
+    width: calc(var(--n, 20) * 1ch);
+  }
+}
+
+/* fade to the hero colour just before navigating */
+.hx-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: #05070d;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+
+.hx-veil[data-on="true"] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-veil {
+    transition: none;
+  }
+  .hx-line {
+    animation: none;
+    width: auto;
+  }
+}
