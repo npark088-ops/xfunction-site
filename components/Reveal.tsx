@@ -58,7 +58,12 @@ export function Reveal({
     };
   }, []);
 
-  const Comp = as as React.ElementType;
+  // Type-only: with @react-three/fiber installed, React.ElementType grows a
+  // huge union of 3D element names that JSX can't resolve, so say plainly
+  // what this is — an ordinary HTML element tag taking a ref and a class.
+  const Comp = as as unknown as React.ComponentType<
+    React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> }
+  >;
   return (
     <Comp
       ref={ref}
