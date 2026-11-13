@@ -641,3 +641,188 @@
   height: 2px;
   background: var(--mk-accent);
 }
+
+/* ============================================================
+   Help page (app/help/page.tsx, components/FaqList.tsx)
+   ============================================================ */
+.help-hero {
+  padding: clamp(64px, 10vw, 120px) 0 clamp(36px, 5vw, 56px);
+}
+
+.help-hero .mk-lead {
+  margin-top: 22px;
+}
+
+.help-body {
+  padding: 0 0 clamp(72px, 10vw, 128px);
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 48px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .help-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+}
+
+/* Search */
+.help-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.help-search svg {
+  position: absolute;
+  left: 16px;
+  color: var(--mk-ink-2);
+  pointer-events: none;
+}
+
+.help-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px 14px 46px;
+  background: var(--mk-surface);
+  color: var(--mk-ink);
+  border: 1px solid var(--mk-line);
+  border-radius: var(--mk-radius-sm);
+  font-family: inherit;
+  font-size: 16px;
+  box-shadow: var(--mk-shadow);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.help-search input::placeholder {
+  color: var(--mk-ink-2);
+  opacity: 0.85;
+}
+
+.help-search input:focus-visible {
+  border-color: var(--mk-blue);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--mk-accent-soft), var(--mk-shadow);
+}
+
+.help-count {
+  margin: 12px 2px 20px;
+  font-size: 13px;
+  color: var(--mk-ink-2);
+}
+
+/* Accordion */
+.help-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.help-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 26px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.help-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.mk-page .help-q {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(19px, 2.2vw, 23px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.help-chevron {
+  flex-shrink: 0;
+  color: var(--mk-accent);
+  transition: transform var(--transition);
+}
+
+.help-item[open] .help-chevron {
+  transform: rotate(180deg);
+}
+
+.help-item[open] {
+  border-color: var(--mk-blue);
+}
+
+.help-a {
+  margin: 0;
+  padding: 0 26px 26px;
+  font-size: 16.5px;
+  line-height: 1.75;
+  color: var(--mk-ink-2);
+  max-width: 68ch;
+  animation: help-open 0.3s var(--ease) both;
+}
+
+@keyframes help-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.help-empty {
+  padding: 28px;
+  color: var(--mk-ink-2);
+}
+
+/* Contact card */
+.help-contact {
+  padding: 30px 28px 28px;
+  position: sticky;
+  top: calc(var(--mk-nav-h) + 24px);
+}
+
+@media (max-width: 900px) {
+  .help-contact {
+    position: static;
+  }
+}
+
+.help-contact p {
+  margin: 14px 0 0;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--mk-ink-2);
+}
+
+.help-contact .mk-btn {
+  margin-top: 24px;
+}
+
+.help-contact__mail {
+  color: var(--mk-blue-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-a {
+    animation: none;
+  }
+  .help-chevron {
+    transition: none;
+  }
+}
