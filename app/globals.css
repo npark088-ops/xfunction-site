@@ -478,3 +478,114 @@ button:disabled {
     transition: none;
   }
 }
+
+/* ============================================================
+   Landing page visuals: logo entrance + "drone view" background
+   (components/LogoIntro.tsx, components/DroneBackground.tsx)
+   ============================================================ */
+
+/* Logo entrance — fade + slight scale-up. On by default so a first
+   visit animates from the first paint; LogoIntro adds --skip when this
+   browser session has already seen it. */
+@keyframes xf-logo-in {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.xf-logo-intro {
+  transform-origin: left center;
+  animation: xf-logo-in 0.9s var(--ease) 0.1s both;
+}
+
+.xf-logo-intro--skip {
+  animation: none;
+}
+
+/* Background container — fills its positioned parent, sits behind the
+   page content, takes no clicks, and is absolutely positioned so it can
+   never shift layout. The dark base colour shows while the image loads. */
+.xf-drone-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #0b1220;
+}
+
+/* Still image (also the fallback when there's no video). The slow
+   pan/zoom is transform-only, so it stays on the compositor. */
+@keyframes xf-drone-pan {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(-2.5%, -1.5%, 0);
+  }
+}
+
+.xf-drone-bg__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: 60% 50%;
+  animation: xf-drone-pan 32s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Video stays invisible until it reports `playing`, then fades in over
+   the still image. */
+.xf-drone-bg__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.xf-drone-bg--playing .xf-drone-bg__video {
+  opacity: 1;
+}
+
+/* No point animating the image while the video covers it. */
+.xf-drone-bg--playing .xf-drone-bg__img {
+  animation-play-state: paused;
+}
+
+/* Dark gradient so white text stays readable over any frame. */
+.xf-drone-bg__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.5) 30%,
+    rgba(0, 0, 0, 0.5) 60%,
+    rgba(0, 0, 0, 0.78) 100%
+  );
+}
+
+/* Reduced motion: logo just appears, the image holds still, and the
+   video is hidden (DroneBackground also doesn't mount it). */
+@media (prefers-reduced-motion: reduce) {
+  .xf-logo-intro {
+    animation: none;
+  }
+  .xf-drone-bg__img {
+    animation: none;
+    transform: none;
+  }
+  .xf-drone-bg__video {
+    display: none;
+  }
+}

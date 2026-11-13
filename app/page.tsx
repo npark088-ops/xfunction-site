@@ -2,6 +2,14 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { LogoIntro } from "../components/LogoIntro";
+import { DroneBackground } from "../components/DroneBackground";
+
+// Hero still image — also the poster/fallback for the optional drone
+// video (see components/DroneBackground.tsx; video files go in
+// public/videos/city-drone.mp4 / .webm).
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -55,9 +63,7 @@ export default function Home() {
   color: text,
   zIndex: 100
 }}>
-  <Link href="/" style={{ textDecoration: "none" }}>
-    <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
-  </Link>
+  <LogoIntro />
 
 <div className="xf-public-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
 
@@ -140,43 +146,15 @@ export default function Home() {
       {page === "home" && (
         <div>
 
-          {/* HERO (VIDEO + IMAGE FALLBACK) */}
+          {/* HERO (DRONE VIDEO + STILL IMAGE FALLBACK + DARK GRADIENT —
+              all inside DroneBackground, which fills this container) */}
           <div style={{
             position: "relative",
             height: "100vh",
-            overflow: "hidden",
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600')",
-            backgroundSize: "cover",
-            backgroundPosition: "center"
+            overflow: "hidden"
           }}>
 
-            {/* VIDEO */}
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              style={{
-                position: "absolute",
-                width: "100%",
-                height: "100%",
-                objectFit: "cover"
-              }}
-            >
-              <source
-                src="https://cdn.coverr.co/videos/coverr-night-drive-through-city-traffic-1605/1080p.mp4"
-                type="video/mp4"
-              />
-            </video>
-
-            {/* OVERLAY */}
-            <div style={{
-              position: "absolute",
-              width: "100%",
-              height: "100%",
-              background: "rgba(0,0,0,0.5)"
-            }} />
+            <DroneBackground imageSrc={HERO_IMAGE} />
 
             {/* HERO TEXT — kept white: this sits on a dark video/photo
                 overlay, not the page background, so light text is what
@@ -184,6 +162,7 @@ export default function Home() {
 <div
   style={{
     position: "relative",
+    zIndex: 1,
     height: "100%",
     display: "flex",
     justifyContent: "center",
