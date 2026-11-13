@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import posthog from "posthog-js";
 import { createClient } from "../../lib/supabase/client";
 import { safeNextPath } from "../../lib/safe-redirect";
+import { Wordmark } from "../../components/Wordmark";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -171,6 +172,11 @@ function LoginForm() {
       }}
     >
       <div style={{ width: "100%", maxWidth: 380 }}>
+        <div style={{ marginBottom: 28 }}>
+          <Link href="/" aria-label="XFunction home" style={{ textDecoration: "none", display: "inline-flex" }}>
+            <Wordmark size="lg" />
+          </Link>
+        </div>
         <Link
           href="/"
           style={{

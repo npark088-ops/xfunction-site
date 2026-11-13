@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { getCachedUser } from "../../lib/supabase/server";
+import { Wordmark } from "../../components/Wordmark";
 
 const bg = "var(--bg)";
 const border = "var(--border)";
-const blue = "var(--blue)";
 const text = "var(--text)";
 const textDim = "var(--text-dim)";
 
@@ -24,8 +24,9 @@ export default async function ParentLayout({ children }: { children: React.React
           borderBottom: `1px solid ${border}`,
         }}
       >
-        <Link href="/parent" style={{ color: blue, fontSize: 18, fontWeight: 700, textDecoration: "none" }}>
-          XFunction <span style={{ color: textDim, fontWeight: 500, fontSize: 13 }}>· Parent view</span>
+        <Link href="/parent" aria-label="XFunction parent view" style={{ textDecoration: "none", display: "inline-flex", alignItems: "baseline", gap: 10 }}>
+          <Wordmark size="sm" />
+          <span style={{ color: textDim, fontWeight: 500, fontSize: 13 }}>· Parent view</span>
         </Link>
         {user?.email && (
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>

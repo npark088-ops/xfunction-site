@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { LogoIntro } from "../components/LogoIntro";
+import { MarketingNav } from "../components/MarketingNav";
+import { MarketingFooter } from "../components/MarketingFooter";
+import { Wordmark } from "../components/Wordmark";
 import { DroneBackground } from "../components/DroneBackground";
 
 // Hero still image — also the poster/fallback for the optional drone
@@ -49,102 +51,9 @@ export default function Home() {
   return (
     <div className="xf-page-enter" style={{ margin: 0, fontFamily: "Inter, sans-serif", background: bg }}>
 
-      {/* NAVBAR — solid background (not transparent) so it stays
-          readable over both the dark hero video and the light sections
-          below it while scrolling. */}
-      <div style={{
-  position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100%",
-  boxSizing: "border-box",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "20px 40px",
-  background: bg,
-  borderBottom: `1px solid ${border}`,
-  color: text,
-  zIndex: 100
-}}>
-  <LogoIntro />
-
-<div className="xf-public-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_home");
-      }
-    }}
-  >
-    <Link href="/" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      Home
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_about");
-      }
-    }}
-  >
-    <Link href="/about" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      About
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_pricing");
-      }
-    }}
-  >
-    <Link href="/pricing" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      Pricing
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_help");
-      }
-    }}
-  >
-    <Link href="/help" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      Help
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_changelog");
-      }
-    }}
-  >
-    <Link href="/changelog" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      What&apos;s New
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_app");
-      }
-    }}
-  >
-    <Link href="/today" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      App
-    </Link>
-  </span>
-
-</div>
-</div>
+      {/* NAVBAR — shared with the other public pages. The landing page keeps
+          its own App link (/today) and its per-click analytics events. */}
+      <MarketingNav appHref="/today" trackClicks />
 
       {/* ================= HOME ================= */}
       {page === "home" && (
@@ -183,16 +92,8 @@ export default function Home() {
       transition: "all 1s ease"
     }}
   >
-    <h1
-      className="xf-marketing-heading"
-      style={{
-        fontSize: "64px",
-        fontWeight: "600",
-        lineHeight: "1.1",
-        textShadow: HERO_TEXT_SHADOW
-      }}
-    >
-      XFunction
+    <h1 style={{ margin: 0, lineHeight: 1, textShadow: HERO_TEXT_SHADOW }}>
+      <Wordmark size="xl" tone="light" />
     </h1>
 
     <p
@@ -356,6 +257,7 @@ export default function Home() {
 
       {page === "about" && <div style={{ padding: "100px" }}>About Page</div>}
       {page === "app" && <div style={{ padding: "100px" }}>App Page</div>}
+<MarketingFooter appHref="/today" />
 {!acceptedCookies && (
   <div style={{
     position: "fixed",
@@ -440,27 +342,4 @@ export default function Home() {
 )}
     </div>
   );
-}
-
-const navBtn = {
-  background: "none",
-  border: "none",
-  textDecoration: "none",
-  color: text,
-  fontSize: "15px",
-  fontWeight: 600,
-  cursor: "pointer",
-  paddingBottom: 4,
-  borderBottom: "2px solid transparent",
-  transition: "color var(--transition-fast), border-color var(--transition-fast)",
-};
-
-function navLinkHoverOn(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.color = blue;
-  e.currentTarget.style.borderBottomColor = blue;
-}
-
-function navLinkHoverOff(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.color = text;
-  e.currentTarget.style.borderBottomColor = "transparent";
 }
