@@ -541,8 +541,11 @@ button:disabled {
   will-change: transform;
 }
 
-/* Video stays invisible until it reports `playing`, then fades in over
-   the still image. */
+/* Album video slots. Each <video> starts invisible. The slot on screen has
+   .is-active (opacity 1); the incoming clip also gets .is-top so it fades in
+   ABOVE the outgoing one, which stays fully visible underneath until the
+   fade finishes — so the picture never dips to the still image between
+   clips. Which slot is which is managed in components/DroneBackground.tsx. */
 .xf-drone-bg__video {
   position: absolute;
   inset: 0;
@@ -550,28 +553,35 @@ button:disabled {
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 1.2s ease;
+  transition: opacity 1.4s ease;
 }
 
-.xf-drone-bg--playing .xf-drone-bg__video {
+.xf-drone-bg__video.is-active {
   opacity: 1;
 }
 
-/* No point animating the image while the video covers it. */
+.xf-drone-bg__video.is-top {
+  z-index: 1;
+}
+
+/* No point animating the image while video covers it. */
 .xf-drone-bg--playing .xf-drone-bg__img {
   animation-play-state: paused;
 }
 
-/* Dark gradient so white text stays readable over any frame. */
+/* Light gradient — just enough darkening at the top (under the nav) and
+   the bottom edge to ground the section, with a soft text shadow on the
+   hero copy (see app/page.tsx) doing most of the readability work. */
 .xf-drone-bg__overlay {
   position: absolute;
   inset: 0;
+  z-index: 2;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.6) 0%,
-    rgba(0, 0, 0, 0.5) 30%,
-    rgba(0, 0, 0, 0.5) 60%,
-    rgba(0, 0, 0, 0.78) 100%
+    rgba(0, 0, 0, 0.36) 0%,
+    rgba(0, 0, 0, 0.25) 30%,
+    rgba(0, 0, 0, 0.25) 60%,
+    rgba(0, 0, 0, 0.44) 100%
   );
 }
 

@@ -11,6 +11,10 @@ import { DroneBackground } from "../components/DroneBackground";
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600";
 
+// The background is lighter now, so the white hero copy gets a soft shadow
+// to stay readable over bright sky and glass.
+const HERO_TEXT_SHADOW = "0 1px 3px rgba(0,0,0,0.6), 0 2px 28px rgba(0,0,0,0.65)";
+
 const bg = "var(--bg)";
 const card = "var(--card)";
 const border = "var(--border)";
@@ -184,7 +188,8 @@ export default function Home() {
       style={{
         fontSize: "64px",
         fontWeight: "600",
-        lineHeight: "1.1"
+        lineHeight: "1.1",
+        textShadow: HERO_TEXT_SHADOW
       }}
     >
       XFunction
@@ -196,7 +201,8 @@ export default function Home() {
         fontSize: "24px",
         maxWidth: "700px",
         marginLeft: "auto",
-        marginRight: "auto"
+        marginRight: "auto",
+        textShadow: HERO_TEXT_SHADOW
       }}
     >
       A system designed to transform complexity into clarity,

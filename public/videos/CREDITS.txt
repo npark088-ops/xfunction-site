@@ -1,16 +1,12 @@
-Hero background video — credits and license
-============================================
+Hero background video album — credits and license
+==================================================
 
-Title:            Twilight Aerial View of New York City Skyline
-Creator:          Yura Forrat (Pexels profile: https://www.pexels.com/@yuraforrat/)
-Source page:      https://www.pexels.com/video/twilight-aerial-view-of-new-york-city-skyline-36244245/
-Published:        Feb 20, 2026 (as shown on the Pexels page)
-File downloaded:  https://videos.pexels.com/video-files/36244245/15370519_2560_1440_30fps.mp4
-                  (2560x1440, 30 fps, 8.5 s; the page lists the original as 3840x2160)
-Downloaded on:    2026-11-12
+Four short clips rotate behind the landing page hero (city-1 ... city-4).
+All four are from Pexels, downloaded on 2026-11-12, and all are used under
+the Pexels License.
 
-License:          Pexels License
-License page:     https://www.pexels.com/license/
+License:        Pexels License
+License page:   https://www.pexels.com/license/
 
 Per that page: all photos and videos on Pexels can be downloaded and used for
 free; attribution is not required (credit is appreciated, hence this file);
@@ -19,12 +15,41 @@ selling them on other stock platforms, implying endorsement by people or
 brands shown, and using them as part of a trademark or business name.
 Terms checked on 2026-11-12.
 
-Modifications made for this site (city-drone.mp4 / city-drone.webm):
-  - scaled from 2560x1440 to 1920x1080
-  - the 8.5 s clip is played twice with a 1 s crossfade between passes, and
-    the end is crossfaded into the start so the file loops without a jump
-    (final length about 14.9 s)
-  - audio removed (the source has none)
-  - encoded to H.264 (mp4) and VP9 (webm) with ffmpeg 9.0.2
+--------------------------------------------------------------------------
+city-1   "Dazzling Aerial View of Manhattan Skyline"
+  Creator:   Joseph Eulo (https://www.pexels.com/@josepheulo/)
+  Page:      https://www.pexels.com/video/dazzling-aerial-view-of-manhattan-skyline-37493550/
+  Published: May 8, 2026
+  File:      https://videos.pexels.com/video-files/37493550/15883977_2560_1440_30fps.mp4
+  Used:      seconds 2-11 of the 1:04 source
 
-The original download is NOT stored in this repository.
+city-2   "Aerial View of Brooklyn Bridge and Manhattan Skyline"
+  Creator:   Joseph Eulo (https://www.pexels.com/@josepheulo/)
+  Page:      https://www.pexels.com/video/aerial-view-of-brooklyn-bridge-and-manhattan-skyline-37493547/
+  Published: May 8, 2026
+  File:      https://videos.pexels.com/video-files/37493547/15884005_2560_1440_30fps.mp4
+  Used:      seconds 11-20 of the 1:13 source
+
+city-3   "Aerial View of Manhattan Skyline"
+  Creator:   Joseph Eulo (https://www.pexels.com/@josepheulo/)
+  Page:      https://www.pexels.com/video/aerial-view-of-manhattan-skyline-37493546/
+  Published: May 8, 2026
+  File:      https://videos.pexels.com/video-files/37493546/15883971_2560_1440_30fps.mp4
+  Used:      seconds 14-23 of the 0:38 source
+
+city-4   "Twilight Aerial View of New York City Skyline"
+  Creator:   Yura Forrat (https://www.pexels.com/@yuraforrat/)
+  Page:      https://www.pexels.com/video/twilight-aerial-view-of-new-york-city-skyline-36244245/
+  Published: Feb 20, 2026
+  File:      https://videos.pexels.com/video-files/36244245/15370519_2560_1440_30fps.mp4
+  Used:      the whole 8.5 s clip
+
+--------------------------------------------------------------------------
+Modifications made for this site (cityN.mp4 / cityN.webm):
+  - each clip is a short segment of its source (see "Used" above)
+  - scaled from 2560x1440 to 1920x1080, 30 fps
+  - audio removed (the sources have none)
+  - encoded to H.264 (mp4) and VP9 (webm) with ffmpeg 9.0.2
+  - the site rotates the clips with a crossfade (components/DroneBackground.tsx)
+
+The original downloads are NOT stored in this repository.
