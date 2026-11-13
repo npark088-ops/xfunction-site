@@ -549,3 +549,95 @@
     transform: none;
   }
 }
+
+/* ============================================================
+   About page (app/about/page.tsx)
+   ============================================================ */
+.about-hero {
+  padding: clamp(72px, 12vw, 148px) 0 clamp(56px, 8vw, 96px);
+}
+
+.about-hero .mk-lead {
+  margin-top: 28px;
+}
+
+/* The 01 / 02 / 03 numerals come from a CSS counter, so they are
+   decoration only and add no text to the page. */
+.about-rows {
+  counter-reset: about;
+}
+
+.about-row {
+  border-top: 1px solid var(--mk-line);
+  padding: clamp(56px, 8vw, 96px) 0;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 32px 72px;
+  align-items: start;
+}
+
+.about-row__title::before {
+  counter-increment: about;
+  content: counter(about, decimal-leading-zero);
+  display: block;
+  margin-bottom: 14px;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--mk-accent);
+}
+
+.about-grid .mk-prose p {
+  font-size: 19px;
+  line-height: 1.75;
+}
+
+@media (max-width: 860px) {
+  .about-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
+.about-mission {
+  background: var(--mk-surface-2);
+  border-top: 1px solid var(--mk-line);
+  padding: clamp(72px, 11vw, 136px) 0;
+}
+
+.about-mission__label {
+  font-family: var(--font-body), system-ui, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+  color: var(--mk-accent) !important;
+  margin: 0 0 28px !important;
+}
+
+.about-mission__quote {
+  position: relative;
+  margin: 0;
+  padding-top: 28px;
+  max-width: 880px;
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(28px, 4.4vw, 52px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--mk-ink);
+}
+
+.about-mission__quote::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 2px;
+  background: var(--mk-accent);
+}
