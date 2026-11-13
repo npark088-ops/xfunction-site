@@ -14,9 +14,9 @@
 --   - mark_onboarding_email_sent -> writes rows for any user id
 -- The first four are now service_role ONLY (called from the Stripe
 -- webhook and onboarding routes via the server-only admin client).
--- delete_own_account and accept_parent_invite stay available to signed-in
--- users but not anonymous callers. peek_parent_invite is intentionally
--- NOT changed here.
+-- delete_own_account, accept_parent_invite and peek_parent_invite stay
+-- available to signed-in users but not anonymous callers (the only
+-- caller of the last two is /parent/join, which is behind login).
 --
 -- This file is for a database where 0003/0008/0012/0017 were ALREADY run
 -- with their old grants. Each statement is wrapped so a function that
@@ -54,6 +54,11 @@ begin
   if to_regprocedure('public.accept_parent_invite(text)') is not null then
     revoke all on function public.accept_parent_invite(text) from public, anon;
     grant execute on function public.accept_parent_invite(text) to authenticated;
+  end if;
+
+  if to_regprocedure('public.peek_parent_invite(text)') is not null then
+    revoke all on function public.peek_parent_invite(text) from public, anon;
+    grant execute on function public.peek_parent_invite(text) to authenticated;
   end if;
 end
 $$;

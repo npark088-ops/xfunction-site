@@ -105,4 +105,10 @@ begin
 end;
 $$;
 
+-- Signed-in users only. The only caller is /parent/join, which proxy.ts
+-- already puts behind login, so no anonymous caller ever needs this — and
+-- left open it lets anyone with the public anon key look up a student's
+-- email by guessing invite codes. Postgres grants EXECUTE to PUBLIC by
+-- default (and Supabase also grants anon), so those are revoked explicitly.
+revoke all on function peek_parent_invite(text) from public, anon;
 grant execute on function peek_parent_invite(text) to authenticated;

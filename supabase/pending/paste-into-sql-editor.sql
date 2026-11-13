@@ -5,9 +5,11 @@
 -- delete_own_account / accept_parent_invite revokes (from 0024) -> the
 -- final handle_new_user() that saves signup fields (from 0023).
 --
--- NOT changed here, on purpose: peek_parent_invite (still anon-callable);
--- set_pro_on_checkout / set_pro_on_cancellation (already locked down in
--- your database — verified with the anon key: 401 permission denied).
+-- NOT changed here, on purpose: set_pro_on_checkout /
+-- set_pro_on_cancellation (already locked down in your database —
+-- verified with the anon key: 401 permission denied).
+-- peek_parent_invite IS locked down here (signed-in users only): its only
+-- caller, /parent/join, is behind login.
 --
 -- You can delete this file after running it; the real migrations live in
 -- supabase/migrations/.
@@ -132,10 +134,12 @@ create index if not exists study_sessions_user_occurred_idx
 
 
 -- ============================================================
--- PART 3 — signed-in users only for these two functions
+-- PART 3 — signed-in users only for these three functions
 -- (Postgres grants EXECUTE to PUBLIC by default, so anon could call them.)
--- Re-run safe: revoke/grant are idempotent. Both functions exist in your
--- database (verified), so these will not error.
+-- Re-run safe: revoke/grant are idempotent. delete_own_account and
+-- accept_parent_invite are verified to exist in your database;
+-- peek_parent_invite is created by the same migration (0012) as
+-- accept_parent_invite, so it exists too.
 -- ============================================================
 
 revoke all on function delete_own_account() from public, anon;
@@ -143,6 +147,9 @@ grant execute on function delete_own_account() to authenticated;
 
 revoke all on function accept_parent_invite(text) from public, anon;
 grant execute on function accept_parent_invite(text) to authenticated;
+
+revoke all on function peek_parent_invite(text) from public, anon;
+grant execute on function peek_parent_invite(text) to authenticated;
 
 
 -- ============================================================
