@@ -5,10 +5,38 @@ import { PostHogAppProvider } from "../components/PostHogProvider";
 import "./globals.css";
 import "./marketing.css";
 
+const SITE_DESCRIPTION =
+  "Turn your Canvas grades into a clear plan — track courses, get AI-powered study help, and stay ahead of deadlines.";
+
+// Share cards: the 1200x630 image comes from app/opengraph-image.png and
+// app/twitter-image.png (Next's file convention adds the og:image /
+// twitter:image tags, with the alt text from the matching .alt.txt files).
+// The favicon and app icons come from app/favicon.ico, app/icon.png and
+// app/apple-icon.png the same way.
+// Absolute base for the share-card image URLs. Set NEXT_PUBLIC_SITE_URL (a
+// public address, not a secret) to override; on Vercel it falls back to the
+// production domain Vercel provides, and locally to localhost.
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "XFunction",
-  description:
-    "Turn your Canvas grades into a clear plan — track courses, get AI-powered study help, and stay ahead of deadlines.",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: "XFunction",
+    description: SITE_DESCRIPTION,
+    siteName: "XFunction",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "XFunction",
+    description: SITE_DESCRIPTION,
+  },
 };
 
 // Body copy uses Inter (already referenced everywhere as the fallback
