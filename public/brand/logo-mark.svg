@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="12 15 170 128" role="img" aria-label="XFunction mark">
+  <title>XFunction mark</title>
+  <defs>
+    <linearGradient id="xf-a" gradientUnits="userSpaceOnUse" x1="40" y1="40" x2="95" y2="72">
+      <stop offset="0" stop-color="#057DEF"/><stop offset="0.5" stop-color="#0056C6"/><stop offset="1" stop-color="#00318E"/>
+    </linearGradient>
+    <linearGradient id="xf-b" gradientUnits="userSpaceOnUse" x1="100" y1="96" x2="160" y2="135">
+      <stop offset="0" stop-color="#0A3A8A"/><stop offset="0.2" stop-color="#002372"/><stop offset="0.55" stop-color="#002475"/><stop offset="0.8" stop-color="#003798"/><stop offset="1" stop-color="#0151C7"/>
+    </linearGradient>
+    <linearGradient id="xf-s" gradientUnits="userSpaceOnUse" x1="14" y1="140" x2="157" y2="35">
+      <stop offset="0" stop-color="#023595"/><stop offset="0.3" stop-color="#0155C6"/><stop offset="0.5" stop-color="#006FE4"/><stop offset="0.78" stop-color="#0486F3"/><stop offset="1" stop-color="#0471EE"/>
+    </linearGradient>
+  </defs>
+  <path d="M32.5 37.4H69.8Q74.7 37.3 79.8 43.3L97.5 64L71.8 82.8Z" fill="url(#xf-a)"/>
+  <path d="M139 58.5L116.8 84.5L164.3 138.8L127.3 139Q121.4 139 116.8 133.7L90.5 103.8L100.3 92.3L112.5 80.3Z" fill="url(#xf-b)"/>
+  <path d="M13.8 140.6L51.5 139.8C80.3 98.9 117.9 64.8 158.5 36L160.4 55.4L179.8 17.2L139 26.9L156.3 33.9C102.5 59.7 53.4 95.8 13.8 140Z" fill="url(#xf-s)"/>
+</svg>

@@ -289,62 +289,60 @@
 
 /* ------------------------------------------------------------
    Wordmark — one component (components/Wordmark.tsx), used in the nav,
-   landing hero, footer, login, sidebar and parent header. Serif, with a
-   heavier blue "X" against a lighter, gently tracked "Function". At the
-   large sizes a short brass hairline sits underneath. Colours come from
-   the --mk tokens so it reads on both light and dark; tone="light" is for
-   sitting on top of photos/video.
+   landing hero, footer, login, sidebar and parent header: the brand mark
+   plus "XFunction" in Plus Jakarta Sans Bold (--font-brand, see
+   app/layout.tsx). Text is navy on light backgrounds and white on dark
+   (it follows --mk-ink). The mark is full colour on light and all white on
+   dark; tone="light" forces white for sitting on photos/video.
    ------------------------------------------------------------ */
 .mk-wordmark {
   display: inline-flex;
-  align-items: baseline;
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  align-items: center;
+  gap: 0.3em;
+  font-family: var(--font-brand), "Plus Jakarta Sans", system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.012em;
   line-height: 1;
   color: var(--mk-ink);
   white-space: nowrap;
-  position: relative;
 }
 
-.mk-wordmark__x {
-  font-weight: 700;
-  font-size: 1.1em;
-  color: var(--mk-blue);
-  margin-right: 0.015em;
-  letter-spacing: -0.01em;
+.mk-wordmark__mark {
+  display: block;
+  height: 1.02em;
+  width: auto;
+  flex: none;
 }
 
-.mk-wordmark__rest {
-  font-weight: 500;
-  letter-spacing: 0.012em;
+.mk-wordmark__mark--white {
+  display: none;
+}
+
+:root[data-theme="dark"] .mk-wordmark__mark--color {
+  display: none;
+}
+
+:root[data-theme="dark"] .mk-wordmark__mark--white {
+  display: block;
 }
 
 .mk-wordmark--sm { font-size: 20px; }
 .mk-wordmark--md { font-size: 25px; }
 .mk-wordmark--lg { font-size: 34px; }
-.mk-wordmark--xl { font-size: clamp(54px, 10vw, 104px); }
-
-.mk-wordmark--lg::after,
-.mk-wordmark--xl::after {
-  content: "";
-  position: absolute;
-  left: 0.06em;
-  bottom: -0.2em;
-  width: 2.1em;
-  height: 2px;
-  background: var(--mk-accent);
-  opacity: 0.85;
-}
+.mk-wordmark--xl { font-size: clamp(44px, 9vw, 92px); }
 
 .mk-wordmark--light {
   color: #FFFFFF;
 }
 
-.mk-wordmark--light .mk-wordmark__x {
-  color: #9BCBFF;
+.mk-wordmark--light .mk-wordmark__mark--color,
+:root[data-theme="dark"] .mk-wordmark--light .mk-wordmark__mark--color {
+  display: none;
 }
 
-.mk-wordmark--light::after {
-  background: #9BCBFF;
+.mk-wordmark--light .mk-wordmark__mark--white,
+:root[data-theme="dark"] .mk-wordmark--light .mk-wordmark__mark--white {
+  display: block;
 }
 
 /* The logo entrance animation (components/LogoIntro.tsx) scales this

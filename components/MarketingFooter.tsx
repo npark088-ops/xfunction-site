@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Wordmark } from "./Wordmark";
 
 // Shared footer for the public pages. Uses only wording and links that
 // already exist on the site: the wordmark, the tagline from the landing
@@ -17,7 +18,7 @@ export function MarketingFooter({ appHref = "/overview" }: { appHref?: string })
     <footer className="mk-footer">
       <div className="mk-container mk-footer__inner">
         <div>
-          <span style={{ color: "var(--mk-blue-text)", fontSize: 22, fontWeight: 700 }}>XFunction</span>
+          <Wordmark size="md" />
           <p className="mk-footer__tagline">Plan less. Execute more.</p>
         </div>
         <nav className="mk-footer__links" aria-label="Footer">

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Inter, Newsreader, Sora } from "next/font/google";
+import { Inter, Newsreader, Plus_Jakarta_Sans, Sora } from "next/font/google";
 import { PostHogAppProvider } from "../components/PostHogProvider";
 import "./globals.css";
 import "./marketing.css";
@@ -27,7 +27,18 @@ const sora = Sora({
   display: "swap",
 });
 
-// Display serif for large marketing headings and the XFunction wordmark
+// Brand wordmark: Plus Jakarta Sans Bold, the closest match among the
+// next/font families to the lettering on the brand board (a bold geometric
+// sans with round c/o, a flat-topped t and tight spacing). One weight, so a
+// single self-hosted file. Used only by components/Wordmark.tsx.
+const brandSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: "700",
+  variable: "--font-brand",
+  display: "swap",
+});
+
+// Display serif for large marketing headings
 // (see app/marketing.css). Self-hosted by next/font like the two above —
 // no external requests at runtime. preload is off on purpose: the app
 // pages never use it, so they shouldn't pay to preload it; it's fetched
@@ -54,7 +65,7 @@ export default function RootLayout({
     // server- and client-rendered HTML. That's expected here, not a
     // real bug, so React shouldn't warn about (or try to "fix") it —
     // same recommended pattern as Next.js's own dark-mode docs.
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sora.variable} ${newsreader.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sora.variable} ${newsreader.variable} ${brandSans.variable}`}>
       <head>
         {/* Sets data-theme before first paint so returning dark-mode
             users don't see a flash of the light theme. A plain <script>

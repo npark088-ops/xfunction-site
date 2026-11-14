@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { Wordmark } from "./Wordmark";
 
 const SESSION_KEY = "xf-logo-intro-played";
 
@@ -23,9 +24,10 @@ function markPlayed() {
   }
 }
 
-// The XFunction wordmark in the landing page's nav. There is no logo
-// graphic (it's text), so the entrance is a fade + slight scale-up —
-// see .xf-logo-intro in app/globals.css.
+// The XFunction wordmark in the public nav (components/MarketingNav.tsx),
+// with its entrance animation. The wordmark is text (components/Wordmark.tsx),
+// so the entrance is a fade + slight scale-up — see .xf-logo-intro in
+// app/globals.css.
 //
 // Plays once per browser session:
 //  - The animation is ON by default in the CSS, so a first visit
@@ -40,8 +42,14 @@ function markPlayed() {
 //    disables the animation and `animationend` never fires).
 // No React state is used: the class is toggled directly on the element,
 // which avoids a re-render and any hydration mismatch.
-export function LogoIntro() {
-  const ref = useRef<HTMLHeadingElement>(null);
+export function LogoIntro({
+  size = "md",
+  tone = "auto",
+}: {
+  size?: "sm" | "md" | "lg" | "xl";
+  tone?: "auto" | "light";
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -62,10 +70,10 @@ export function LogoIntro() {
   }, []);
 
   return (
-    <Link href="/" style={{ textDecoration: "none" }}>
-      <h2 ref={ref} className="xf-logo-intro" style={{ color: "var(--blue)", margin: 0 }}>
-        XFunction
-      </h2>
+    <Link href="/" style={{ textDecoration: "none", display: "inline-flex" }} aria-label="XFunction home">
+      <span ref={ref} className="xf-logo-intro">
+        <Wordmark size={size} tone={tone} />
+      </span>
     </Link>
   );
 }
