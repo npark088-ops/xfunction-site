@@ -158,7 +158,7 @@ function LoginForm() {
 
   return (
     <div
-      className="xf-page-enter"
+      className="xf-page-enter mk-theme"
       style={{
         minHeight: "100vh",
         background: bg,
@@ -287,7 +287,7 @@ function LoginForm() {
                 padding: "12px 16px",
                 borderRadius: "var(--radius-sm)",
                 background: blue,
-                color: "white",
+                color: "var(--mk-on-blue)",
                 border: "none",
                 fontSize: 14,
                 fontWeight: 700,

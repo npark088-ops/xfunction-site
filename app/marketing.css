@@ -5,43 +5,56 @@
    footer. Everything is prefixed `mk-` so it can't collide with the app's
    own styles in globals.css, and it only reads its own `--mk-*` tokens.
 
-   Palette: built around the app's existing blue (#2563EB). Deep navy ink
-   for text, a warm off-white paper in light mode and a near-black navy in
-   dark mode, and ONE restrained accent — brass — used for hairlines,
-   labels and small details, never for big surfaces. Every text/background
-   pair below was checked against WCAG AA (most reach AAA).
+   BRAND PALETTE (from the brand board)
+     navy        #092C67   text, headings
+     blue        #0878EF   highlights, focus ring, graphics
+     light blue  #9BCBFF   accents, tags
+     ice white   #F2F7FF   page background
+     white       #FFFFFF   cards
+   Predominantly white with navy text and blue highlights. No brass, no cream.
 
-     LIGHT  paper #FAF8F4  surface #FFFFFF  surface-2 #F2EFE8
-            ink #111A2B (16.4:1)   ink-2 #4B5565 (7.1:1)   line #E4DFD4
-            blue #2563EB (button, 5.2:1 with white text)
-            blue-text #1D4ED8 (6.3:1)   accent #8A6420 (5.0:1)
-     DARK   paper #0A0F1C  surface #121A2C  surface-2 #182137
-            ink #F3EFE6 (16.7:1)   ink-2 #A9B3C7 (9.1:1)   line #242E45
-            blue #7CA6FF (button, 8.0:1 with dark text)
-            blue-text #8FB2FF (9.1:1)   accent #D9B76E (10.0:1)
+   Two small, deliberate deviations for accessibility. The exact brand blue
+   #0878EF gives only 4.25:1 with white text (and 3.95:1 as text on ice
+   white), under the 4.5:1 AA bar for normal-size text, so:
+     --mk-btn        #076BD6  button fill  (white text 5.14:1)
+     --mk-blue-text  #0666CC  link / label text (5.16:1 on ice, 5.56:1 on white)
+   #0878EF itself is still used wherever it isn't carrying small text.
+
+   All pairs below were checked against WCAG AA (scratch/contrast-dark.cjs):
+
+     LIGHT  paper #F2F7FF  surface #FFFFFF  surface-2 #E7F0FE
+            ink #092C67 (12.5:1)   ink-2 #37507F (7.5:1)   line #D2E2F8
+            blue-text #0666CC (5.2:1)   white on button #076BD6 (5.1:1)
+            navy on light-blue tag #9BCBFF (7.9:1)
+     DARK   paper #071A40  surface #0C2656  surface-2 #12326C
+            ink #F2F7FF (15.9:1)   ink-2 #B4C7E8 (10.0:1)   line #244A88
+            blue / blue-text #9BCBFF (10.1:1)   navy on button #9BCBFF (7.9:1)
 
    Fonts (both self-hosted by next/font, see app/layout.tsx):
-     Display  Newsreader (serif) — large headings and the wordmark
+     Display  Newsreader (serif) — large headings
      Body     Inter — everything else
    ============================================================ */
 
 :root {
-  --mk-paper: #FAF8F4;
+  --mk-paper: #F2F7FF;
   --mk-surface: #FFFFFF;
-  --mk-surface-2: #F2EFE8;
-  --mk-ink: #111A2B;
-  --mk-ink-2: #4B5565;
-  --mk-line: #E4DFD4;
-  --mk-blue: #2563EB;
-  --mk-blue-text: #1D4ED8;
+  --mk-surface-2: #E7F0FE;
+  --mk-ink: #092C67;
+  --mk-ink-2: #37507F;
+  --mk-line: #D2E2F8;
+  --mk-blue: #0878EF;
+  --mk-blue-text: #0666CC;
+  --mk-btn: #076BD6;
   --mk-on-blue: #FFFFFF;
-  --mk-accent: #8A6420;
-  --mk-accent-soft: rgba(138, 100, 32, 0.1);
-  --mk-error: #B42318; /* 6.2:1 on paper */
+  --mk-tint: #9BCBFF;
+  --mk-on-tint: #092C67;
+  --mk-accent: #0666CC;
+  --mk-accent-soft: rgba(8, 120, 239, 0.1);
+  --mk-error: #B42318; /* 6.1:1 on paper */
 
   /* Thin borders + very soft shadows, one scale for every card. */
-  --mk-shadow: 0 1px 2px rgba(17, 26, 43, 0.04), 0 10px 28px rgba(17, 26, 43, 0.06);
-  --mk-shadow-lift: 0 2px 4px rgba(17, 26, 43, 0.05), 0 18px 40px rgba(17, 26, 43, 0.1);
+  --mk-shadow: 0 1px 2px rgba(9, 44, 103, 0.05), 0 10px 28px rgba(9, 44, 103, 0.07);
+  --mk-shadow-lift: 0 2px 4px rgba(9, 44, 103, 0.06), 0 18px 40px rgba(9, 44, 103, 0.12);
 
   --mk-width: 1100px;
   --mk-gutter: 24px;
@@ -51,21 +64,41 @@
 }
 
 :root[data-theme="dark"] {
-  --mk-paper: #0A0F1C;
-  --mk-surface: #121A2C;
-  --mk-surface-2: #182137;
-  --mk-ink: #F3EFE6;
-  --mk-ink-2: #A9B3C7;
-  --mk-line: #242E45;
-  --mk-blue: #7CA6FF;
-  --mk-blue-text: #8FB2FF;
-  --mk-on-blue: #0A0F1C;
-  --mk-accent: #D9B76E;
-  --mk-accent-soft: rgba(217, 183, 110, 0.12);
-  --mk-error: #FF8A80; /* 7.6:1 on surface */
+  --mk-paper: #071A40;
+  --mk-surface: #0C2656;
+  --mk-surface-2: #12326C;
+  --mk-ink: #F2F7FF;
+  --mk-ink-2: #B4C7E8;
+  --mk-line: #244A88;
+  --mk-blue: #9BCBFF;
+  --mk-blue-text: #9BCBFF;
+  --mk-btn: #9BCBFF;
+  --mk-on-blue: #092C67;
+  --mk-tint: #9BCBFF;
+  --mk-on-tint: #092C67;
+  --mk-accent: #9BCBFF;
+  --mk-accent-soft: rgba(155, 203, 255, 0.14);
+  --mk-error: #FF9C92; /* 8.5:1 on paper */
 
   --mk-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
   --mk-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.45), 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* The landing page and the login page are written against the app's global
+   theme variables (--bg, --card, --text, --blue ...). Those variables also
+   drive the dashboard, so they are left alone; this class re-points them at
+   the brand palette on just those two pages. --blue is the button fill
+   (white text in light mode, navy text in dark mode — the buttons use
+   --mk-on-blue for their label), so it maps to --mk-btn. */
+.mk-theme,
+.mk-nav,
+.mk-footer {
+  --bg: var(--mk-paper);
+  --card: var(--mk-surface);
+  --border: var(--mk-line);
+  --text: var(--mk-ink);
+  --text-dim: var(--mk-ink-2);
+  --blue: var(--mk-btn);
 }
 
 @media (max-width: 640px) {
@@ -214,13 +247,13 @@
 }
 
 .mk-btn--primary {
-  background: var(--mk-blue);
+  background: var(--mk-btn);
   color: var(--mk-on-blue);
-  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3), 0 8px 20px rgba(37, 99, 235, 0.18);
+  box-shadow: 0 1px 2px rgba(8, 120, 239, 0.3), 0 8px 20px rgba(8, 120, 239, 0.18);
 }
 
 .mk-btn--primary:hover:not(:disabled) {
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.35), 0 12px 26px rgba(37, 99, 235, 0.24);
+  box-shadow: 0 2px 4px rgba(8, 120, 239, 0.35), 0 12px 26px rgba(8, 120, 239, 0.24);
 }
 
 .mk-btn--ghost {
@@ -307,11 +340,11 @@
 }
 
 .mk-wordmark--light .mk-wordmark__x {
-  color: #B9CFFF;
+  color: #9BCBFF;
 }
 
 .mk-wordmark--light::after {
-  background: #E4C88C;
+  background: #9BCBFF;
 }
 
 /* The logo entrance animation (components/LogoIntro.tsx) scales this
@@ -1026,9 +1059,9 @@
   right: 22px;
   padding: 4px 12px;
   border-radius: 999px;
-  background: var(--mk-surface-2);
-  border: 1px solid var(--mk-line);
-  color: var(--mk-accent);
+  background: var(--mk-tint);
+  border: 1px solid transparent;
+  color: var(--mk-on-tint);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;

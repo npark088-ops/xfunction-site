@@ -48,7 +48,7 @@ export default function Home() {
 
 
   return (
-    <div className="xf-page-enter" style={{ margin: 0, fontFamily: "Inter, sans-serif", background: bg }}>
+    <div className="xf-page-enter mk-theme" style={{ margin: 0, fontFamily: "Inter, sans-serif", background: bg }}>
 
       {/* NAVBAR — shared with the other public pages. The landing page keeps
           its own App link (/today) and its per-click analytics events. */}
@@ -334,7 +334,7 @@ export default function Home() {
   style={{
     padding: "8px 15px",
     background: blue,
-    color: "white",
+    color: "var(--mk-on-blue)",
     border: "none",
     borderRadius: "6px",
     fontWeight: 700,
