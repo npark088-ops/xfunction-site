@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "../../../lib/supabase/server";
-import { consumeSupportMessage } from "../../../lib/ai-usage";
+import { consumeSupportMessage } from "../../../lib/profile-server";
 import { buildSupportContext } from "../../../lib/support-context";
 import { SUPPORT_EMAIL } from "../../../lib/support-config";
 import { captureServerEvent } from "../../../lib/posthog-server";
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
-  const usage = await consumeSupportMessage(supabase, user.id);
+  const usage = await consumeSupportMessage(supabase);
   if (!usage.allowed) {
     return Response.json(
       {

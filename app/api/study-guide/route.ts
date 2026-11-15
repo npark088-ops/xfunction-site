@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getUserCourses } from "../../../lib/user-courses";
 import { findTargetAssignment, relevantContextAssignmentNames } from "../../../lib/study-target";
 import { createClient } from "../../../lib/supabase/server";
-import { consumeAiGeneration } from "../../../lib/ai-usage";
+import { consumeAiGeneration } from "../../../lib/profile-server";
 import { captureServerEvent } from "../../../lib/posthog-server";
 import { getAiModel } from "../../../lib/ai-model";
 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
-  const usage = await consumeAiGeneration(supabase, user.id);
+  const usage = await consumeAiGeneration(supabase);
   if (!usage.allowed) {
     return Response.json(
       {

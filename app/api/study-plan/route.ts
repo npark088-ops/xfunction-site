@@ -3,8 +3,7 @@ import { getUserCourses } from "../../../lib/user-courses";
 import { calculateCategoryBreakdown, calculateCurrentGrade } from "../../../lib/grade-calculator";
 import { findTargetAssignment } from "../../../lib/study-target";
 import { createClient } from "../../../lib/supabase/server";
-import { consumeAiGeneration } from "../../../lib/ai-usage";
-import { markFirstStudyPlanGenerated } from "../../../lib/achievements";
+import { consumeAiGeneration, markFirstStudyPlanGenerated } from "../../../lib/profile-server";
 import { captureServerEvent } from "../../../lib/posthog-server";
 import { getAiModel } from "../../../lib/ai-model";
 
@@ -29,7 +28,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
-  const usage = await consumeAiGeneration(supabase, user.id);
+  const usage = await consumeAiGeneration(supabase);
   if (!usage.allowed) {
     return Response.json(
       {
@@ -125,7 +124,7 @@ Rules:
       tasks: Array.isArray(parsed.days[i]?.tasks) ? parsed.days[i].tasks : [],
     }));
 
-    await markFirstStudyPlanGenerated(supabase, user.id);
+    await markFirstStudyPlanGenerated(supabase);
     captureServerEvent(user.id, "ai_feature_used", { feature: "study_plan" });
 
     return Response.json({

@@ -1,5 +1,5 @@
 import { createClient } from "../../../lib/supabase/server";
-import { consumeAiGeneration } from "../../../lib/ai-usage";
+import { consumeAiGeneration } from "../../../lib/profile-server";
 import { generateCoachInsight } from "../../../lib/coach-insight";
 import { getUserCourses } from "../../../lib/user-courses";
 
@@ -13,7 +13,7 @@ export async function GET() {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
-  const usage = await consumeAiGeneration(supabase, user.id);
+  const usage = await consumeAiGeneration(supabase);
   if (!usage.allowed) {
     return Response.json(
       {

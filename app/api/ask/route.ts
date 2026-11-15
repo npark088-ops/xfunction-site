@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "../../../lib/supabase/server";
-import { consumeChatMessage } from "../../../lib/ai-usage";
+import { consumeChatMessage } from "../../../lib/profile-server";
 import { buildAcademicContext } from "../../../lib/academic-context";
 import { getUserCourses } from "../../../lib/user-courses";
 import { captureServerEvent } from "../../../lib/posthog-server";
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
-  const usage = await consumeChatMessage(supabase, user.id);
+  const usage = await consumeChatMessage(supabase);
   if (!usage.allowed) {
     return Response.json(
       {

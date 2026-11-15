@@ -1,4 +1,3 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { ClipboardList, Flame, Award, Link2, type LucideIcon } from "lucide-react";
 import type { MockCourse } from "./mock-canvas-data";
 
@@ -72,21 +71,6 @@ export function getUnlockedAchievementIds(ctx: AchievementContext): Set<string> 
   return unlocked;
 }
 
-// Called from app/api/study-plan on a successful generation. Only sets
-// the timestamp the first time — never overwrites it — since this is
-// meant to record when the achievement was first earned.
-export async function markFirstStudyPlanGenerated(supabase: SupabaseClient, userId: string) {
-  const { data } = await supabase
-    .from("profiles")
-    .select("first_study_plan_at")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (data?.first_study_plan_at) return;
-
-  const { error } = await supabase
-    .from("profiles")
-    .upsert({ user_id: userId, first_study_plan_at: new Date().toISOString() });
-
-  if (error) console.error("markFirstStudyPlanGenerated failed:", error);
-}
+// markFirstStudyPlanGenerated (the write that sets first_study_plan_at) lives in
+// lib/profile-server.ts: signed-in users can't write their own profile, so it
+// runs server-side with the admin client.

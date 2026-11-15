@@ -1,5 +1,5 @@
 import { createClient } from "../../../lib/supabase/server";
-import { consumeAiGeneration } from "../../../lib/ai-usage";
+import { consumeAiGeneration } from "../../../lib/profile-server";
 import { generateCoachInsight } from "../../../lib/coach-insight";
 import { composeDigestData, sendDigestEmail } from "../../../lib/weekly-digest";
 import { getUserCourses } from "../../../lib/user-courses";
@@ -27,7 +27,7 @@ export async function POST() {
   // digest still sends — just without that one section — rather than
   // blocking the whole email over it.
   let coachHighlight: string | null = null;
-  const usage = await consumeAiGeneration(supabase, user.id);
+  const usage = await consumeAiGeneration(supabase);
   if (usage.allowed) {
     try {
       coachHighlight = await generateCoachInsight(courses, usage.isPro);
