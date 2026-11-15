@@ -15,6 +15,15 @@ import { GradingScale, STANDARD_GRADING_SCALE, SIMPLE_GRADING_SCALE } from "./gr
 // page built against that shape (grade-calculator, grade-projection,
 // grade-history, course-colors, etc.) needed zero changes to their own
 // internals; only their DATA SOURCE changed.
+//
+// A course is identified by (user_id, id) — see
+// supabase/migrations/0022_manual_courses.sql and the follow-up
+// supabase/pending/0025_courses_per_user_key.sql. The text id alone is NOT
+// unique across users: two students can both have the demo course
+// "ap-biology". So every query in this file filters by user_id as well as
+// id, and any new code that looks a course up must do the same (never by id
+// alone — e.g. a parent who is also a student can see two courses with the
+// same id).
 
 function scaleForKey(key: string): GradingScale {
   return key === "simple" ? SIMPLE_GRADING_SCALE : STANDARD_GRADING_SCALE;
@@ -266,7 +275,8 @@ export async function deleteAssignment(
 // starting point," never as silently merging fake courses into a
 // student's real ones. Copies lib/mock-canvas-data.ts's 3 courses
 // verbatim, INCLUDING their original string ids — see the migration
-// file's comment for why that id reuse matters.
+// file's comment for why that id reuse matters. Those ids repeat for every
+// user who loads the demo, which is why a course's key is (user_id, id).
 export async function seedDemoData(supabase: SupabaseClient, userId: string): Promise<void> {
   const { count, error: countError } = await supabase
     .from("courses")
@@ -277,6 +287,26 @@ export async function seedDemoData(supabase: SupabaseClient, userId: string): Pr
     throw new Error("Demo data can only be loaded into an empty course list.");
   }
 
+  // If anything fails part-way, remove what THIS call created (a course's
+  // groups and assignments go with it via ON DELETE CASCADE) so the account
+  // is not left half-seeded — a half-seeded account would no longer count as
+  // "empty", and the student could never retry.
+  const seededCourseIds: string[] = [];
+  try {
+    await seedCourses(supabase, userId, seededCourseIds);
+  } catch (err) {
+    if (seededCourseIds.length > 0) {
+      await supabase.from("courses").delete().eq("user_id", userId).in("id", seededCourseIds);
+    }
+    throw err;
+  }
+}
+
+async function seedCourses(
+  supabase: SupabaseClient,
+  userId: string,
+  seededCourseIds: string[]
+): Promise<void> {
   for (const course of Object.values(mockCourses)) {
     const { error: courseError } = await supabase.from("courses").insert({
       id: course.id,
@@ -286,6 +316,7 @@ export async function seedDemoData(supabase: SupabaseClient, userId: string): Pr
       grading_scale: keyForScale(course.gradingScale),
     });
     if (courseError) throw courseError;
+    seededCourseIds.push(course.id);
 
     for (const group of course.assignmentGroups) {
       const { data: groupRow, error: groupError } = await supabase
