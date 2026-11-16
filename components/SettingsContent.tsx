@@ -14,8 +14,10 @@ import {
   Mail,
   MessageSquareOff,
   Bell,
+  Headset,
 } from "lucide-react";
 import { ACHIEVEMENTS } from "../lib/achievements";
+import { useSupportChat } from "./SupportChatPanel";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -99,6 +101,8 @@ export function SettingsContent({
   justUpgraded: boolean;
   unlockedAchievementIds: string[];
 }) {
+  const { openPanel: openSupportChat } = useSupportChat();
+
   const [upgrading, setUpgrading] = useState(false);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
@@ -337,6 +341,56 @@ export function SettingsContent({
             )}
           </>
         )}
+      </div>
+
+      {/* Support */}
+      <div
+        className="xf-card"
+        style={{
+          background: card,
+          border: `1px solid ${border}`,
+          borderRadius: "var(--radius-lg)",
+          padding: 28,
+          marginBottom: 24,
+        }}
+      >
+        <h2
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 18,
+            fontWeight: 700,
+            marginBottom: 4,
+            color: text,
+          }}
+        >
+          <Headset size={17} strokeWidth={2} />
+          Support
+        </h2>
+        <p style={{ fontSize: 13, color: textDim, marginBottom: 16, lineHeight: 1.5 }}>
+          Billing questions, how a feature works, connection troubleshooting, or reporting a bug —
+          separate from Your Consultant, which is for questions about your grades and coursework.
+        </p>
+        <button
+          onClick={openSupportChat}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "10px 18px",
+            borderRadius: "var(--radius-sm)",
+            background: bg,
+            border: `1px solid ${border}`,
+            color: text,
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          <Headset size={14} strokeWidth={2} />
+          Chat with support
+        </button>
       </div>
 
       {/* Account */}

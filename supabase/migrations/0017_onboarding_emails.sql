@@ -97,5 +97,15 @@ begin
 end;
 $$;
 
-grant execute on function get_onboarding_email_candidates(text, numeric) to anon, authenticated;
-grant execute on function mark_onboarding_email_sent(uuid, text) to anon, authenticated;
+-- Locked down to service_role ONLY. get_onboarding_email_candidates
+-- returns users' email addresses, and mark_onboarding_email_sent writes
+-- rows for any user id — neither may be callable with the public anon
+-- key. Postgres grants EXECUTE to PUBLIC by default (and Supabase also
+-- grants anon/authenticated), so all three are revoked explicitly. Callers:
+-- app/api/cron/onboarding-emails and app/api/onboarding/welcome, both
+-- through the server-only service-role client (lib/supabase/admin.ts).
+revoke all on function get_onboarding_email_candidates(text, numeric) from public, anon, authenticated;
+grant execute on function get_onboarding_email_candidates(text, numeric) to service_role;
+
+revoke all on function mark_onboarding_email_sent(uuid, text) from public, anon, authenticated;
+grant execute on function mark_onboarding_email_sent(uuid, text) to service_role;

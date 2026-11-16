@@ -1,11 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { mockCourses } from "../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../lib/user-courses";
 import { calculateCategoryBreakdown, calculateCurrentGrade } from "../../../lib/grade-calculator";
 import { findTargetAssignment } from "../../../lib/study-target";
 import { createClient } from "../../../lib/supabase/server";
-import { consumeAiGeneration } from "../../../lib/ai-usage";
-import { markFirstStudyPlanGenerated } from "../../../lib/achievements";
+import { consumeAiGeneration, markFirstStudyPlanGenerated } from "../../../lib/profile-server";
 import { captureServerEvent } from "../../../lib/posthog-server";
+import { getAiModel } from "../../../lib/ai-model";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
-  const usage = await consumeAiGeneration(supabase, user.id);
+  const usage = await consumeAiGeneration(supabase);
   if (!usage.allowed) {
     return Response.json(
       {
@@ -40,7 +40,8 @@ export async function POST(req: Request) {
   }
 
   const { courseId } = await req.json();
-  const course = mockCourses[courseId];
+  const courses = await getUserCourses(supabase, user.id);
+  const course = courses[courseId];
   if (!course) {
     return Response.json({ error: "Course not found" }, { status: 404 });
   }
@@ -105,7 +106,7 @@ Rules:
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
+      model: getAiModel(usage.isPro),
       max_tokens: 1500,
       messages: [{ role: "user", content: prompt }],
     });
@@ -123,7 +124,7 @@ Rules:
       tasks: Array.isArray(parsed.days[i]?.tasks) ? parsed.days[i].tasks : [],
     }));
 
-    await markFirstStudyPlanGenerated(supabase, user.id);
+    await markFirstStudyPlanGenerated(supabase);
     captureServerEvent(user.id, "ai_feature_used", { feature: "study_plan" });
 
     return Response.json({

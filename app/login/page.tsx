@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ArrowLeft } from "lucide-react";
+import { Wordmark } from "../../components/Wordmark";
 import posthog from "posthog-js";
 import { createClient } from "../../lib/supabase/client";
+import { safeNextPath } from "../../lib/safe-redirect";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -27,7 +29,28 @@ const inputStyle = {
   boxSizing: "border-box" as const,
 };
 
+const selectStyle = {
+  ...inputStyle,
+  fontWeight: 600,
+};
+
 type Mode = "sign-in" | "sign-up";
+
+const GRADE_LEVELS = [
+  { value: "9", label: "9th grade" },
+  { value: "10", label: "10th grade" },
+  { value: "11", label: "11th grade" },
+  { value: "12", label: "12th grade" },
+];
+
+const PLATFORM_OPTIONS = [
+  { value: "canvas", label: "Canvas" },
+  { value: "google-classroom", label: "Google Classroom" },
+  { value: "schoology", label: "Schoology" },
+  { value: "powerschool", label: "PowerSchool" },
+  { value: "other", label: "Other" },
+  { value: "not-sure", label: "Not sure" },
+];
 
 // useSearchParams() opts the component into client-side rendering that
 // needs a Suspense boundary during static generation/build — Next.js's
@@ -44,11 +67,15 @@ export default function LoginPage() {
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/today";
+  // Validated: ?next= is attacker-controllable, so only same-site paths
+  // (query string included, e.g. /parent/join?code=...) are honored.
+  const next = safeNextPath(searchParams.get("next"), "/today");
 
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [gradeLevel, setGradeLevel] = useState("");
+  const [platformPreference, setPlatformPreference] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState<string | null>(() =>
@@ -99,6 +126,14 @@ function LoginForm() {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        // Picked up by the handle_new_user() trigger (see
+        // supabase/migrations/0023_signup_profile_fields.sql) and
+        // written straight to profiles at account-creation time — both
+        // optional, so an empty string here just becomes a null column.
+        data: {
+          grade_level: gradeLevel || undefined,
+          platform_preference: platformPreference || undefined,
+        },
       },
     });
     setLoading(false);
@@ -124,7 +159,7 @@ function LoginForm() {
 
   return (
     <div
-      className="xf-page-enter"
+      className="xf-page-enter mk-theme"
       style={{
         minHeight: "100vh",
         background: bg,
@@ -137,6 +172,11 @@ function LoginForm() {
       }}
     >
       <div style={{ width: "100%", maxWidth: 380 }}>
+        <div style={{ marginBottom: 28 }}>
+          <Link href="/" aria-label="XFunction home" style={{ textDecoration: "none", display: "inline-flex" }}>
+            <Wordmark size="lg" />
+          </Link>
+        </div>
         <Link
           href="/"
           style={{
@@ -193,8 +233,50 @@ function LoginForm() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{ ...inputStyle, marginBottom: 20 }}
+              style={{ ...inputStyle, marginBottom: mode === "sign-up" ? 16 : 20 }}
             />
+
+            {mode === "sign-up" && (
+              <div
+                className="xf-grid-collapse"
+                style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}
+              >
+                <div>
+                  <label style={{ fontSize: 13, color: textDim, display: "block", marginBottom: 6 }}>
+                    Grade level <span style={{ color: textDim, fontWeight: 400 }}>(optional)</span>
+                  </label>
+                  <select
+                    value={gradeLevel}
+                    onChange={(e) => setGradeLevel(e.target.value)}
+                    style={selectStyle}
+                  >
+                    <option value="">Prefer not to say</option>
+                    {GRADE_LEVELS.map((g) => (
+                      <option key={g.value} value={g.value}>
+                        {g.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: 13, color: textDim, display: "block", marginBottom: 6 }}>
+                    School platform <span style={{ color: textDim, fontWeight: 400 }}>(optional)</span>
+                  </label>
+                  <select
+                    value={platformPreference}
+                    onChange={(e) => setPlatformPreference(e.target.value)}
+                    style={selectStyle}
+                  >
+                    <option value="">Prefer not to say</option>
+                    {PLATFORM_OPTIONS.map((p) => (
+                      <option key={p.value} value={p.value}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
 
             {error && (
               <div style={{ color: red, fontSize: 13, marginBottom: 16 }}>{error}</div>
@@ -211,7 +293,7 @@ function LoginForm() {
                 padding: "12px 16px",
                 borderRadius: "var(--radius-sm)",
                 background: blue,
-                color: "white",
+                color: "var(--mk-on-blue)",
                 border: "none",
                 fontSize: 14,
                 fontWeight: 700,

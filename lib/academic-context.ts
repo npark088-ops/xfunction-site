@@ -1,4 +1,5 @@
-import { mockCourses, getCreditHours } from "./mock-canvas-data";
+import type { MockCourse } from "./mock-canvas-data";
+import { getCreditHours } from "./mock-canvas-data";
 import {
   calculateCurrentGrade,
   calculateCategoryBreakdown,
@@ -13,8 +14,13 @@ import { projectFinalGrade } from "./grade-projection";
 // underlying data as the coach check-in (lib/coach-insight.ts) and the
 // grade calculator/projection, just assembled into one plain-text block
 // instead of a single insight.
-export function buildAcademicContext(): string {
-  const courses = Object.values(mockCourses);
+export function buildAcademicContext(courseMap: Record<string, MockCourse>): string {
+  const courses = Object.values(courseMap);
+
+  if (courses.length === 0) {
+    return "The student hasn't added any courses yet — no grades, assignments, or categories exist. If asked about grades or coursework, tell them to add a course on the Courses page first (or load demo data to try things out).";
+  }
+
 
   const perCourse = courses.map((course) => {
     const grade = calculateCurrentGrade(course.assignmentGroups);

@@ -23,4 +23,7 @@ begin
 end;
 $$;
 
+-- Signed-in users only. Postgres grants EXECUTE to PUBLIC by default (and
+-- Supabase also grants anon), so those are revoked explicitly.
+revoke all on function delete_own_account() from public, anon;
 grant execute on function delete_own_account() to authenticated;

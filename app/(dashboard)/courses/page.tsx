@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { mockCourses, getCreditHours } from "../../../lib/mock-canvas-data";
+import { getCreditHours, hasDemoCourses, type MockCourse } from "../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../lib/user-courses";
 import { calculateCurrentGrade } from "../../../lib/grade-calculator";
 import { letterGradeFor } from "../../../lib/grading-scale";
 import { gradeColor } from "../../../components/Gauge";
@@ -10,8 +11,9 @@ import { getSchoologyConnection } from "../../../lib/schoology-token-store";
 import { getMoodleConnection } from "../../../lib/moodle-token-store";
 import { getBlackboardConnection } from "../../../lib/blackboard-token-store";
 import { PlatformConnectionsCard } from "../../../components/PlatformConnectionsCard";
-import { PlatformId } from "../../../lib/platforms";
+import { PlatformId, PlatformPreference } from "../../../lib/platforms";
 import { DemoDataBadge } from "../../../components/DemoDataBadge";
+import { AddCourseCard } from "../../../components/AddCourseCard";
 import { courseColor } from "../../../lib/course-colors";
 
 const card = "var(--card)";
@@ -75,34 +77,35 @@ export default async function CoursesPage({
   const { canvas, gclassroom, schoology, moodle, blackboard } = await searchParams;
   const banner = bannerFor({ canvas, gclassroom, schoology, moodle, blackboard });
 
-  const courses = Object.values(mockCourses).map((course) => ({
-    id: course.id,
-    name: course.name,
-    grade: calculateCurrentGrade(course.assignmentGroups),
-    creditHours: getCreditHours(course),
-    letter: letterGradeFor(calculateCurrentGrade(course.assignmentGroups), course.gradingScale),
-  }));
-
   const user = await getCachedUser();
   let initialStatuses: Partial<
     Record<PlatformId, { connected: boolean; user: { id: string | number; name: string } | null } >
   > = {};
 
+  let userCourses: Record<string, MockCourse> = {};
+
+  let platformPreference: PlatformPreference = null;
+
   if (user) {
     const supabase = await createClient();
+    userCourses = await getUserCourses(supabase, user.id);
     // allSettled, not all — a single platform's lookup failing (e.g. a
     // migration for a newer platform hasn't been run against this
     // Supabase project yet) shouldn't 500 the whole Courses page and
     // take Canvas/everything else down with it. Any rejection just
     // falls back to "not connected" for that one platform.
-    const [canvasResult, googleResult, schoologyResult, moodleResult, blackboardResult] =
+    const [canvasResult, googleResult, schoologyResult, moodleResult, blackboardResult, profileResult] =
       await Promise.allSettled([
         getCanvasConnection(supabase, user.id),
         getGoogleClassroomConnection(supabase, user.id),
         getSchoologyConnection(supabase, user.id),
         getMoodleConnection(supabase, user.id),
         getBlackboardConnection(supabase, user.id),
+        supabase.from("profiles").select("platform_preference").eq("user_id", user.id).maybeSingle(),
       ]);
+
+    platformPreference =
+      profileResult.status === "fulfilled" ? profileResult.value.data?.platform_preference ?? null : null;
 
     for (const result of [canvasResult, googleResult, schoologyResult, moodleResult, blackboardResult]) {
       if (result.status === "rejected") {
@@ -153,6 +156,15 @@ export default async function CoursesPage({
     };
   }
 
+  const courses = Object.values(userCourses).map((course) => ({
+    id: course.id,
+    name: course.name,
+    grade: calculateCurrentGrade(course.assignmentGroups),
+    creditHours: getCreditHours(course),
+    letter: letterGradeFor(calculateCurrentGrade(course.assignmentGroups), course.gradingScale),
+  }));
+  const showDemoBadge = hasDemoCourses(userCourses);
+
   return (
     <div
       className="xf-page-enter xf-dashboard-page"
@@ -179,13 +191,17 @@ export default async function CoursesPage({
           <h1 style={{ fontSize: 34, fontWeight: 700, margin: 0, letterSpacing: "-0.02em", color: text }}>
             Your courses
           </h1>
-          <DemoDataBadge />
+          {showDemoBadge && <DemoDataBadge />}
         </div>
         <p style={{ color: textDim, marginBottom: 24, fontSize: 15 }}>
-          Sample courses for preview — platform sync isn&apos;t live yet.
+          Add your real classes and track grades yourself, or connect a platform above to sync automatically.
         </p>
 
-        <PlatformConnectionsCard initialStatuses={initialStatuses} banner={banner} />
+        <PlatformConnectionsCard
+          initialStatuses={initialStatuses}
+          banner={banner}
+          preferredPlatform={platformPreference}
+        />
 
         {/* COURSE CARDS */}
         <div
@@ -195,6 +211,7 @@ export default async function CoursesPage({
             gap: 20,
           }}
         >
+          <AddCourseCard hasCourses={courses.length > 0} />
           {courses.map((c) => (
             <Link
               key={c.id}

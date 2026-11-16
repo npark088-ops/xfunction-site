@@ -1,13 +1,42 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Inter, Sora } from "next/font/google";
+import { Inter, Newsreader, Plus_Jakarta_Sans, Sora } from "next/font/google";
 import { PostHogAppProvider } from "../components/PostHogProvider";
 import "./globals.css";
+import "./marketing.css";
+
+const SITE_DESCRIPTION =
+  "Turn your Canvas grades into a clear plan — track courses, get AI-powered study help, and stay ahead of deadlines.";
+
+// Share cards: the 1200x630 image comes from app/opengraph-image.png and
+// app/twitter-image.png (Next's file convention adds the og:image /
+// twitter:image tags, with the alt text from the matching .alt.txt files).
+// The favicon and app icons come from app/favicon.ico, app/icon.png and
+// app/apple-icon.png the same way.
+// Absolute base for the share-card image URLs. Set NEXT_PUBLIC_SITE_URL (a
+// public address, not a secret) to override; on Vercel it falls back to the
+// production domain Vercel provides, and locally to localhost.
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000");
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "XFunction",
-  description:
-    "Turn your Canvas grades into a clear plan — track courses, get AI-powered study help, and stay ahead of deadlines.",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: "XFunction",
+    description: SITE_DESCRIPTION,
+    siteName: "XFunction",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "XFunction",
+    description: SITE_DESCRIPTION,
+  },
 };
 
 // Body copy uses Inter (already referenced everywhere as the fallback
@@ -26,6 +55,32 @@ const sora = Sora({
   display: "swap",
 });
 
+// Brand wordmark: Plus Jakarta Sans Bold, the closest match among the
+// next/font families to the lettering on the brand board (a bold geometric
+// sans with round c/o, a flat-topped t and tight spacing). One weight, so a
+// single self-hosted file. Used only by components/Wordmark.tsx.
+const brandSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: "700",
+  variable: "--font-brand",
+  display: "swap",
+});
+
+// Display serif for large marketing headings
+// (see app/marketing.css). Self-hosted by next/font like the two above —
+// no external requests at runtime. preload is off on purpose: the app
+// pages never use it, so they shouldn't pay to preload it; it's fetched
+// only when a page actually renders text in this family. next/font also
+// generates a size-adjusted fallback so the swap doesn't shift layout.
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  variable: "--font-display",
+  display: "swap",
+  preload: false,
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -38,7 +93,7 @@ export default function RootLayout({
     // server- and client-rendered HTML. That's expected here, not a
     // real bug, so React shouldn't warn about (or try to "fix") it —
     // same recommended pattern as Next.js's own dark-mode docs.
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sora.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sora.variable} ${newsreader.variable} ${brandSans.variable}`}>
       <head>
         {/* Sets data-theme before first paint so returning dark-mode
             users don't see a flash of the light theme. A plain <script>

@@ -3,7 +3,7 @@ import { getCachedUser, createClient } from "../../../lib/supabase/server";
 import { getAiUsageSnapshot, getChatUsageSnapshot } from "../../../lib/ai-usage";
 import { getCanvasConnection } from "../../../lib/canvas-token-store";
 import { getUnlockedAchievementIds } from "../../../lib/achievements";
-import { mockCourses } from "../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../lib/user-courses";
 import { calculateCurrentGrade } from "../../../lib/grade-calculator";
 import { projectFinalGrade } from "../../../lib/grade-projection";
 import { evaluatePrediction, accuracyLabel } from "../../../lib/grade-prediction-accuracy";
@@ -46,23 +46,25 @@ export default async function SettingsPage({
   if (user) {
     const supabase = await createClient();
 
-    const [usage, chatUsage, profileRow, canvasConnection, parentLinksRow, predictionsRow] = await Promise.all([
-      getAiUsageSnapshot(supabase, user.id),
-      getChatUsageSnapshot(supabase, user.id),
-      supabase
-        .from("profiles")
-        .select("longest_streak, first_study_plan_at")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      getCanvasConnection(supabase, user.id),
-      supabase
-        .from("parent_links")
-        .select("id, parent_email, status, invite_code, created_at")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("grade_predictions")
-        .select("course_id, predicted_grade, percent_graded_at_prediction, created_at"),
-    ]);
+    const [usage, chatUsage, profileRow, canvasConnection, parentLinksRow, predictionsRow, courses] =
+      await Promise.all([
+        getAiUsageSnapshot(supabase, user.id),
+        getChatUsageSnapshot(supabase, user.id),
+        supabase
+          .from("profiles")
+          .select("longest_streak, first_study_plan_at")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        getCanvasConnection(supabase, user.id),
+        supabase
+          .from("parent_links")
+          .select("id, parent_email, status, invite_code, created_at")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("grade_predictions")
+          .select("course_id, predicted_grade, percent_graded_at_prediction, created_at"),
+        getUserCourses(supabase, user.id),
+      ]);
 
     isPro = usage.isPro;
     used = usage.used;
@@ -74,6 +76,7 @@ export default async function SettingsPage({
       longestStreak: profileRow.data?.longest_streak ?? 0,
       hasGeneratedStudyPlan: Boolean(profileRow.data?.first_study_plan_at),
       canvasConnected: Boolean(canvasConnection),
+      courses,
     });
     unlockedIds = Array.from(unlocked);
     parentLinks = parentLinksRow.data ?? [];
@@ -85,7 +88,7 @@ export default async function SettingsPage({
     const predictionRows = predictionsRow.data ?? [];
     const evaluations = predictionRows
       .map((row) => {
-        const course = mockCourses[row.course_id];
+        const course = courses[row.course_id];
         if (!course) return null;
         const liveGrade = calculateCurrentGrade(course.assignmentGroups);
         const livePercentGraded = projectFinalGrade(course.assignmentGroups).percentGraded;

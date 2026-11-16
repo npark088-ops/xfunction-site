@@ -1,11 +1,13 @@
 import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "../../../../lib/supabase/admin";
 import { captureServerEvent } from "../../../../lib/posthog-server";
 
 // No signed-in user hits this route — Stripe calls it directly — so it
-// uses the plain anon-key client and the SECURITY DEFINER RPCs from
-// supabase/migrations/0003_stripe_webhook.sql instead of the normal
-// cookie-based server client.
+// uses the server-only service-role client instead of the normal
+// cookie-based one. The SECURITY DEFINER RPCs from
+// supabase/migrations/0003_stripe_webhook.sql are executable by
+// service_role only, so nobody holding the public anon key can call
+// them to grant or revoke Pro.
 export async function POST(req: Request) {
   const signature = req.headers.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -26,10 +28,15 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  let supabase: ReturnType<typeof createAdminClient>;
+  try {
+    supabase = createAdminClient();
+  } catch (error) {
+    // 500 (not 200) so Stripe retries the event once the key is set —
+    // a 200 here would silently drop a paid upgrade.
+    console.error("Stripe webhook: admin client unavailable:", error);
+    return Response.json({ error: "Server not configured" }, { status: 500 });
+  }
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, Sparkles, Mail, MessageSquareText, CalendarRange, Megaphone, Timer } from "lucide-react";
-import { mockCourses, getCreditHours } from "../../../lib/mock-canvas-data";
+import { getCreditHours, hasDemoCourses, type MockCourse } from "../../../lib/mock-canvas-data";
+import { getUserCourses } from "../../../lib/user-courses";
 import { getAllAnnouncements } from "../../../lib/mock-announcements";
 import { calculateCurrentGrade, calculateWeightedOverallGrade } from "../../../lib/grade-calculator";
 import { Gauge, gradeColor } from "../../../components/Gauge";
@@ -40,12 +41,29 @@ function timeAgo(iso: string): string {
 }
 
 export default function OverviewPage() {
-  const courses = Object.values(mockCourses).map((course) => ({
-    id: course.id,
-    name: course.name,
-    grade: calculateCurrentGrade(course.assignmentGroups),
-    creditHours: getCreditHours(course),
-  }));
+  // Fetched client-side on mount, like weekSessions/coachInsight below —
+  // this whole page is already a client component, so there's no server
+  // wrapper to seed it from. `null` means "still loading."
+  const [userCourses, setUserCourses] = useState<Record<string, MockCourse> | null>(null);
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        setUserCourses({});
+        return;
+      }
+      getUserCourses(supabase, user.id).then(setUserCourses);
+    });
+  }, []);
+
+  const courses = userCourses
+    ? Object.values(userCourses).map((course) => ({
+        id: course.id,
+        name: course.name,
+        grade: calculateCurrentGrade(course.assignmentGroups),
+        creditHours: getCreditHours(course),
+      }))
+    : [];
 
   // Weighted by each course's credit hours (an AP/Honors course
   // carrying 1.5 credits pulls the overall grade more than a
@@ -53,15 +71,15 @@ export default function OverviewPage() {
   const overallGrade = calculateWeightedOverallGrade(courses);
   const totalCredits = courses.reduce((sum, c) => sum + c.creditHours, 0);
 
-  const overallGradeHistory = getOverallGradeHistory(overallGrade);
+  const overallGradeHistory = getOverallGradeHistory(overallGrade, courses.map((c) => c.id));
   const overallTrend = trendDirection(overallGradeHistory);
 
   // Ungraded assignments due within the next 7 days, across all courses.
-  const upcoming = getUpcomingAssignments(7);
+  const upcoming = userCourses ? getUpcomingAssignments(userCourses, 7) : [];
 
-  // Simulated Canvas announcements feed — see lib/mock-announcements.ts
-  // for why this is hand-authored rather than fetched.
-  const announcements = getAllAnnouncements().slice(0, 6);
+  // Class announcements feed — see lib/mock-announcements.ts; only
+  // shows entries for demo-seeded courses, empty otherwise.
+  const announcements = userCourses ? getAllAnnouncements(userCourses).slice(0, 6) : [];
 
   const [hoveredReminder, setHoveredReminder] = useState<number | null>(null);
 
@@ -230,10 +248,10 @@ export default function OverviewPage() {
           <h1 style={{ fontSize: 34, fontWeight: 700, margin: 0, letterSpacing: "-0.02em", color: text }}>
             Welcome back
           </h1>
-          <DemoDataBadge />
+          {userCourses && hasDemoCourses(userCourses) && <DemoDataBadge />}
         </div>
         <p style={{ color: textDim, marginBottom: 24, fontSize: 15 }}>
-          Sample data for preview — Canvas sync isn&apos;t live yet.
+          Here&apos;s where things stand across your courses.
         </p>
 
         <div>
@@ -241,44 +259,98 @@ export default function OverviewPage() {
         </div>
 
         {/* OVERALL GRADE */}
-        <div
-          className="xf-card"
-          style={{
-            background: card,
-            border: `1px solid ${border}`,
-            borderRadius: "var(--radius-lg)",
-            padding: 28,
-            marginBottom: 24,
-            display: "flex",
-            gap: 28,
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <Gauge percentage={overallGrade} size={100} />
-          <div>
-            <div style={{ fontSize: 13, color: textDim, marginBottom: 2 }}>
-              Overall grade · {courses.length} courses
-            </div>
-            <div
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 32,
-                fontWeight: 700,
-                color: gradeColor(overallGrade),
-                marginBottom: 6,
-              }}
-            >
-              {overallGrade.toFixed(1)}%
-            </div>
-            <div style={{ fontSize: 13, color: textDim }}>
-              Weighted by credit hours across {courses.map((c) => c.name).join(", ")} ({totalCredits} total credits)
+        {userCourses === null ? (
+          <div
+            className="xf-card"
+            style={{
+              background: card,
+              border: `1px solid ${border}`,
+              borderRadius: "var(--radius-lg)",
+              padding: 28,
+              marginBottom: 24,
+              display: "flex",
+              gap: 28,
+              alignItems: "center",
+            }}
+          >
+            <div className="xf-skeleton" style={{ width: 100, height: 100, borderRadius: "50%" }} />
+            <div style={{ flex: 1 }}>
+              <div className="xf-skeleton" style={{ height: 32, width: "40%", marginBottom: 10 }} />
+              <div className="xf-skeleton" style={{ height: 14, width: "70%" }} />
             </div>
           </div>
-        </div>
+        ) : courses.length === 0 ? (
+          <div
+            className="xf-card"
+            style={{
+              background: card,
+              border: `1px dashed ${border}`,
+              borderRadius: "var(--radius-lg)",
+              padding: 28,
+              marginBottom: 24,
+              textAlign: "center",
+            }}
+          >
+            <h2 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px", color: text }}>No classes yet</h2>
+            <p style={{ fontSize: 14, color: textDim, margin: "0 0 16px" }}>
+              Add a class on the Courses page to see your grade and trends here.
+            </p>
+            <Link
+              href="/courses"
+              style={{
+                display: "inline-block",
+                padding: "10px 18px",
+                borderRadius: "var(--radius-sm)",
+                background: blue,
+                color: "white",
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              Go to Courses
+            </Link>
+          </div>
+        ) : (
+          <div
+            className="xf-card"
+            style={{
+              background: card,
+              border: `1px solid ${border}`,
+              borderRadius: "var(--radius-lg)",
+              padding: 28,
+              marginBottom: 24,
+              display: "flex",
+              gap: 28,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <Gauge percentage={overallGrade} size={100} />
+            <div>
+              <div style={{ fontSize: 13, color: textDim, marginBottom: 2 }}>
+                Overall grade · {courses.length} course{courses.length === 1 ? "" : "s"}
+              </div>
+              <div
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 32,
+                  fontWeight: 700,
+                  color: gradeColor(overallGrade),
+                  marginBottom: 6,
+                }}
+              >
+                {overallGrade.toFixed(1)}%
+              </div>
+              <div style={{ fontSize: 13, color: textDim }}>
+                Weighted by credit hours across {courses.map((c) => c.name).join(", ")} ({totalCredits} total credits)
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* OVERALL GRADE TREND */}
-        <div
+        {courses.length > 0 && <div
           className="xf-card"
           style={{
             background: card,
@@ -330,10 +402,12 @@ export default function OverviewPage() {
             }}
           >
             <AlertTriangle size={13} strokeWidth={2} />
-            Simulated historical data — real Canvas grade history isn&apos;t connected yet.
+            {hasDemoCourses(userCourses ?? {})
+              ? "Simulated historical data — real grade history builds up over time."
+              : "Trend builds up as your grades change over time."}
           </div>
           <TrendChart points={overallGradeHistory} />
-        </div>
+        </div>}
 
         {/* THIS WEEK'S STUDY TIME */}
         <div
@@ -400,7 +474,7 @@ export default function OverviewPage() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {weekStudyByCourse.map((entry) => {
-                  const name = mockCourses[entry.courseId]?.name ?? entry.courseId;
+                  const name = userCourses?.[entry.courseId]?.name ?? entry.courseId;
                   const share = weekStudyMinutes > 0 ? (entry.minutes / weekStudyMinutes) * 100 : 0;
                   const color = courseColor(entry.courseId);
                   return (
@@ -673,19 +747,21 @@ export default function OverviewPage() {
             <Megaphone size={15} strokeWidth={2} color={blue} />
             <div style={{ fontSize: 14, fontWeight: 600, color: text }}>Class announcements</div>
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              fontSize: 11,
-              color: textDim,
-              marginBottom: announcements.length > 0 ? 12 : 0,
-            }}
-          >
-            <AlertTriangle size={12} strokeWidth={2} />
-            Simulated — a preview of what a real Canvas-connected feed will show here.
-          </div>
+          {hasDemoCourses(userCourses ?? {}) && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 11,
+                color: textDim,
+                marginBottom: announcements.length > 0 ? 12 : 0,
+              }}
+            >
+              <AlertTriangle size={12} strokeWidth={2} />
+              Simulated — a preview of what a real Canvas-connected feed will show here.
+            </div>
+          )}
           {announcements.length === 0 ? (
             <div style={{ fontSize: 13, color: textDim }}>No announcements right now.</div>
           ) : (

@@ -18,6 +18,9 @@ create table if not exists study_sessions (
 
 alter table study_sessions enable row level security;
 
+-- drop-then-create so re-running this file doesn't fail with
+-- "policy already exists" (CREATE POLICY has no IF NOT EXISTS).
+drop policy if exists "Users manage their own study sessions" on study_sessions;
 create policy "Users manage their own study sessions"
   on study_sessions
   for all

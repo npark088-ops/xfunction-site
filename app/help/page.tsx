@@ -1,35 +1,10 @@
-"use client";
-
 import Link from "next/link";
+import { MarketingNav } from "../../components/MarketingNav";
+import { MarketingFooter } from "../../components/MarketingFooter";
+import { FaqList } from "../../components/FaqList";
+import { SUPPORT_EMAIL } from "../../lib/support-config";
 
-const bg = "var(--bg)";
-const card = "var(--card)";
-const border = "var(--border)";
-const blue = "var(--blue)";
-const text = "var(--text)";
-const textDim = "var(--text-dim)";
-
-const navLink = {
-  textDecoration: "none",
-  color: text,
-  fontSize: "15px",
-  fontWeight: 600,
-  cursor: "pointer",
-  paddingBottom: 4,
-  borderBottom: "2px solid transparent",
-  transition: "color var(--transition-fast), border-color var(--transition-fast)",
-};
-
-function navLinkHoverOn(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.color = blue;
-  e.currentTarget.style.borderBottomColor = blue;
-}
-
-function navLinkHoverOff(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.color = text;
-  e.currentTarget.style.borderBottomColor = "transparent";
-}
-
+// The five questions and answers are the page's original text, unchanged.
 const FAQS = [
   {
     q: "What is XFunction?",
@@ -53,84 +28,51 @@ const FAQS = [
   },
 ];
 
+// Server component: SUPPORT_EMAIL is read from the server environment (the
+// same address the in-app support chat tells students to email). The
+// in-app support chat itself is untouched — it lives in the signed-in app.
 export default function HelpPage() {
   return (
-    <div className="xf-page-enter" style={{ fontFamily: "Inter, sans-serif", color: text, background: bg, minHeight: "100vh" }}>
-      {/* NAVBAR */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "20px 40px",
-          background: bg,
-          borderBottom: `1px solid ${border}`,
-          color: text,
-          zIndex: 100,
-        }}
-      >
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
-        </Link>
+    <div className="mk-page">
+      <MarketingNav />
 
-        <div className="xf-public-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
-          <Link href="/" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            Home
-          </Link>
-          <Link href="/about" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            About
-          </Link>
-          <Link href="/pricing" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            Pricing
-          </Link>
-          <Link href="/help" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            Help
-          </Link>
-          <Link href="/changelog" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            What&apos;s New
-          </Link>
-          <Link href="/overview" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-            App
-          </Link>
-        </div>
-      </div>
+      <main className="mk-main">
+        {/* HERO */}
+        <section className="help-hero">
+          <div className="mk-container">
+            <h1 className="mk-h1">Help &amp; FAQ</h1>
+            <p className="mk-lead">Common questions about how XFunction works.</p>
+          </div>
+        </section>
 
-      {/* HERO */}
-      <div style={{ padding: "160px 20px 60px", textAlign: "center" }}>
-        <h1 className="xf-marketing-heading" style={{ fontSize: 44, fontWeight: 700, marginBottom: 12, letterSpacing: "-0.02em", color: text }}>
-          Help & FAQ
-        </h1>
-        <p style={{ color: textDim, fontSize: 17, maxWidth: 500, margin: "0 auto" }}>
-          Common questions about how XFunction works.
-        </p>
-      </div>
+        <section className="help-body">
+          <div className="mk-container help-grid">
+            <FaqList items={FAQS} />
 
-      {/* FAQ LIST */}
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 20px 140px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {FAQS.map((item) => (
-            <div
-              key={item.q}
-              className="xf-card"
-              style={{
-                background: card,
-                border: `1px solid ${border}`,
-                borderRadius: "var(--radius-lg)",
-                padding: 28,
-              }}
-            >
-              <h2 style={{ fontSize: 18, fontWeight: 700, marginTop: 0, marginBottom: 10, color: text }}>
-                {item.q}
+            <aside className="mk-card help-contact" aria-labelledby="help-contact-title">
+              <h2 id="help-contact-title" className="mk-h3">
+                Contact us
               </h2>
-              <p style={{ fontSize: 15, lineHeight: 1.7, color: textDim, margin: 0 }}>{item.a}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+              <p>
+                Signed in? Open the support chat — the headset button in the bottom-right corner of the app — for
+                help with billing, how features work, or connecting your school platform.
+              </p>
+              <p>
+                Still stuck? Email{" "}
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="help-contact__mail">
+                  {SUPPORT_EMAIL}
+                </a>
+                .
+              </p>
+              <Link href="/overview" className="mk-btn mk-btn--primary mk-btn--block">
+                Open the app
+              </Link>
+            </aside>
+          </div>
+        </section>
+      </main>
+
+      <MarketingFooter />
     </div>
   );
 }

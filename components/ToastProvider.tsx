@@ -68,7 +68,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div
         style={{
           position: "fixed",
-          bottom: 92,
+          // Clears both bottom-right floating chat buttons stacked above
+          // each other — Your Consultant (bottom: 24, 56px tall) and
+          // Support (bottom: 92, 56px tall, see components/SupportChatPanel.tsx)
+          // — plus a gap, so a toast never renders behind/under either.
+          bottom: 160,
           right: 24,
           zIndex: 1000,
           display: "flex",

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { mockCourses, getCreditHours } from "../../../lib/mock-canvas-data";
+import { getCreditHours, hasDemoCourses } from "../../../lib/mock-canvas-data";
+import { getCachedUser, createClient } from "../../../lib/supabase/server";
+import { getUserCourses } from "../../../lib/user-courses";
 import { calculateCurrentGrade, calculateCategoryBreakdown } from "../../../lib/grade-calculator";
 import { letterGradeFor } from "../../../lib/grading-scale";
 import { gradeColor } from "../../../components/Gauge";
@@ -15,11 +17,14 @@ const textDim = "var(--text-dim)";
 const green = "var(--green)";
 const red = "var(--red)";
 
-// Server component — same "sync computation over mock data" pattern as
-// the Courses page, just reshaped so every course's key numbers sit
-// side by side instead of requiring a click into each one.
-export default function ComparePage() {
-  const courses = Object.values(mockCourses).map((course) => {
+// Server component — same real per-user data pattern as the Courses
+// page (see lib/user-courses.ts), just reshaped so every course's key
+// numbers sit side by side instead of requiring a click into each one.
+export default async function ComparePage() {
+  const user = await getCachedUser();
+  const userCourses = user ? await getUserCourses(await createClient(), user.id) : {};
+
+  const courses = Object.values(userCourses).map((course) => {
     const grade = calculateCurrentGrade(course.assignmentGroups);
     const breakdown = calculateCategoryBreakdown(course.assignmentGroups);
     const history = getCourseGradeHistory(course.id, grade);
@@ -60,12 +65,28 @@ export default function ComparePage() {
           <h1 style={{ fontSize: 34, fontWeight: 700, margin: 0, letterSpacing: "-0.02em", color: text }}>
             Compare courses
           </h1>
-          <DemoDataBadge />
+          {hasDemoCourses(userCourses) && <DemoDataBadge />}
         </div>
         <p style={{ color: textDim, marginBottom: 28, fontSize: 15 }}>
           All your courses side by side, so you can spot what needs attention at a glance.
         </p>
 
+        {courses.length === 0 ? (
+          <div
+            className="xf-card"
+            style={{
+              background: card,
+              border: `1px solid ${border}`,
+              borderRadius: "var(--radius-lg)",
+              padding: 32,
+              textAlign: "center",
+              color: textDim,
+              fontSize: 14,
+            }}
+          >
+            Add a course on the Courses page to see it here.
+          </div>
+        ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {courses.map((c) => (
             <Link
@@ -170,6 +191,7 @@ export default function ComparePage() {
             </Link>
           ))}
         </div>
+        )}
       </div>
     </div>
   );

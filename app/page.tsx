@@ -2,6 +2,20 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { MarketingNav } from "../components/MarketingNav";
+import { MarketingFooter } from "../components/MarketingFooter";
+import { Wordmark } from "../components/Wordmark";
+import { DroneBackground } from "../components/DroneBackground";
+
+// Hero still image — also the poster/fallback for the optional drone
+// video (see components/DroneBackground.tsx; video files go in
+// public/videos/city-drone.mp4 / .webm).
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600";
+
+// The background is lighter now, so the white hero copy gets a soft shadow
+// to stay readable over bright sky and glass.
+const HERO_TEXT_SHADOW = "0 1px 3px rgba(0,0,0,0.6), 0 2px 28px rgba(0,0,0,0.65)";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -35,148 +49,25 @@ export default function Home() {
 
 
   return (
-    <div className="xf-page-enter" style={{ margin: 0, fontFamily: "Inter, sans-serif", background: bg }}>
+    <div className="xf-page-enter mk-theme" style={{ margin: 0, fontFamily: "Inter, sans-serif", background: bg }}>
 
-      {/* NAVBAR — solid background (not transparent) so it stays
-          readable over both the dark hero video and the light sections
-          below it while scrolling. */}
-      <div style={{
-  position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100%",
-  boxSizing: "border-box",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "20px 40px",
-  background: bg,
-  borderBottom: `1px solid ${border}`,
-  color: text,
-  zIndex: 100
-}}>
-  <Link href="/" style={{ textDecoration: "none" }}>
-    <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
-  </Link>
-
-<div className="xf-public-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_home");
-      }
-    }}
-  >
-    <Link href="/" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      Home
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_about");
-      }
-    }}
-  >
-    <Link href="/about" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      About
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_pricing");
-      }
-    }}
-  >
-    <Link href="/pricing" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      Pricing
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_help");
-      }
-    }}
-  >
-    <Link href="/help" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      Help
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_changelog");
-      }
-    }}
-  >
-    <Link href="/changelog" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      What&apos;s New
-    </Link>
-  </span>
-
-  <span
-    onClick={() => {
-      if (typeof window !== "undefined") {
-        (window as any).gtag?.("event", "click_app");
-      }
-    }}
-  >
-    <Link href="/today" style={navBtn} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-      App
-    </Link>
-  </span>
-
-</div>
-</div>
+      {/* NAVBAR — shared with the other public pages. The landing page keeps
+          its own App link (/today) and its per-click analytics events. */}
+      <MarketingNav appHref="/today" trackClicks />
 
       {/* ================= HOME ================= */}
       {page === "home" && (
         <div>
 
-          {/* HERO (VIDEO + IMAGE FALLBACK) */}
+          {/* HERO (DRONE VIDEO + STILL IMAGE FALLBACK + DARK GRADIENT —
+              all inside DroneBackground, which fills this container) */}
           <div style={{
             position: "relative",
             height: "100vh",
-            overflow: "hidden",
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600')",
-            backgroundSize: "cover",
-            backgroundPosition: "center"
+            overflow: "hidden"
           }}>
 
-            {/* VIDEO */}
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              style={{
-                position: "absolute",
-                width: "100%",
-                height: "100%",
-                objectFit: "cover"
-              }}
-            >
-              <source
-                src="https://cdn.coverr.co/videos/coverr-night-drive-through-city-traffic-1605/1080p.mp4"
-                type="video/mp4"
-              />
-            </video>
-
-            {/* OVERLAY */}
-            <div style={{
-              position: "absolute",
-              width: "100%",
-              height: "100%",
-              background: "rgba(0,0,0,0.5)"
-            }} />
+            <DroneBackground imageSrc={HERO_IMAGE} />
 
             {/* HERO TEXT — kept white: this sits on a dark video/photo
                 overlay, not the page background, so light text is what
@@ -184,6 +75,7 @@ export default function Home() {
 <div
   style={{
     position: "relative",
+    zIndex: 1,
     height: "100%",
     display: "flex",
     justifyContent: "center",
@@ -200,15 +92,8 @@ export default function Home() {
       transition: "all 1s ease"
     }}
   >
-    <h1
-      className="xf-marketing-heading"
-      style={{
-        fontSize: "64px",
-        fontWeight: "600",
-        lineHeight: "1.1"
-      }}
-    >
-      XFunction
+    <h1 style={{ margin: 0, lineHeight: 1, textShadow: HERO_TEXT_SHADOW }}>
+      <Wordmark size="xl" tone="light" />
     </h1>
 
     <p
@@ -217,7 +102,8 @@ export default function Home() {
         fontSize: "24px",
         maxWidth: "700px",
         marginLeft: "auto",
-        marginRight: "auto"
+        marginRight: "auto",
+        textShadow: HERO_TEXT_SHADOW
       }}
     >
       A system designed to transform complexity into clarity,
@@ -371,6 +257,7 @@ export default function Home() {
 
       {page === "about" && <div style={{ padding: "100px" }}>About Page</div>}
       {page === "app" && <div style={{ padding: "100px" }}>App Page</div>}
+<MarketingFooter appHref="/today" />
 {!acceptedCookies && (
   <div style={{
     position: "fixed",
@@ -440,7 +327,7 @@ export default function Home() {
   style={{
     padding: "8px 15px",
     background: blue,
-    color: "white",
+    color: "var(--mk-on-blue)",
     border: "none",
     borderRadius: "6px",
     fontWeight: 700,
@@ -455,27 +342,4 @@ export default function Home() {
 )}
     </div>
   );
-}
-
-const navBtn = {
-  background: "none",
-  border: "none",
-  textDecoration: "none",
-  color: text,
-  fontSize: "15px",
-  fontWeight: 600,
-  cursor: "pointer",
-  paddingBottom: 4,
-  borderBottom: "2px solid transparent",
-  transition: "color var(--transition-fast), border-color var(--transition-fast)",
-};
-
-function navLinkHoverOn(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.color = blue;
-  e.currentTarget.style.borderBottomColor = blue;
-}
-
-function navLinkHoverOff(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.color = text;
-  e.currentTarget.style.borderBottomColor = "transparent";
 }

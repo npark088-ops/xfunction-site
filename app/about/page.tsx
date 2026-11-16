@@ -1,247 +1,81 @@
-"use client";
+import { MarketingNav } from "../../components/MarketingNav";
+import { MarketingFooter } from "../../components/MarketingFooter";
+import { Reveal } from "../../components/Reveal";
 
-import Link from "next/link";
-
-const bg = "var(--bg)";
-const card = "var(--card)";
-const border = "var(--border)";
-const blue = "var(--blue)";
-const text = "var(--text)";
-const textDim = "var(--text-dim)";
+// Wording is the page's original copy, unchanged — only the layout and
+// styling are new (styles: the "About" block in app/marketing.css).
+const SECTIONS = [
+  {
+    title: "The problem",
+    paragraphs: [
+      "Most productivity systems rely heavily on constant planning, reconsideration, and motivation. This creates friction and leads to inconsistent execution.",
+      "Over time, this inconsistency prevents meaningful progress and makes even simple tasks feel overwhelming.",
+    ],
+  },
+  {
+    title: "What XFunction does",
+    paragraphs: [
+      "XFunction transforms complex workflows into structured systems. Instead of deciding what to do next, users follow predefined steps that guide execution.",
+      "This removes indecision, reduces wasted time, and allows users to focus entirely on making progress.",
+    ],
+  },
+  {
+    title: "Our approach",
+    paragraphs: [
+      "By simplifying decisions and structuring workflows, XFunction enables consistent execution regardless of external factors.",
+      "The result is a system that supports long-term productivity through clarity, structure, and repetition.",
+    ],
+  },
+];
 
 export default function About() {
   return (
-    <div
-  className="xf-page-enter"
-  style={{
-    fontFamily: "Inter, sans-serif",
-    color: text,
-    background: bg,
-    minHeight: "100vh"
-  }}
->
+    <div className="mk-page">
+      <MarketingNav />
 
-      {/* ✅ NAVBAR */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "20px 40px",
-          background: bg,
-          borderBottom: `1px solid ${border}`,
-          color: text,
-          zIndex: 100
-        }}
-      >
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <h2 style={{ color: blue, margin: 0 }}>XFunction</h2>
-        </Link>
+      <main className="mk-main">
+        {/* HERO */}
+        <section className="about-hero">
+          <div className="mk-container">
+            <h1 className="mk-h1">
+              About <span className="mk-em">XFunction</span>
+            </h1>
+            <p className="mk-lead">
+              XFunction is designed to eliminate the gap between planning and execution, enabling
+              consistent, structured progress over time.
+            </p>
+          </div>
+        </section>
 
-        <div className="xf-public-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
-
-          <Link href="/" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-  Home
-</Link>
-
-         <Link href="/about" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-  About
-</Link>
-
-          <Link href="/pricing" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-  Pricing
-</Link>
-
-          <Link href="/help" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-  Help
-</Link>
-
-          <Link href="/changelog" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-  What&apos;s New
-</Link>
-
-          <Link href="/overview" style={navLink} onMouseEnter={navLinkHoverOn} onMouseLeave={navLinkHoverOff}>
-  App
-</Link>
-
+        {/* THE STORY — three numbered rows */}
+        <div className="about-rows">
+          {SECTIONS.map((section) => (
+            <Reveal as="section" className="about-row" key={section.title}>
+              <div className="mk-container about-grid">
+                <h2 className="mk-h2 about-row__title">{section.title}</h2>
+                <div className="mk-prose">
+                  {section.paragraphs.map((p) => (
+                    <p key={p}>{p}</p>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+          ))}
         </div>
-      </div>
 
-      {/* HERO */}
-      <div
-  style={{
-    height: "70vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    padding: "20px",
-    marginTop: "80px",
-    background: `radial-gradient(circle at center, ${card}, transparent 70%)`
-  }}
->
-        <div style={{ maxWidth: "800px" }}>
-          <h1 className="xf-marketing-heading" style={{
-  fontSize: "64px",
-  fontWeight: "600",
-  color: text
-}}>
-  About XFunction
-</h1>
+        {/* MISSION */}
+        <Reveal as="section" className="about-mission">
+          <div className="mk-container">
+            <h2 className="about-mission__label">Designed for real progress</h2>
+            <p className="about-mission__quote">
+              XFunction is not about doing more work. It’s about creating systems that make progress
+              inevitable.
+            </p>
+          </div>
+        </Reveal>
+      </main>
 
-          <p
-            style={{
-              marginTop: "20px",
-              fontSize: "22px",
-              color: textDim,
-              lineHeight: "1.6"
-            }}
-          >
-            XFunction is designed to eliminate the gap between planning
-            and execution, enabling consistent, structured progress over time.
-          </p>
-        </div>
-      </div>
-
-      {/* SECTION 1 */}
-      <div style={{
-        padding: "120px 20px",
-        display: "flex",
-        justifyContent: "center"
-      }}>
-        <div className="xf-card" style={{
-          maxWidth: "900px",
-          padding: "60px",
-          borderRadius: "var(--radius-xl)",
-          background: card,
-          border: `1px solid ${border}`
-        }}>
-          <h2 className="xf-marketing-heading" style={{ fontSize: "40px", fontWeight: "700", color: text }}>
-            The problem
-          </h2>
-
-          <p style={{ marginTop: "20px", fontSize: "20px", color: textDim, lineHeight: "1.7" }}>
-            Most productivity systems rely heavily on constant planning,
-            reconsideration, and motivation. This creates friction and leads
-            to inconsistent execution.
-          </p>
-
-          <p style={{ marginTop: "15px", fontSize: "20px", color: textDim, lineHeight: "1.7" }}>
-            Over time, this inconsistency prevents meaningful progress and
-            makes even simple tasks feel overwhelming.
-          </p>
-        </div>
-      </div>
-
-      {/* SECTION 2 */}
-      <div style={{
-        padding: "120px 20px",
-        display: "flex",
-        justifyContent: "center"
-      }}>
-        <div className="xf-card" style={{
-          maxWidth: "900px",
-          padding: "60px",
-          borderRadius: "var(--radius-xl)",
-          background: card,
-          border: `1px solid ${border}`
-        }}>
-          <h2 className="xf-marketing-heading" style={{ fontSize: "40px", fontWeight: "700", color: text }}>
-            What XFunction does
-          </h2>
-
-          <p style={{ marginTop: "20px", fontSize: "20px", color: textDim, lineHeight: "1.7" }}>
-            XFunction transforms complex workflows into structured systems.
-            Instead of deciding what to do next, users follow predefined
-            steps that guide execution.
-          </p>
-
-          <p style={{ marginTop: "15px", fontSize: "20px", color: textDim, lineHeight: "1.7" }}>
-            This removes indecision, reduces wasted time, and allows users
-            to focus entirely on making progress.
-          </p>
-        </div>
-      </div>
-
-      {/* SECTION 3 */}
-      <div style={{
-        padding: "120px 20px",
-        display: "flex",
-        justifyContent: "center"
-      }}>
-        <div className="xf-card" style={{
-          maxWidth: "900px",
-          padding: "60px",
-          borderRadius: "var(--radius-xl)",
-          background: card,
-          border: `1px solid ${border}`
-        }}>
-          <h2 className="xf-marketing-heading" style={{ fontSize: "40px", fontWeight: "700", color: text }}>
-            Our approach
-          </h2>
-
-          <p style={{ marginTop: "20px", fontSize: "20px", color: textDim, lineHeight: "1.7" }}>
-            By simplifying decisions and structuring workflows, XFunction
-            enables consistent execution regardless of external factors.
-          </p>
-
-          <p style={{ marginTop: "15px", fontSize: "20px", color: textDim, lineHeight: "1.7" }}>
-            The result is a system that supports long-term productivity
-            through clarity, structure, and repetition.
-          </p>
-        </div>
-      </div>
-
-      {/* FINAL SECTION */}
-      <div style={{
-        padding: "140px 20px",
-        textAlign: "center",
-        background: card,
-        borderTop: `1px solid ${border}`,
-        color: text
-      }}>
-        <h2 className="xf-marketing-heading" style={{ fontSize: "44px" }}>
-          Designed for real progress
-        </h2>
-
-        <p style={{
-          marginTop: "20px",
-          fontSize: "18px",
-          maxWidth: "700px",
-          margin: "0 auto",
-          color: textDim
-        }}>
-          XFunction is not about doing more work.
-          It’s about creating systems that make progress inevitable.
-        </p>
-      </div>
-
+      <MarketingFooter />
     </div>
   );
-}
-
-/* ✅ NAV LINK STYLE */
-const navLink = {
-  textDecoration: "none",
-  color: "var(--text)",
-  fontSize: "15px",
-  fontWeight: 600,
-  cursor: "pointer",
-  paddingBottom: 4,
-  borderBottom: "2px solid transparent",
-  transition: "color var(--transition-fast), border-color var(--transition-fast)",
-};
-
-function navLinkHoverOn(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.color = "var(--blue)";
-  e.currentTarget.style.borderBottomColor = "var(--blue)";
-}
-
-function navLinkHoverOff(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.color = "var(--text)";
-  e.currentTarget.style.borderBottomColor = "transparent";
 }

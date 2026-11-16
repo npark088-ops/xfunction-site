@@ -40,6 +40,14 @@ export type PlatformId =
   | "skyward"
   | "studentvue-synergy";
 
+// A student's signup-time answer to "what platform does your school
+// use?" (see app/login/page.tsx's optional signup fields and
+// profiles.platform_preference in supabase/migrations/0023_signup_profile_fields.sql).
+// "other" and "not-sure" aren't PlatformIds — the "Connect your
+// platform" section (components/PlatformConnectionsCard.tsx) just skips
+// pre-selection and shows a short contextual note instead.
+export type PlatformPreference = PlatformId | "other" | "not-sure" | null;
+
 export interface PlatformConfig {
   id: PlatformId;
   category: PlatformCategory;

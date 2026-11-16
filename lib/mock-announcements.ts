@@ -1,14 +1,18 @@
-import { mockCourses } from "./mock-canvas-data";
+import type { MockCourse } from "./mock-canvas-data";
 
-// SIMULATED DATA — NOT REAL CANVAS CONTENT
+// SIMULATED DATA FOR DEMO COURSES ONLY — NOT REAL CONTENT
 // ---------------------------------------------------------------------
-// Canvas's real API exposes a discussion_topics/announcements feed per
-// course; this app's mock Canvas integration doesn't have one wired up
-// yet, so these are hand-authored placeholders standing in for what
-// that feed will show once real Canvas sync lands. postedAt is anchored
-// to "now" (same trick as the upcoming assignment due dates in
-// mock-canvas-data.ts) so these don't silently drift into the past as
-// real time passes.
+// This is hand-authored flavor content tied to the exact 3 demo courses
+// seeded by "Load demo data" (see lib/user-courses.ts's seedDemoData(),
+// which keeps their original ids "ap-biology"/"us-history"/"algebra-2" —
+// see the migration file's comment for why). There's no real analog for
+// a genuinely manual course — a student's own class has no announcement
+// feed at all, so getAllAnnouncements() below only ever returns entries
+// for course ids that are BOTH in MOCK_ANNOUNCEMENTS and actually present
+// in the student's real course list, which naturally means "none" for
+// anyone who hasn't loaded demo data. postedAt is anchored to "now" (same
+// trick as the upcoming assignment due dates in mock-canvas-data.ts) so
+// these don't silently drift into the past as real time passes.
 
 function hoursAgo(hours: number): string {
   return new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
@@ -91,18 +95,22 @@ const MOCK_ANNOUNCEMENTS: Record<string, MockAnnouncement[]> = {
   ],
 };
 
-export function getAllAnnouncements(): Announcement[] {
+export function getAllAnnouncements(courses: Record<string, MockCourse>): Announcement[] {
   return Object.entries(MOCK_ANNOUNCEMENTS)
+    .filter(([courseId]) => courseId in courses)
     .flatMap(([courseId, items]) =>
       items.map((item) => ({
         ...item,
         courseId,
-        courseName: mockCourses[courseId]?.name ?? courseId,
+        courseName: courses[courseId].name,
       }))
     )
     .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
 }
 
-export function getCourseAnnouncements(courseId: string): Announcement[] {
-  return getAllAnnouncements().filter((a) => a.courseId === courseId);
+export function getCourseAnnouncements(
+  courses: Record<string, MockCourse>,
+  courseId: string
+): Announcement[] {
+  return getAllAnnouncements(courses).filter((a) => a.courseId === courseId);
 }

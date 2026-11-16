@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import posthog from "posthog-js";
 import { LayoutDashboard, BookOpen, CalendarDays, ListTodo, Settings as SettingsIcon, HelpCircle, LogOut, Users, Columns3, Search, Bot, TrendingUp, Sun, Menu, X, type LucideIcon } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
+import { Wordmark } from "./Wordmark";
 import { useConsultantPanel } from "./ConsultantPanel";
 import type { NotificationRow } from "../lib/notifications";
 
@@ -177,8 +178,8 @@ export function Sidebar({
         >
           <Menu size={18} strokeWidth={2} />
         </button>
-        <Link href="/" style={{ color: blue, fontSize: 17, fontWeight: 700, textDecoration: "none" }}>
-          XFunction
+        <Link href="/" aria-label="XFunction home" style={{ textDecoration: "none", display: "inline-flex" }}>
+          <Wordmark size="sm" />
         </Link>
         <NotificationBell
           initialNotifications={initialNotifications}
@@ -219,15 +220,10 @@ export function Sidebar({
         >
           <Link
             href="/"
-            style={{
-              color: blue,
-              fontSize: 18,
-              fontWeight: 700,
-              textDecoration: "none",
-              display: "inline-block",
-            }}
+            aria-label="XFunction home"
+            style={{ textDecoration: "none", display: "inline-flex" }}
           >
-            XFunction
+            <Wordmark size="sm" />
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <NotificationBell

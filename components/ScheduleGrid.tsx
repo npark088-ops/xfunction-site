@@ -59,10 +59,12 @@ export function ScheduleGrid({
   courses,
   initialBlocks,
   initialSessions,
+  assignmentsDue,
 }: {
   courses: CourseOption[];
   initialBlocks: ScheduleBlock[];
   initialSessions: StudySession[];
+  assignmentsDue: { courseId: string; courseName: string; name: string; dueAt: string }[];
 }) {
   const [blocks, setBlocks] = useState<ScheduleBlock[]>(initialBlocks);
   const [sessions] = useState<StudySession[]>(initialSessions);
@@ -533,6 +535,7 @@ export function ScheduleGrid({
         <ScheduleMonthView
           blocks={blocks}
           sessions={sessions}
+          assignmentsDue={assignmentsDue}
           courseColor={courseColor}
           courseName={courseName}
           onRemoveBlock={removeBlock}

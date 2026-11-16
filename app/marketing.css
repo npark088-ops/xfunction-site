@@ -1,0 +1,1139 @@
+/* ============================================================
+   XFunction marketing design system
+   One place for the look of the public pages (landing, About, Help,
+   What's New, Pricing), the XFunction wordmark, and the shared nav and
+   footer. Everything is prefixed `mk-` so it can't collide with the app's
+   own styles in globals.css, and it only reads its own `--mk-*` tokens.
+
+   BRAND PALETTE (from the brand board)
+     navy        #092C67   text, headings
+     blue        #0878EF   highlights, focus ring, graphics
+     light blue  #9BCBFF   accents, tags
+     ice white   #F2F7FF   page background
+     white       #FFFFFF   cards
+   Predominantly white with navy text and blue highlights. No brass, no cream.
+
+   Two small, deliberate deviations for accessibility. The exact brand blue
+   #0878EF gives only 4.25:1 with white text (and 3.95:1 as text on ice
+   white), under the 4.5:1 AA bar for normal-size text, so:
+     --mk-btn        #076BD6  button fill  (white text 5.14:1)
+     --mk-blue-text  #0666CC  link / label text (5.16:1 on ice, 5.56:1 on white)
+   #0878EF itself is still used wherever it isn't carrying small text.
+
+   All pairs below were checked against WCAG AA (scratch/contrast-dark.cjs):
+
+     LIGHT  paper #F2F7FF  surface #FFFFFF  surface-2 #E7F0FE
+            ink #092C67 (12.5:1)   ink-2 #37507F (7.5:1)   line #D2E2F8
+            blue-text #0666CC (5.2:1)   white on button #076BD6 (5.1:1)
+            navy on light-blue tag #9BCBFF (7.9:1)
+     DARK   paper #071A40  surface #0C2656  surface-2 #12326C
+            ink #F2F7FF (15.9:1)   ink-2 #B4C7E8 (10.0:1)   line #244A88
+            blue / blue-text #9BCBFF (10.1:1)   navy on button #9BCBFF (7.9:1)
+
+   Fonts (both self-hosted by next/font, see app/layout.tsx):
+     Display  Newsreader (serif) — large headings
+     Body     Inter — everything else
+   ============================================================ */
+
+:root {
+  --mk-paper: #F2F7FF;
+  --mk-surface: #FFFFFF;
+  --mk-surface-2: #E7F0FE;
+  --mk-ink: #092C67;
+  --mk-ink-2: #37507F;
+  --mk-line: #D2E2F8;
+  --mk-blue: #0878EF;
+  --mk-blue-text: #0666CC;
+  --mk-btn: #076BD6;
+  --mk-on-blue: #FFFFFF;
+  --mk-tint: #9BCBFF;
+  --mk-on-tint: #092C67;
+  --mk-accent: #0666CC;
+  --mk-accent-soft: rgba(8, 120, 239, 0.1);
+  --mk-error: #B42318; /* 6.1:1 on paper */
+
+  /* Thin borders + very soft shadows, one scale for every card. */
+  --mk-shadow: 0 1px 2px rgba(9, 44, 103, 0.05), 0 10px 28px rgba(9, 44, 103, 0.07);
+  --mk-shadow-lift: 0 2px 4px rgba(9, 44, 103, 0.06), 0 18px 40px rgba(9, 44, 103, 0.12);
+
+  --mk-width: 1100px;
+  --mk-gutter: 24px;
+  --mk-radius: 16px;
+  --mk-radius-sm: 10px;
+  --mk-nav-h: 68px;
+}
+
+:root[data-theme="dark"] {
+  --mk-paper: #071A40;
+  --mk-surface: #0C2656;
+  --mk-surface-2: #12326C;
+  --mk-ink: #F2F7FF;
+  --mk-ink-2: #B4C7E8;
+  --mk-line: #244A88;
+  --mk-blue: #9BCBFF;
+  --mk-blue-text: #9BCBFF;
+  --mk-btn: #9BCBFF;
+  --mk-on-blue: #092C67;
+  --mk-tint: #9BCBFF;
+  --mk-on-tint: #092C67;
+  --mk-accent: #9BCBFF;
+  --mk-accent-soft: rgba(155, 203, 255, 0.14);
+  --mk-error: #FF9C92; /* 8.5:1 on paper */
+
+  --mk-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
+  --mk-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.45), 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* The landing page and the login page are written against the app's global
+   theme variables (--bg, --card, --text, --blue ...). Those variables also
+   drive the dashboard, so they are left alone; this class re-points them at
+   the brand palette on just those two pages. --blue is the button fill
+   (white text in light mode, navy text in dark mode — the buttons use
+   --mk-on-blue for their label), so it maps to --mk-btn. */
+.mk-theme,
+.mk-nav,
+.mk-footer {
+  --bg: var(--mk-paper);
+  --card: var(--mk-surface);
+  --border: var(--mk-line);
+  --text: var(--mk-ink);
+  --text-dim: var(--mk-ink-2);
+  --blue: var(--mk-btn);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --mk-gutter: 20px;
+    --mk-nav-h: 60px;
+  }
+}
+
+/* ------------------------------------------------------------
+   Page shell + typography
+   ------------------------------------------------------------ */
+.mk-page {
+  background: var(--mk-paper);
+  color: var(--mk-ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.7;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+.mk-main {
+  padding-top: var(--mk-nav-h);
+}
+
+.mk-page h1,
+.mk-page h2,
+.mk-page h3 {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--mk-ink);
+  margin: 0;
+}
+
+.mk-h1 {
+  font-size: clamp(40px, 6.2vw, 68px);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+}
+
+.mk-h2 {
+  font-size: clamp(30px, 4.2vw, 44px);
+  line-height: 1.12;
+}
+
+.mk-h3 {
+  font-size: clamp(22px, 2.6vw, 28px);
+  line-height: 1.2;
+}
+
+.mk-lead {
+  font-size: clamp(18px, 2vw, 21px);
+  line-height: 1.65;
+  color: var(--mk-ink-2);
+  max-width: 640px;
+  margin: 0;
+}
+
+.mk-eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mk-accent);
+  margin: 0;
+}
+
+/* Italic serif for a single emphasised word in a headline. */
+.mk-em {
+  font-style: italic;
+  color: var(--mk-blue-text);
+}
+
+.mk-prose p {
+  margin: 0 0 18px;
+  max-width: 62ch;
+  color: var(--mk-ink-2);
+}
+
+.mk-prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------
+   Layout
+   ------------------------------------------------------------ */
+.mk-container {
+  width: 100%;
+  max-width: calc(var(--mk-width) + var(--mk-gutter) * 2);
+  margin: 0 auto;
+  padding-left: var(--mk-gutter);
+  padding-right: var(--mk-gutter);
+  box-sizing: border-box;
+}
+
+.mk-section {
+  padding: clamp(64px, 9vw, 112px) 0;
+}
+
+.mk-rule {
+  border: 0;
+  border-top: 1px solid var(--mk-line);
+  margin: 0;
+}
+
+/* ------------------------------------------------------------
+   Cards + buttons
+   ------------------------------------------------------------ */
+.mk-card {
+  background: var(--mk-surface);
+  border: 1px solid var(--mk-line);
+  border-radius: var(--mk-radius);
+  box-shadow: var(--mk-shadow);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.mk-card--hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mk-shadow-lift);
+}
+
+.mk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: var(--mk-radius-sm);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  transition: transform var(--transition-fast), background-color var(--transition-fast),
+    border-color var(--transition-fast), box-shadow var(--transition-fast), color var(--transition-fast);
+}
+
+.mk-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.mk-btn--primary {
+  background: var(--mk-btn);
+  color: var(--mk-on-blue);
+  box-shadow: 0 1px 2px rgba(8, 120, 239, 0.3), 0 8px 20px rgba(8, 120, 239, 0.18);
+}
+
+.mk-btn--primary:hover:not(:disabled) {
+  box-shadow: 0 2px 4px rgba(8, 120, 239, 0.35), 0 12px 26px rgba(8, 120, 239, 0.24);
+}
+
+.mk-btn--ghost {
+  background: transparent;
+  color: var(--mk-ink);
+  border-color: var(--mk-line);
+}
+
+.mk-btn--ghost:hover:not(:disabled) {
+  border-color: var(--mk-blue);
+  color: var(--mk-blue-text);
+}
+
+.mk-btn--block {
+  display: flex;
+  width: 100%;
+}
+
+.mk-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* Visible keyboard focus everywhere on the marketing pages. */
+.mk-page a:focus-visible,
+.mk-page button:focus-visible,
+.mk-page summary:focus-visible,
+.mk-page input:focus-visible {
+  outline: 2px solid var(--mk-blue);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ------------------------------------------------------------
+   Wordmark — one component (components/Wordmark.tsx), used in the nav,
+   landing hero, footer, login, sidebar and parent header: the brand mark
+   plus "XFunction" in Plus Jakarta Sans Bold (--font-brand, see
+   app/layout.tsx). Text is navy on light backgrounds and white on dark
+   (it follows --mk-ink). The mark is full colour on light and all white on
+   dark; tone="light" forces white for sitting on photos/video.
+   ------------------------------------------------------------ */
+.mk-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-family: var(--font-brand), "Plus Jakarta Sans", system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  line-height: 1;
+  color: var(--mk-ink);
+  white-space: nowrap;
+}
+
+.mk-wordmark__mark {
+  display: block;
+  height: 1.02em;
+  width: auto;
+  flex: none;
+}
+
+.mk-wordmark__mark--white {
+  display: none;
+}
+
+:root[data-theme="dark"] .mk-wordmark__mark--color {
+  display: none;
+}
+
+:root[data-theme="dark"] .mk-wordmark__mark--white {
+  display: block;
+}
+
+.mk-wordmark--sm { font-size: 20px; }
+.mk-wordmark--md { font-size: 25px; }
+.mk-wordmark--lg { font-size: 34px; }
+.mk-wordmark--xl { font-size: clamp(44px, 9vw, 92px); }
+
+.mk-wordmark--light {
+  color: #FFFFFF;
+}
+
+.mk-wordmark--light .mk-wordmark__mark--color,
+:root[data-theme="dark"] .mk-wordmark--light .mk-wordmark__mark--color {
+  display: none;
+}
+
+.mk-wordmark--light .mk-wordmark__mark--white,
+:root[data-theme="dark"] .mk-wordmark--light .mk-wordmark__mark--white {
+  display: block;
+}
+
+/* The logo entrance animation (components/LogoIntro.tsx) scales this
+   wrapper, so it must be a box. */
+.xf-logo-intro {
+  display: inline-block;
+}
+
+/* ------------------------------------------------------------
+   Nav + footer (components/MarketingNav.tsx, MarketingFooter.tsx)
+   ------------------------------------------------------------ */
+.mk-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: var(--mk-nav-h);
+  background: var(--mk-paper);
+  background: color-mix(in srgb, var(--mk-paper) 88%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid var(--mk-line);
+}
+
+.mk-nav__inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.mk-nav__brand {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mk-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.mk-nav__link {
+  position: relative;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--mk-ink-2);
+  text-decoration: none;
+  padding: 6px 0;
+  transition: color var(--transition-fast);
+}
+
+.mk-nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--mk-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition);
+}
+
+.mk-nav__link:hover {
+  color: var(--mk-ink);
+}
+
+.mk-nav__link:hover::after,
+.mk-nav__link[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+.mk-nav__link[aria-current="page"] {
+  color: var(--mk-ink);
+}
+
+.mk-nav__link--app {
+  color: var(--mk-blue-text);
+  font-weight: 600;
+  border: 1px solid var(--mk-line);
+  border-radius: 999px;
+  padding: 7px 18px;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.mk-nav__link--app::after {
+  display: none;
+}
+
+.mk-nav__link--app:hover {
+  border-color: var(--mk-blue);
+  color: var(--mk-blue-text);
+  background: var(--mk-accent-soft);
+}
+
+.mk-nav__menu-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--mk-line);
+  border-radius: var(--mk-radius-sm);
+  color: var(--mk-ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.mk-nav__panel {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .mk-nav__links {
+    display: none;
+  }
+  .mk-nav__menu-btn {
+    display: inline-flex;
+  }
+  .mk-nav__panel {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--mk-paper);
+    border-bottom: 1px solid var(--mk-line);
+    box-shadow: var(--mk-shadow-lift);
+    padding: 8px var(--mk-gutter) 20px;
+    animation: mk-panel-in 0.22s var(--ease) both;
+  }
+  .mk-nav__panel a {
+    display: block;
+    padding: 14px 2px;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--mk-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--mk-line);
+  }
+  .mk-nav__panel a[aria-current="page"] {
+    color: var(--mk-blue-text);
+  }
+  .mk-nav__panel a:last-child {
+    border-bottom: 0;
+  }
+}
+
+@keyframes mk-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mk-footer {
+  background: var(--mk-paper);
+  border-top: 1px solid var(--mk-line);
+  padding: 56px 0 44px;
+}
+
+.mk-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px 64px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.mk-footer__tagline {
+  margin: 14px 0 0;
+  max-width: 320px;
+  font-size: 15px;
+  color: var(--mk-ink-2);
+}
+
+.mk-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+}
+
+.mk-footer__links a {
+  font-size: 15px;
+  color: var(--mk-ink-2);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.mk-footer__links a:hover {
+  color: var(--mk-blue-text);
+}
+
+/* ------------------------------------------------------------
+   Scroll reveal (components/Reveal.tsx): gentle fade + slide-up.
+   Content is visible by default; the component only hides an element
+   that starts BELOW the fold, then lets it in as it scrolls into view —
+   so no-JS and reduced-motion visitors never see hidden content.
+   ------------------------------------------------------------ */
+.mk-reveal {
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+
+.mk-reveal-pending {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-reveal,
+  .mk-card,
+  .mk-btn,
+  .mk-nav__link,
+  .mk-nav__link::after {
+    transition: none;
+  }
+  .mk-reveal-pending {
+    opacity: 1;
+    transform: none;
+  }
+  .mk-nav__panel {
+    animation: none;
+  }
+  .mk-card--hover:hover,
+  .mk-btn:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   About page (app/about/page.tsx)
+   ============================================================ */
+.about-hero {
+  padding: clamp(72px, 12vw, 148px) 0 clamp(56px, 8vw, 96px);
+}
+
+.about-hero .mk-lead {
+  margin-top: 28px;
+}
+
+/* The 01 / 02 / 03 numerals come from a CSS counter, so they are
+   decoration only and add no text to the page. */
+.about-rows {
+  counter-reset: about;
+}
+
+.about-row {
+  border-top: 1px solid var(--mk-line);
+  padding: clamp(56px, 8vw, 96px) 0;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 32px 72px;
+  align-items: start;
+}
+
+.about-row__title::before {
+  counter-increment: about;
+  content: counter(about, decimal-leading-zero);
+  display: block;
+  margin-bottom: 14px;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--mk-accent);
+}
+
+.about-grid .mk-prose p {
+  font-size: 19px;
+  line-height: 1.75;
+}
+
+@media (max-width: 860px) {
+  .about-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
+.about-mission {
+  background: var(--mk-surface-2);
+  border-top: 1px solid var(--mk-line);
+  padding: clamp(72px, 11vw, 136px) 0;
+}
+
+.about-mission__label {
+  font-family: var(--font-body), system-ui, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+  color: var(--mk-accent) !important;
+  margin: 0 0 28px !important;
+}
+
+.about-mission__quote {
+  position: relative;
+  margin: 0;
+  padding-top: 28px;
+  max-width: 880px;
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(28px, 4.4vw, 52px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--mk-ink);
+}
+
+.about-mission__quote::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 2px;
+  background: var(--mk-accent);
+}
+
+/* ============================================================
+   Help page (app/help/page.tsx, components/FaqList.tsx)
+   ============================================================ */
+.help-hero {
+  padding: clamp(64px, 10vw, 120px) 0 clamp(36px, 5vw, 56px);
+}
+
+.help-hero .mk-lead {
+  margin-top: 22px;
+}
+
+.help-body {
+  padding: 0 0 clamp(72px, 10vw, 128px);
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 48px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .help-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+}
+
+/* Search */
+.help-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.help-search svg {
+  position: absolute;
+  left: 16px;
+  color: var(--mk-ink-2);
+  pointer-events: none;
+}
+
+.help-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px 14px 46px;
+  background: var(--mk-surface);
+  color: var(--mk-ink);
+  border: 1px solid var(--mk-line);
+  border-radius: var(--mk-radius-sm);
+  font-family: inherit;
+  font-size: 16px;
+  box-shadow: var(--mk-shadow);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.help-search input::placeholder {
+  color: var(--mk-ink-2);
+  opacity: 0.85;
+}
+
+.help-search input:focus-visible {
+  border-color: var(--mk-blue);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--mk-accent-soft), var(--mk-shadow);
+}
+
+.help-count {
+  margin: 12px 2px 20px;
+  font-size: 13px;
+  color: var(--mk-ink-2);
+}
+
+/* Accordion */
+.help-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.help-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 26px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.help-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.mk-page .help-q {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(19px, 2.2vw, 23px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.help-chevron {
+  flex-shrink: 0;
+  color: var(--mk-accent);
+  transition: transform var(--transition);
+}
+
+.help-item[open] .help-chevron {
+  transform: rotate(180deg);
+}
+
+.help-item[open] {
+  border-color: var(--mk-blue);
+}
+
+.help-a {
+  margin: 0;
+  padding: 0 26px 26px;
+  font-size: 16.5px;
+  line-height: 1.75;
+  color: var(--mk-ink-2);
+  max-width: 68ch;
+  animation: help-open 0.3s var(--ease) both;
+}
+
+@keyframes help-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.help-empty {
+  padding: 28px;
+  color: var(--mk-ink-2);
+}
+
+/* Contact card */
+.help-contact {
+  padding: 30px 28px 28px;
+  position: sticky;
+  top: calc(var(--mk-nav-h) + 24px);
+}
+
+@media (max-width: 900px) {
+  .help-contact {
+    position: static;
+  }
+}
+
+.help-contact p {
+  margin: 14px 0 0;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--mk-ink-2);
+}
+
+.help-contact .mk-btn {
+  margin-top: 24px;
+}
+
+.help-contact__mail {
+  color: var(--mk-blue-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-a {
+    animation: none;
+  }
+  .help-chevron {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   What's New (app/changelog/page.tsx) — vertical timeline
+   ============================================================ */
+.cl-hero {
+  padding: clamp(64px, 10vw, 120px) 0 clamp(40px, 6vw, 72px);
+}
+
+.cl-hero .mk-lead {
+  margin-top: 22px;
+}
+
+.cl-body {
+  padding: 0 0 clamp(72px, 10vw, 128px);
+}
+
+.cl-timeline {
+  --cl-date-w: 200px;
+  --cl-gap: 64px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* The vertical line, centred in the gap between the date and the text. */
+.cl-timeline::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 12px;
+  left: calc(var(--cl-date-w) + var(--cl-gap) / 2);
+  width: 1px;
+  background: var(--mk-line);
+}
+
+.cl-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--cl-date-w) minmax(0, 1fr);
+  column-gap: var(--cl-gap);
+  padding-bottom: clamp(44px, 6vw, 64px);
+}
+
+.cl-entry:last-child {
+  padding-bottom: 0;
+}
+
+/* The dot on the line; the newest entry's is filled blue. */
+.cl-entry::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: calc(var(--cl-date-w) + var(--cl-gap) / 2 - 6px);
+  width: 13px;
+  height: 13px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--mk-paper);
+  border: 2px solid var(--mk-accent);
+}
+
+.cl-entry:first-child::before {
+  background: var(--mk-blue);
+  border-color: var(--mk-blue);
+}
+
+.cl-date {
+  padding-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mk-accent);
+}
+
+.cl-content .mk-h3 {
+  margin: 0 0 16px;
+}
+
+.cl-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 64ch;
+}
+
+.cl-items li {
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 12px;
+  font-size: 16.5px;
+  line-height: 1.7;
+  color: var(--mk-ink-2);
+}
+
+.cl-items li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.78em;
+  width: 10px;
+  height: 1.5px;
+  background: var(--mk-accent);
+}
+
+.cl-items li:last-child {
+  margin-bottom: 0;
+}
+
+/* Phones: date sits above each entry; the line runs down the left edge. */
+@media (max-width: 760px) {
+  .cl-timeline {
+    --cl-dot-x: 6px;
+  }
+  .cl-timeline::before {
+    left: var(--cl-dot-x);
+  }
+  .cl-entry {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
+    padding-left: 34px;
+  }
+  .cl-entry::before {
+    left: 0;
+  }
+  .cl-date {
+    padding-top: 0;
+  }
+}
+
+/* ============================================================
+   Pricing page (app/pricing/page.tsx)
+   ============================================================ */
+.pr-hero {
+  padding: clamp(64px, 10vw, 120px) 0 clamp(40px, 6vw, 72px);
+  text-align: center;
+}
+
+.pr-hero .mk-lead {
+  margin: 22px auto 0;
+}
+
+.pr-body {
+  padding: 0 0 clamp(80px, 11vw, 136px);
+}
+
+.pr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+@media (max-width: 760px) {
+  .pr-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Each Reveal wrapper stretches so both cards are the same height. */
+.pr-slot {
+  display: flex;
+}
+
+.pr-card {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(28px, 4vw, 40px);
+}
+
+/* The recommended plan: a blue hairline, a soft halo and a thin top bar —
+   quietly distinct, not loud. */
+.pr-card--pro {
+  border-color: color-mix(in srgb, var(--mk-blue) 60%, var(--mk-line));
+  box-shadow: var(--mk-shadow-lift), 0 0 0 4px var(--mk-accent-soft);
+  overflow: hidden;
+}
+
+.pr-card--pro::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--mk-blue);
+}
+
+.pr-tag {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--mk-tint);
+  border: 1px solid transparent;
+  color: var(--mk-on-tint);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pr-card__label {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--mk-ink-2);
+}
+
+.pr-card--pro .pr-card__label {
+  color: var(--mk-blue-text);
+}
+
+.pr-price {
+  margin-top: 10px;
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(48px, 6vw, 62px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--mk-ink);
+}
+
+.pr-price__unit {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--mk-ink-2);
+}
+
+.pr-card__desc {
+  margin: 14px 0 0;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--mk-line);
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--mk-ink-2);
+}
+
+.pr-features {
+  list-style: none;
+  margin: 26px 0 36px;
+  padding: 0;
+  flex: 1;
+}
+
+.pr-features li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--mk-ink);
+}
+
+.pr-features li:last-child {
+  margin-bottom: 0;
+}
+
+.pr-features svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--mk-blue-text);
+}
+
+.pr-error {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--mk-error);
+}

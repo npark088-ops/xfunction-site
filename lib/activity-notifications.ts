@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { MockCourse } from "./mock-canvas-data";
 import { getCanvasConnection } from "./canvas-token-store";
 import { ACHIEVEMENTS, getUnlockedAchievementIds } from "./achievements";
 import { getUpcomingAssignments, getDigestAssignments, URGENT_WITHIN_DAYS } from "./upcoming-assignments";
@@ -17,7 +18,11 @@ import { ensureNotification } from "./notifications";
 // app/api/notifications/sync and app/(dashboard)/overview/page.tsx) —
 // the layout itself only does the cheap read-only notification
 // snapshot needed to render the bell correctly everywhere.
-export async function syncActivityNotifications(supabase: SupabaseClient, userId: string) {
+export async function syncActivityNotifications(
+  supabase: SupabaseClient,
+  userId: string,
+  courses: Record<string, MockCourse>
+) {
   const [profileRow, canvasConnection] = await Promise.all([
     supabase
       .from("profiles")
@@ -31,6 +36,7 @@ export async function syncActivityNotifications(supabase: SupabaseClient, userId
     longestStreak: profileRow.data?.longest_streak ?? 0,
     hasGeneratedStudyPlan: Boolean(profileRow.data?.first_study_plan_at),
     canvasConnected: Boolean(canvasConnection),
+    courses,
   });
 
   await Promise.all(
@@ -46,7 +52,7 @@ export async function syncActivityNotifications(supabase: SupabaseClient, userId
 
   // Genuinely urgent (due within URGENT_WITHIN_DAYS) — each gets its
   // own notification, same as before.
-  const urgent = getUpcomingAssignments(URGENT_WITHIN_DAYS);
+  const urgent = getUpcomingAssignments(courses, URGENT_WITHIN_DAYS);
   await Promise.all(
     urgent.map((item) =>
       ensureNotification(supabase, {
@@ -64,7 +70,7 @@ export async function syncActivityNotifications(supabase: SupabaseClient, userId
   // notification that silently goes stale as the underlying list
   // changes. ensureNotification's ignoreDuplicates means this only
   // actually inserts once per day, even though sync runs on every visit.
-  const digestItems = getDigestAssignments();
+  const digestItems = getDigestAssignments(courses);
   if (digestItems.length > 0) {
     const preview = digestItems.slice(0, 3).map((item) => item.assignmentName);
     const overflow = digestItems.length - preview.length;

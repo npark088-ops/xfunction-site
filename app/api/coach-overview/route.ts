@@ -1,6 +1,7 @@
 import { createClient } from "../../../lib/supabase/server";
-import { consumeAiGeneration } from "../../../lib/ai-usage";
+import { consumeAiGeneration } from "../../../lib/profile-server";
 import { generateCoachInsight } from "../../../lib/coach-insight";
+import { getUserCourses } from "../../../lib/user-courses";
 
 export async function GET() {
   const supabase = await createClient();
@@ -12,7 +13,7 @@ export async function GET() {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
-  const usage = await consumeAiGeneration(supabase, user.id);
+  const usage = await consumeAiGeneration(supabase);
   if (!usage.allowed) {
     return Response.json(
       {
@@ -24,7 +25,8 @@ export async function GET() {
   }
 
   try {
-    const insight = await generateCoachInsight();
+    const courses = await getUserCourses(supabase, user.id);
+    const insight = await generateCoachInsight(courses, usage.isPro);
     return Response.json({ insight });
   } catch (error) {
     console.error("Coach overview generation failed:", error);

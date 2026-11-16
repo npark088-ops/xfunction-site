@@ -41,5 +41,15 @@ begin
 end;
 $$;
 
-grant execute on function set_pro_on_checkout(uuid, text, text) to anon, authenticated;
-grant execute on function set_pro_on_cancellation(text) to anon, authenticated;
+-- Locked down to service_role ONLY. These grant/revoke Pro for any user
+-- id / Stripe customer id they're handed, so they must never be callable
+-- with the public anon key (which ships in the browser bundle). Postgres
+-- grants EXECUTE to PUBLIC by default — and Supabase additionally
+-- grants it to anon/authenticated — so all three are revoked explicitly.
+-- The only caller is app/api/stripe/webhook, through the server-only
+-- service-role client (lib/supabase/admin.ts).
+revoke all on function set_pro_on_checkout(uuid, text, text) from public, anon, authenticated;
+grant execute on function set_pro_on_checkout(uuid, text, text) to service_role;
+
+revoke all on function set_pro_on_cancellation(text) from public, anon, authenticated;
+grant execute on function set_pro_on_cancellation(text) to service_role;

@@ -286,5 +286,17 @@ export const mockCourses: Record<string, MockCourse> = {
   },
 };
 
+// The exact set of ids "Load demo data" seeds (see lib/user-courses.ts's
+// seedDemoData()) — used to decide whether the amber "Demo data" badge
+// (components/DemoDataBadge.tsx) should show at all. It used to be
+// unconditional back when every course was always fake; now that real
+// per-user courses exist, showing "Demo data" over a student's own
+// manually-entered class would be actively wrong, not just unnecessary.
+export const DEMO_COURSE_IDS = new Set(Object.keys(mockCourses));
+
+export function hasDemoCourses(courses: Record<string, MockCourse>): boolean {
+  return Object.keys(courses).some((id) => DEMO_COURSE_IDS.has(id));
+}
+
 // Kept for lib/test-calculator.ts, which exercises the calculator against a single course.
 export const mockAssignmentGroups = apBiologyGroups;

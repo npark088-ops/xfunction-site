@@ -4,6 +4,7 @@ import { ToastProvider } from "../../components/ToastProvider";
 import { ToastWatcher } from "../../components/ToastWatcher";
 import { OnboardingTour } from "../../components/OnboardingTour";
 import { ConsultantPanelProvider } from "../../components/ConsultantPanel";
+import { SupportChatProvider } from "../../components/SupportChatPanel";
 import { getNotificationsSnapshot } from "../../lib/notifications";
 
 const bg = "var(--bg)";
@@ -55,21 +56,26 @@ export default async function DashboardLayout({
     <ToastProvider>
       {user && <ToastWatcher />}
       {user && <OnboardingTour />}
-      {/* Wraps Sidebar (not just page content) so the sidebar's "Your
-          Consultant" nav item can open the same panel instance as the
-          floating button — see components/Sidebar.tsx's use of
-          useConsultantPanel(). */}
+      {/* ConsultantPanelProvider wraps Sidebar (not just page content) so
+          the sidebar's "Your Consultant" nav item opens the same panel
+          instance as its bottom-right floating button — see
+          components/Sidebar.tsx's use of useConsultantPanel().
+          SupportChatProvider renders its own bottom-left floating button
+          (see components/SupportChatPanel.tsx) and is also reachable from
+          the Settings page's "Support" card via useSupportChat(). */}
       <ConsultantPanelProvider>
-        <div style={{ display: "flex", minHeight: "100vh", background: bg }}>
-          <Sidebar
-            userId={user?.id ?? null}
-            userEmail={user?.email ?? null}
-            initialNotifications={notifications.notifications}
-            initialUnreadCount={notifications.unreadCount}
-            hasParentAccess={hasParentAccess}
-          />
-          <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-        </div>
+        <SupportChatProvider>
+          <div style={{ display: "flex", minHeight: "100vh", background: bg }}>
+            <Sidebar
+              userId={user?.id ?? null}
+              userEmail={user?.email ?? null}
+              initialNotifications={notifications.notifications}
+              initialUnreadCount={notifications.unreadCount}
+              hasParentAccess={hasParentAccess}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+          </div>
+        </SupportChatProvider>
       </ConsultantPanelProvider>
     </ToastProvider>
   );

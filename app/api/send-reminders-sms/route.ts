@@ -1,5 +1,6 @@
 import { getUpcomingAssignments, URGENT_WITHIN_DAYS } from "../../../lib/upcoming-assignments";
 import { createClient } from "../../../lib/supabase/server";
+import { getUserCourses } from "../../../lib/user-courses";
 
 function daysAwayLabel(daysAway: number) {
   if (daysAway <= 0) return "due today";
@@ -27,7 +28,8 @@ export async function POST() {
     );
   }
 
-  const urgent = getUpcomingAssignments(URGENT_WITHIN_DAYS);
+  const courses = await getUserCourses(supabase, user.id);
+  const urgent = getUpcomingAssignments(courses, URGENT_WITHIN_DAYS);
 
   if (urgent.length === 0) {
     return Response.json({ sent: false, count: 0 });

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCachedUser, createClient } from "../../lib/supabase/server";
-import { mockCourses, getCreditHours } from "../../lib/mock-canvas-data";
+import { getCreditHours } from "../../lib/mock-canvas-data";
+import { getUserCourses } from "../../lib/user-courses";
 import { calculateCurrentGrade, calculateWeightedOverallGrade } from "../../lib/grade-calculator";
 import { getOverallGradeHistory, trendDirection } from "../../lib/grade-history";
 import { getUpcomingAssignments, URGENT_WITHIN_DAYS } from "../../lib/upcoming-assignments";
@@ -60,22 +61,26 @@ export default async function ParentDashboardPage({
   const active =
     linkedStudents.find((s) => s.student_id === selectedStudentId) ?? linkedStudents[0];
 
-  // Every account currently reads from the same shared mock course
-  // dataset (lib/mock-canvas-data.ts) — there's no real per-student
-  // Canvas sync yet, so this is the same data the student themselves
-  // sees. The access-control (who's allowed to view, revocation) is
-  // real; the underlying grades becoming genuinely student-specific
-  // is the next step once real Canvas data is wired up.
-  const courses = Object.values(mockCourses).map((c) => ({
+  // Genuinely the linked STUDENT's own real courses (see
+  // lib/user-courses.ts), fetched with the signed-in PARENT's own
+  // session — that works because of the "Parents can view their linked
+  // student's courses" RLS policy (see supabase/migrations/0022_manual_courses.sql),
+  // which only allows it for an active, accepted link. Without that
+  // policy this would just silently return nothing (RLS still scopes
+  // it to auth.uid() = the parent, not the student).
+  const supabase = await createClient();
+  const studentCourses = await getUserCourses(supabase, active.student_id);
+
+  const courses = Object.values(studentCourses).map((c) => ({
     id: c.id,
     name: c.name,
     grade: calculateCurrentGrade(c.assignmentGroups),
     creditHours: getCreditHours(c),
   }));
   const overallGrade = calculateWeightedOverallGrade(courses);
-  const overallGradeHistory = getOverallGradeHistory(overallGrade);
+  const overallGradeHistory = getOverallGradeHistory(overallGrade, Object.keys(studentCourses));
   const trend = trendDirection(overallGradeHistory);
-  const upcoming = getUpcomingAssignments(7);
+  const upcoming = getUpcomingAssignments(studentCourses, 7);
 
   return (
     <div className="xf-page-enter" style={{ maxWidth: 820, margin: "0 auto", padding: "40px 40px 64px" }}>
