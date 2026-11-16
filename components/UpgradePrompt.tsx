@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Zap } from "lucide-react";
 import posthog from "posthog-js";
 
-const card = "#FFF8EB";
+const card = "var(--xf-warn-bg, #FFF8EB)";
 const amber = "var(--amber)";
 const blue = "var(--blue)";
 const red = "var(--red)";
@@ -64,11 +64,11 @@ export function UpgradePrompt({
           gap: 8,
           fontSize: 14,
           fontWeight: 700,
-          color: "#8A5A00",
+          color: "var(--xf-warn-text, #8A5A00)",
           marginBottom: 4,
         }}
       >
-        <Zap size={16} strokeWidth={2} fill="#8A5A00" fillOpacity={0.2} />
+        <Zap size={16} strokeWidth={2} fill="var(--xf-warn-text, #8A5A00)" fillOpacity={0.2} />
         Free plan limit reached
       </div>
       <p style={{ fontSize: 13, color: text, margin: 0, marginBottom: 14, lineHeight: 1.5 }}>

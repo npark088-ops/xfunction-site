@@ -5,9 +5,6 @@ import { Flame, Sparkle } from "lucide-react";
 import { resolveCssVar } from "../lib/theme-color";
 import { useEncouragement } from "./ToastProvider";
 
-const card = "#FFF8EB";
-const textDim = "var(--text-dim)";
-
 // Milestones worth a separate encouragement toast on top of the
 // built-in pop/particle animation below — deliberately sparse so it
 // stays a "you hit something real" moment, not one every day.
@@ -57,65 +54,39 @@ export function StreakBadge() {
 
   return (
     <div
+      className="xf-streak"
+      role="status"
+      aria-label={`${streak}-day streak`}
       style={{
         position: "relative",
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 12,
-        background: `linear-gradient(135deg, ${card}, #FFF1D6)`,
-        border: `1px solid ${resolvedAmber}88`,
-        borderRadius: "var(--radius-lg)",
-        padding: "12px 20px",
-        marginBottom: 24,
-        boxShadow: celebrate ? `var(--shadow-sm), 0 0 24px ${resolvedAmber}55` : "var(--shadow-sm)",
+        boxShadow: celebrate ? `var(--shadow-sm), 0 0 24px ${resolvedAmber}55` : undefined,
         transition: "box-shadow 0.4s ease",
       }}
     >
       <div
+        aria-hidden="true"
         style={{
           display: "flex",
           animation: celebrate ? "streakPop 0.7s ease" : undefined,
-          filter: `drop-shadow(0 0 ${celebrate ? 10 : 4}px ${resolvedAmber}aa)`,
+          filter: `drop-shadow(0 0 ${celebrate ? 10 : 3}px ${resolvedAmber}aa)`,
           transition: "filter 0.4s ease",
           color: resolvedAmber,
         }}
       >
-        <Flame size={30} strokeWidth={2} fill={resolvedAmber} fillOpacity={0.25} />
+        <Flame size={24} strokeWidth={2} fill={resolvedAmber} fillOpacity={0.25} />
       </div>
-      <div>
-        <div
-          style={{
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 24,
-            fontWeight: 700,
-            color: "#8A5A00",
-            lineHeight: 1.1,
-          }}
-        >
-          {streak}
-        </div>
-        <div
-          style={{
-            fontSize: 11,
-            color: textDim,
-            fontWeight: 600,
-            letterSpacing: "0.04em",
-            textTransform: "uppercase",
-          }}
-        >
-          Day streak
-        </div>
-      </div>
+      <span className="xf-streak__num">{streak}</span>
+      <span className="xf-streak__label">day streak</span>
 
       {celebrate && (
         <>
-          <span style={{ position: "absolute", top: "40%", left: 18, color: resolvedAmber, animation: "streakParticle0 1s ease-out forwards", pointerEvents: "none" }}>
+          <span style={{ position: "absolute", top: "40%", left: 14, color: resolvedAmber, animation: "streakParticle0 1s ease-out forwards", pointerEvents: "none" }}>
             <Sparkle size={14} fill={resolvedAmber} />
           </span>
-          <span style={{ position: "absolute", top: "40%", left: 18, color: resolvedAmber, animation: "streakParticle1 1s ease-out forwards", pointerEvents: "none" }}>
+          <span style={{ position: "absolute", top: "40%", left: 14, color: resolvedAmber, animation: "streakParticle1 1s ease-out forwards", pointerEvents: "none" }}>
             <Sparkle size={14} fill={resolvedAmber} />
           </span>
-          <span style={{ position: "absolute", top: "40%", left: 18, color: resolvedAmber, animation: "streakParticle2 1s ease-out forwards", pointerEvents: "none" }}>
+          <span style={{ position: "absolute", top: "40%", left: 14, color: resolvedAmber, animation: "streakParticle2 1s ease-out forwards", pointerEvents: "none" }}>
             <Sparkle size={14} fill={resolvedAmber} />
           </span>
         </>
