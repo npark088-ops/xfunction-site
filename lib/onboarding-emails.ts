@@ -5,12 +5,11 @@
 // get_onboarding_email_candidates() RPC (supabase/migrations/0017_onboarding_emails.sql),
 // which is also what "hasn't happened yet" (canvas_connected, has_study_plan) comes from.
 //
-// Sends via the same onboarding@resend.dev shared sender as
-// lib/weekly-digest.ts — meaning it's currently limited to whatever
-// single address the Resend account itself is registered under, until
-// a verified sending domain replaces it. That's a real gap for a
-// feature meant to reach every new student, not one fixed inbox — see
-// the route's doc comment for how failures are handled meanwhile.
+// Sends from the EMAIL_FROM address (see lib/email-config.ts). Until a verified
+// sender is configured nothing is sent: callers check emailSendingEnabled()
+// first and skip quietly (the cron route returns "skipped" without touching
+// any student's "already sent" record, so nobody loses an email).
+import { EMAIL_DISABLED_MESSAGE, emailSendingEnabled, getEmailSender } from "./email-config";
 
 export interface OnboardingCandidate {
   user_id: string;
@@ -94,11 +93,8 @@ export async function sendOnboardingEmail(
   subject: string,
   html: string
 ): Promise<{ ok: boolean; error?: string }> {
-  if (!process.env.RESEND_API_KEY) {
-    return {
-      ok: false,
-      error: "Email sending isn't set up yet — RESEND_API_KEY is missing from the server.",
-    };
+  if (!emailSendingEnabled()) {
+    return { ok: false, error: EMAIL_DISABLED_MESSAGE };
   }
 
   try {
@@ -109,7 +105,7 @@ export async function sendOnboardingEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "XFunction <onboarding@resend.dev>",
+        from: getEmailSender(),
         to,
         subject,
         html,

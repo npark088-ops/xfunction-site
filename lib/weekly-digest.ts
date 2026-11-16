@@ -1,4 +1,5 @@
 import type { MockCourse } from "./mock-canvas-data";
+import { EMAIL_DISABLED_MESSAGE, emailSendingEnabled, getEmailSender } from "./email-config";
 import { getCreditHours } from "./mock-canvas-data";
 import { calculateCurrentGrade, calculateWeightedOverallGrade } from "./grade-calculator";
 import { getOverallGradeHistory, trendDirection, type GradePoint } from "./grade-history";
@@ -72,19 +73,14 @@ export function buildDigestEmail(data: DigestData): { subject: string; html: str
   };
 }
 
-// Sends via onboarding@resend.dev, Resend's shared test sender — same
-// single-recipient restriction documented in app/api/send-reminders:
-// it can only deliver to the email address the Resend account itself
-// is registered under, until a verified sending domain is set up.
+// Sends from the EMAIL_FROM address; does nothing until one is configured
+// (see lib/email-config.ts).
 export async function sendDigestEmail(
   to: string,
   data: DigestData
 ): Promise<{ ok: boolean; error?: string }> {
-  if (!process.env.RESEND_API_KEY) {
-    return {
-      ok: false,
-      error: "Email sending isn't set up yet — RESEND_API_KEY is missing from the server.",
-    };
+  if (!emailSendingEnabled()) {
+    return { ok: false, error: EMAIL_DISABLED_MESSAGE };
   }
 
   const { subject, html } = buildDigestEmail(data);
@@ -97,7 +93,7 @@ export async function sendDigestEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "XFunction <onboarding@resend.dev>",
+        from: getEmailSender(),
         to,
         subject,
         html,

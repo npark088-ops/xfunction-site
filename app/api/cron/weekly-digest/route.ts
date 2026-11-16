@@ -2,7 +2,7 @@
 // user exists in this context, so it can't gate/consume a per-user AI
 // quota the way the on-demand /api/weekly-digest route does.
 //
-// DISABLED as of real per-user course data (see lib/user-courses.ts):
+// SWITCHED OFF as of real per-user course data (see lib/user-courses.ts):
 // this used to compose a digest from the single shared mockCourses
 // dataset and send it to one fixed DIGEST_EMAIL address — safe when
 // every account showed the same numbers anyway. Now that grades are
@@ -20,11 +20,11 @@ export async function GET(req: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return Response.json(
-    {
-      error:
-        "Weekly digest cron is disabled pending per-user account resolution — see the comment in this route's source.",
-    },
-    { status: 501 }
-  );
+  // Switched off (see the note above), and it must not look like a failure:
+  // Vercel logged an error every Monday for the old 501. Answers 200 "skipped".
+  return Response.json({
+    ok: true,
+    skipped: true,
+    reason: "Weekly digest cron is switched off pending per-user account resolution.",
+  });
 }

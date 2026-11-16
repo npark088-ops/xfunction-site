@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, Sparkles, Mail, MessageSquareText, CalendarRange, Megaphone, Timer } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, Sparkles, Mail, CalendarRange, Megaphone, Timer } from "lucide-react";
 import { getCreditHours, hasDemoCourses, type MockCourse } from "../../../lib/mock-canvas-data";
 import { getUserCourses } from "../../../lib/user-courses";
 import { getAllAnnouncements } from "../../../lib/mock-announcements";
@@ -188,27 +188,14 @@ export default function OverviewPage() {
           setReminderStatus({ kind: "error", message: data.error || "Failed to send email" });
           return;
         }
+        if (data.disabled) {
+          // Email isn't switched on yet (no verified sender): nothing was sent.
+          setReminderStatus({ kind: "error", message: data.message || "Email reminders aren't switched on yet." });
+          return;
+        }
         setReminderStatus({ kind: "sent", count: data.count });
       })
       .catch(() => setReminderStatus({ kind: "error", message: "Failed to send email" }));
-  };
-
-  const [smsStatus, setSmsStatus] = useState<
-    { kind: "sending" } | { kind: "sent"; count: number } | { kind: "error"; message: string } | null
-  >(null);
-
-  const sendReminderSms = () => {
-    setSmsStatus({ kind: "sending" });
-    fetch("/api/send-reminders-sms", { method: "POST" })
-      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok) {
-          setSmsStatus({ kind: "error", message: data.error || "Failed to send text" });
-          return;
-        }
-        setSmsStatus({ kind: "sent", count: data.count });
-      })
-      .catch(() => setSmsStatus({ kind: "error", message: "Failed to send text" }));
   };
 
   // Combined study plan across every course at once — see
@@ -638,26 +625,6 @@ export default function OverviewPage() {
                   <Mail size={13} strokeWidth={2} />
                   {reminderStatus?.kind === "sending" ? "Sending…" : "Email me these reminders"}
                 </button>
-                <button
-                  onClick={sendReminderSms}
-                  disabled={smsStatus?.kind === "sending"}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "6px 14px",
-                    borderRadius: "var(--radius-sm)",
-                    background: "transparent",
-                    border: `1px solid ${blue}`,
-                    color: blue,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: smsStatus?.kind === "sending" ? "default" : "pointer",
-                  }}
-                >
-                  <MessageSquareText size={13} strokeWidth={2} />
-                  {smsStatus?.kind === "sending" ? "Sending…" : "Text me these reminders"}
-                </button>
               </div>
             )}
           </div>
@@ -669,16 +636,6 @@ export default function OverviewPage() {
           {reminderStatus?.kind === "error" && (
             <div style={{ fontSize: 12, color: red, marginBottom: 12 }}>
               {reminderStatus.message}
-            </div>
-          )}
-          {smsStatus?.kind === "sent" && (
-            <div style={{ fontSize: 12, color: green, marginBottom: 12 }}>
-              Sent — {smsStatus.count} urgent item{smsStatus.count === 1 ? "" : "s"} texted to you.
-            </div>
-          )}
-          {smsStatus?.kind === "error" && (
-            <div style={{ fontSize: 12, color: red, marginBottom: 12 }}>
-              {smsStatus.message}
             </div>
           )}
           {upcoming.length === 0 ? (

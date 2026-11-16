@@ -1,5 +1,6 @@
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { ONBOARDING_STEPS, sendOnboardingEmail, type OnboardingCandidate } from "../../../../lib/onboarding-emails";
+import { emailSendingEnabled } from "../../../../lib/email-config";
 
 // Triggered daily by Vercel Cron (see vercel.json). No signed-in user
 // exists in this context — same as app/api/cron/weekly-digest — so
@@ -9,19 +10,20 @@ import { ONBOARDING_STEPS, sendOnboardingEmail, type OnboardingCandidate } from 
 // service_role only — they return user emails, so they must never be
 // reachable with the public anon key).
 //
-// IMPORTANT: like the weekly digest, this sends through Resend's shared
-// onboarding@resend.dev sender, which can only deliver to the address
-// the Resend account itself is registered under until a verified
-// sending domain is set up. Right now that means real students will
-// NOT receive these emails in production — only whatever single inbox
-// Resend is configured against will. The step logic, skip conditions,
-// and dedupe below are all real and ready to go the moment a verified
-// domain replaces the sandbox sender; nothing here needs to change,
-// this route just needs Resend's sending restriction lifted.
+// Email is OFF until a verified sender is configured (EMAIL_FROM, see
+// lib/email-config.ts): the route then answers "skipped" and does nothing. Once
+// it is on, the step logic, skip conditions and dedupe below are all ready.
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
   if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // No verified sender configured (EMAIL_FROM, see lib/email-config.ts): do
+  // nothing. Returns before any lookup, so no student is marked as "emailed"
+  // and everyone is still a candidate once email is switched on.
+  if (!emailSendingEnabled()) {
+    return Response.json({ ok: true, skipped: true, reason: "Email sending isn't configured (EMAIL_FROM)." });
   }
 
   let supabase: ReturnType<typeof createAdminClient>;

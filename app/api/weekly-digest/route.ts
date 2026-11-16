@@ -1,5 +1,6 @@
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/profile-server";
+import { EMAIL_DISABLED_MESSAGE, emailSendingEnabled } from "../../../lib/email-config";
 import { getRequestTimeZone } from "../../../lib/request-tz";
 import { generateCoachInsight } from "../../../lib/coach-insight";
 import { composeDigestData, sendDigestEmail } from "../../../lib/weekly-digest";
@@ -19,6 +20,12 @@ export async function POST() {
 
   if (!user?.email) {
     return Response.json({ error: "Not signed in" }, { status: 401 });
+  }
+
+  // No verified sender yet: do nothing (and don't spend an AI generation on
+  // a digest that can't be sent).
+  if (!emailSendingEnabled()) {
+    return Response.json({ sent: false, disabled: true, message: EMAIL_DISABLED_MESSAGE });
   }
 
   const courses = await getUserCourses(supabase, user.id);

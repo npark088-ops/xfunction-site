@@ -1,6 +1,7 @@
 import { createClient } from "../../../../lib/supabase/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { ONBOARDING_STEPS, sendOnboardingEmail } from "../../../../lib/onboarding-emails";
+import { emailSendingEnabled } from "../../../../lib/email-config";
 
 // Fired once, fire-and-forget, right after a successful signup (see
 // app/login/page.tsx) so the welcome email goes out immediately rather
@@ -17,6 +18,12 @@ export async function POST() {
 
   if (!user?.email) {
     return Response.json({ error: "Not signed in" }, { status: 401 });
+  }
+
+  // Email isn't switched on yet (no verified sender): do nothing, successfully.
+  // Nothing is marked as sent, so the welcome email still goes out later.
+  if (!emailSendingEnabled()) {
+    return Response.json({ sent: false, skipped: true });
   }
 
   const step = ONBOARDING_STEPS.find((s) => s.key === "welcome")!;

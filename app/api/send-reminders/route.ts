@@ -1,5 +1,6 @@
 import { getUpcomingAssignments, getDigestAssignments, URGENT_WITHIN_DAYS } from "../../../lib/upcoming-assignments";
 import { getRequestTimeZone } from "../../../lib/request-tz";
+import { EMAIL_DISABLED_MESSAGE, emailSendingEnabled, getEmailSender } from "../../../lib/email-config";
 import { createClient } from "../../../lib/supabase/server";
 import { getUserCourses } from "../../../lib/user-courses";
 
@@ -26,11 +27,10 @@ export async function POST() {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
-  if (!process.env.RESEND_API_KEY) {
-    return Response.json(
-      { error: "Email sending isn't set up yet — RESEND_API_KEY is missing from the server." },
-      { status: 500 }
-    );
+  // No verified sender yet (see lib/email-config.ts): do nothing, successfully,
+  // and say so, instead of failing.
+  if (!emailSendingEnabled()) {
+    return Response.json({ sent: false, count: 0, disabled: true, message: EMAIL_DISABLED_MESSAGE });
   }
 
   const courses = await getUserCourses(supabase, user.id);
@@ -66,11 +66,8 @@ export async function POST() {
       : `${digestItems.length} assignment${digestItems.length === 1 ? "" : "s"} due later this week`;
 
   try {
-    // Sends via onboarding@resend.dev, Resend's shared test sender —
-    // it can only deliver to the email address your Resend account
-    // itself is registered under. That's fine for a single-user dev
-    // setup like this one; sending to arbitrary students later would
-    // need a verified sending domain in Resend.
+    // Sends from the verified EMAIL_FROM address (lib/email-config.ts), to the
+    // signed-in student's own email.
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -78,7 +75,7 @@ export async function POST() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "XFunction <onboarding@resend.dev>",
+        from: getEmailSender(),
         to: user.email,
         subject,
         html: `${urgentHtml}${digestHtml}`,

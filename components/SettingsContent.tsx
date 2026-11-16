@@ -213,6 +213,10 @@ export function SettingsContent({
           setDigestStatus({ kind: "error", message: data.error || "Failed to send digest" });
           return;
         }
+        if (data.disabled) {
+          setDigestStatus({ kind: "error", message: data.message || "Email isn't switched on yet." });
+          return;
+        }
         setDigestStatus({ kind: "sent" });
       })
       .catch(() => setDigestStatus({ kind: "error", message: "Failed to send digest" }));
