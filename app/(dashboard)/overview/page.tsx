@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, Sparkles, Mail, MessageSquareText, CalendarRange, Megaphone, Timer } from "lucide-react";
 import { getCreditHours, hasDemoCourses, type MockCourse } from "../../../lib/mock-canvas-data";
 import { getUserCourses } from "../../../lib/user-courses";
@@ -17,6 +17,7 @@ import { DemoDataBadge } from "../../../components/DemoDataBadge";
 import { createClient } from "../../../lib/supabase/client";
 import { getWeekBounds, minutesByCourse, totalMinutes, formatDuration, type StudySession } from "../../../lib/study-sessions";
 import { courseColor } from "../../../lib/course-colors";
+import { TIMEZONE_HEADER, browserTimeZone, localDate } from "../../../lib/local-date";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -41,7 +42,7 @@ function timeAgo(iso: string): string {
 }
 
 export default function OverviewPage() {
-  // Fetched client-side on mount, like weekSessions/coachInsight below —
+  // Fetched client-side on mount, like weekSessions below —
   // this whole page is already a client component, so there's no server
   // wrapper to seed it from. `null` means "still loading."
   const [userCourses, setUserCourses] = useState<Record<string, MockCourse> | null>(null);
@@ -50,9 +51,15 @@ export default function OverviewPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
         setUserCourses({});
+        setCoachLoading(false);
         return;
       }
-      getUserCourses(supabase, user.id).then(setUserCourses);
+      getUserCourses(supabase, user.id).then((loaded) => {
+        setUserCourses(loaded);
+        // The coach check-in is only requested once we know there is
+        // something to coach on (see loadDailyCoachTip below).
+        loadDailyCoachTip(user.id, Object.keys(loaded).length > 0);
+      });
     });
   }, []);
 
@@ -113,11 +120,39 @@ export default function OverviewPage() {
     null
   );
 
-  // Only ever called from a promise continuation or an event handler
-  // (never synchronously from an effect body), so it's fine to update
-  // state here directly.
-  const loadCoachInsight = () => {
-    fetch("/api/coach-overview")
+  // The coach check-in costs a free AI generation, so it is NOT fetched on
+  // every visit any more. The rules (also enforced by app/api/coach-overview):
+  //   - no courses  -> no request at all
+  //   - one tip per user per local day: today's tip is kept in this browser
+  //     (localStorage) so repeat visits make no request; the server also keeps
+  //     a copy per user per day, so other devices reuse it too
+  // Only ever called from a promise continuation (never synchronously from an
+  // effect body), so it's fine to update state here directly.
+  const coachRequested = useRef(false);
+  const loadDailyCoachTip = (userId: string, hasCourses: boolean) => {
+    if (!hasCourses) {
+      setCoachLoading(false);
+      return;
+    }
+    // React's dev-mode double-run of effects must not fire two requests.
+    if (coachRequested.current) return;
+    coachRequested.current = true;
+
+    const timeZone = browserTimeZone();
+    const today = localDate(timeZone);
+    const storageKey = `xf-coach-tip:${userId}`;
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(storageKey) ?? "null");
+      if (saved && saved.date === today && typeof saved.insight === "string") {
+        setCoachInsight(saved.insight);
+        setCoachLoading(false);
+        return;
+      }
+    } catch {
+      // Storage unavailable or unreadable: just ask the server.
+    }
+
+    fetch("/api/coach-overview", { headers: { [TIMEZONE_HEADER]: timeZone } })
       .then((res) => res.json().then((data) => ({ ok: res.ok, status: res.status, data })))
       .then(({ ok, status, data }) => {
         if (!ok) {
@@ -127,16 +162,17 @@ export default function OverviewPage() {
           });
           return;
         }
-        setCoachInsight(data.insight);
+        if (typeof data.insight === "string") {
+          setCoachInsight(data.insight);
+          try {
+            window.localStorage.setItem(storageKey, JSON.stringify({ date: today, insight: data.insight }));
+          } catch {
+            // Private mode etc.: the server copy still prevents a second generation.
+          }
+        }
       })
       .catch(() => setCoachError({ kind: "error", message: "Failed to generate check-in" }))
       .finally(() => setCoachLoading(false));
-  };
-
-  const refreshCoachInsight = () => {
-    setCoachLoading(true);
-    setCoachError(null);
-    loadCoachInsight();
   };
 
   const [reminderStatus, setReminderStatus] = useState<
@@ -209,14 +245,6 @@ export default function OverviewPage() {
       .catch(() => setBulkPlanError({ kind: "error", message: "Failed to generate combined study plan" }))
       .finally(() => setBulkPlanLoading(false));
   };
-
-  // Auto-generate on load — meant to feel like a quick check-in that's
-  // just there, not another feature you have to remember to click.
-  // coachLoading already starts `true`, so nothing needs to be reset
-  // synchronously here — this just kicks off the fetch.
-  useEffect(() => {
-    loadCoachInsight();
-  }, []);
 
   // Re-derives "what notifications should exist right now" (achievement
   // unlocks + urgent deadlines) once per visit to the dashboard, instead
@@ -543,22 +571,6 @@ export default function OverviewPage() {
               <Sparkles size={14} strokeWidth={2} />
               Coach check-in
             </div>
-            {!coachLoading && (coachInsight || coachError) && (
-              <button
-                onClick={refreshCoachInsight}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: blue,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  padding: 0,
-                }}
-              >
-                Refresh
-              </button>
-            )}
           </div>
 
           {coachLoading && (
@@ -575,6 +587,11 @@ export default function OverviewPage() {
           )}
           {!coachLoading && !coachError && coachInsight && (
             <p style={{ fontSize: 15, lineHeight: 1.6, margin: 0, color: text }}>{coachInsight}</p>
+          )}
+          {!coachLoading && !coachError && !coachInsight && (
+            <p style={{ fontSize: 14, margin: 0, color: textDim }}>
+              Add a class on the Courses page and your daily check-in will show up here. It refreshes once a day.
+            </p>
           )}
         </div>
 
