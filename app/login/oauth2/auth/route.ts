@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { issueAuthorizationCode } from "../../../../lib/mock-canvas-server-store";
+import { blockMockServerInProduction } from "../../../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -24,6 +25,8 @@ function escapeHtml(value: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const params = request.nextUrl.searchParams;
   const clientId = params.get("client_id") ?? "";
   const redirectUri = params.get("redirect_uri") ?? "";
@@ -75,6 +78,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const formData = await request.formData();
   const decision = formData.get("decision");
   const clientId = String(formData.get("client_id") ?? "");

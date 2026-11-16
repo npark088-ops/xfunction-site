@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { canvasOAuthConfig } from "../../../../lib/canvas-oauth-config";
 import { consumeAuthorizationCode } from "../../../../lib/mock-canvas-server-store";
 import { CanvasOAuthTokenResponse } from "../../../../lib/canvas-types";
+import { blockMockServerInProduction } from "../../../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -15,6 +16,8 @@ import { CanvasOAuthTokenResponse } from "../../../../lib/canvas-types";
 // response (see CanvasOAuthTokenResponse in lib/canvas-types.ts) —
 // only the values inside it are fake.
 export async function POST(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const formData = await request.formData();
   const grantType = formData.get("grant_type");
   const clientId = String(formData.get("client_id") ?? "");

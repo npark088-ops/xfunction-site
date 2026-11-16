@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { googleClassroomOAuthConfig } from "../../lib/google-classroom-oauth-config";
 import { consumeAuthorizationCode } from "../../lib/mock-google-server-store";
 import { GoogleOAuthTokenResponse } from "../../lib/google-classroom-types";
+import { blockMockServerInProduction } from "../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -33,6 +34,8 @@ function buildMockIdToken() {
 }
 
 export async function POST(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const formData = await request.formData();
   const grantType = formData.get("grant_type");
   const clientId = String(formData.get("client_id") ?? "");

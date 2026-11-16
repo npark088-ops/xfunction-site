@@ -3,6 +3,7 @@ import { schoologyOAuthConfig } from "../../../../lib/schoology-oauth-config";
 import { verifyOAuth1Signature } from "../../../../lib/oauth1-signing";
 import { getAccessTokenSecret, extractOAuthParam } from "../../../../lib/mock-schoology-server-store";
 import { SchoologyUser } from "../../../../lib/schoology-types";
+import { blockMockServerInProduction } from "../../../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -12,6 +13,8 @@ import { SchoologyUser } from "../../../../lib/schoology-types";
 // find out who actually just connected, since Schoology's token
 // endpoints (unlike Canvas's) don't return a name/id directly.
 export async function GET(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const authHeader = request.headers.get("authorization");
   if (!authHeader) {
     return new Response("Missing Authorization header", { status: 401 });
