@@ -8,37 +8,40 @@
    BRAND PALETTE (from the brand board)
      navy        #092C67   text, headings
      blue        #0878EF   highlights, focus ring, graphics
-     light blue  #9BCBFF   accents, tags
-     ice white   #F2F7FF   page background
-     white       #FFFFFF   cards
+     light blue  #9BCBFF   thin accents, tags (never a page background)
+     ice white   #F2F7FF   small tinted fills (icon tiles, call-to-action box)
+     white       #FFFFFF   page background AND cards
    Predominantly white with navy text and blue highlights. No brass, no cream.
+   Cards stand out from the white page by a thin border and a soft shadow.
 
    Two small, deliberate deviations for accessibility. The exact brand blue
    #0878EF gives only 4.25:1 with white text (and 3.95:1 as text on ice
    white), under the 4.5:1 AA bar for normal-size text, so:
      --mk-btn        #076BD6  button fill  (white text 5.14:1)
      --mk-blue-text  #0666CC  link / label text (5.16:1 on ice, 5.56:1 on white)
-   #0878EF itself is still used wherever it isn't carrying small text.
+   Link text uses --mk-blue-text, buttons use --mk-btn. #0878EF itself is still
+   used wherever it isn't carrying small text.
 
    All pairs below were checked against WCAG AA (scratch/contrast-dark.cjs):
 
-     LIGHT  paper #F2F7FF  surface #FFFFFF  surface-2 #E7F0FE
-            ink #092C67 (12.5:1)   ink-2 #37507F (7.5:1)   line #D2E2F8
-            blue-text #0666CC (5.2:1)   white on button #076BD6 (5.1:1)
+     LIGHT  paper #FFFFFF  surface #FFFFFF  surface-2 #F2F7FF (ice)
+            ink #092C67 (13.4:1 on white)   ink-2 #37507F (8.0:1)   line #D2E2F8
+            blue-text #0666CC (5.6:1 on white, 4.8:1 on ice)
+            white on button #076BD6 (5.1:1)
             navy on light-blue tag #9BCBFF (7.9:1)
      DARK   paper #071A40  surface #0C2656  surface-2 #12326C
             ink #F2F7FF (15.9:1)   ink-2 #B4C7E8 (10.0:1)   line #244A88
             blue / blue-text #9BCBFF (10.1:1)   navy on button #9BCBFF (7.9:1)
 
    Fonts (both self-hosted by next/font, see app/layout.tsx):
-     Display  Newsreader (serif) — large headings
-     Body     Inter — everything else
+     Headings + short lead lines  Plus Jakarta Sans (bold/semibold)
+     Small text (card copy, labels, FAQ answers)  Inter
    ============================================================ */
 
 :root {
-  --mk-paper: #F2F7FF;
+  --mk-paper: #FFFFFF;
   --mk-surface: #FFFFFF;
-  --mk-surface-2: #E7F0FE;
+  --mk-surface-2: #F2F7FF;
   --mk-ink: #092C67;
   --mk-ink-2: #37507F;
   --mk-line: #D2E2F8;
@@ -58,7 +61,7 @@
 
   --mk-width: 1100px;
   --mk-gutter: 24px;
-  --mk-radius: 16px;
+  --mk-radius: 20px;
   --mk-radius-sm: 10px;
   --mk-nav-h: 68px;
 }
@@ -126,63 +129,15 @@
   padding-top: var(--mk-nav-h);
 }
 
+/* Headings on every marketing page: Plus Jakarta Sans, bold. */
 .mk-page h1,
 .mk-page h2,
 .mk-page h3 {
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-weight: 500;
-  letter-spacing: -0.015em;
+  font-family: var(--font-brand), "Plus Jakarta Sans", system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: var(--mk-ink);
   margin: 0;
-}
-
-.mk-h1 {
-  font-size: clamp(40px, 6.2vw, 68px);
-  line-height: 1.06;
-  letter-spacing: -0.025em;
-}
-
-.mk-h2 {
-  font-size: clamp(30px, 4.2vw, 44px);
-  line-height: 1.12;
-}
-
-.mk-h3 {
-  font-size: clamp(22px, 2.6vw, 28px);
-  line-height: 1.2;
-}
-
-.mk-lead {
-  font-size: clamp(18px, 2vw, 21px);
-  line-height: 1.65;
-  color: var(--mk-ink-2);
-  max-width: 640px;
-  margin: 0;
-}
-
-.mk-eyebrow {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--mk-accent);
-  margin: 0;
-}
-
-/* Italic serif for a single emphasised word in a headline. */
-.mk-em {
-  font-style: italic;
-  color: var(--mk-blue-text);
-}
-
-.mk-prose p {
-  margin: 0 0 18px;
-  max-width: 62ch;
-  color: var(--mk-ink-2);
-}
-
-.mk-prose p:last-child {
-  margin-bottom: 0;
 }
 
 /* ------------------------------------------------------------
@@ -281,7 +236,9 @@
 .mk-page a:focus-visible,
 .mk-page button:focus-visible,
 .mk-page summary:focus-visible,
-.mk-page input:focus-visible {
+.mk-page input:focus-visible,
+.mk-theme a:focus-visible,
+.mk-theme button:focus-visible {
   outline: 2px solid var(--mk-blue);
   outline-offset: 3px;
   border-radius: 6px;
@@ -584,266 +541,272 @@
 }
 
 /* ============================================================
-   About page (app/about/page.tsx)
+   Simplified page layout
+   Used by About, Help, What's New, Pricing and the landing page BELOW the
+   hero. Every section is one short headline, one or two lines, then a few
+   small cards, with at most one main button. White page, white cards, light
+   blue only as a thin accent. Phone first: one column, then three/two on
+   wider screens. Text lines never run wider than ~65 characters.
+   Headings + short lead lines use Plus Jakarta Sans; card copy, labels and
+   answers use Inter at 15-16px.
    ============================================================ */
-.about-hero {
-  padding: clamp(72px, 12vw, 148px) 0 clamp(56px, 8vw, 96px);
+.sm-h1,
+.sm-h2,
+.sm-h3,
+.sm-lead {
+  font-family: var(--font-brand), "Plus Jakarta Sans", system-ui, sans-serif;
+  color: var(--mk-ink);
+  margin: 0;
+  /* Plus Jakarta Sans sets its word spaces tightly; a little extra keeps bold headings readable. */
+  word-spacing: 0.06em;
 }
 
-.about-hero .mk-lead {
-  margin-top: 28px;
+.sm-h1 {
+  font-weight: 800;
+  font-size: clamp(34px, 9vw, 60px);
+  line-height: 1.07;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
 }
 
-/* The 01 / 02 / 03 numerals come from a CSS counter, so they are
-   decoration only and add no text to the page. */
-.about-rows {
-  counter-reset: about;
+.sm-h2 {
+  font-weight: 800;
+  font-size: clamp(27px, 6.4vw, 40px);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
 }
 
-.about-row {
-  border-top: 1px solid var(--mk-line);
-  padding: clamp(56px, 8vw, 96px) 0;
-}
-
-.about-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: 32px 72px;
-  align-items: start;
-}
-
-.about-row__title::before {
-  counter-increment: about;
-  content: counter(about, decimal-leading-zero);
-  display: block;
-  margin-bottom: 14px;
-  font-family: var(--font-body), system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: var(--mk-accent);
-}
-
-.about-grid .mk-prose p {
+.sm-h3 {
+  font-weight: 700;
   font-size: 19px;
-  line-height: 1.75;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
 }
 
-@media (max-width: 860px) {
-  .about-grid {
-    grid-template-columns: minmax(0, 1fr);
+.sm-lead {
+  font-weight: 500;
+  font-size: clamp(17px, 4.4vw, 21px);
+  line-height: 1.5;
+  color: var(--mk-ink-2);
+  max-width: 34ch;
+  margin: 14px auto 0;
+  text-wrap: balance;
+}
+
+/* a short light-blue bar: the one decorative accent under a page title */
+.sm-accent {
+  display: block;
+  width: 56px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--mk-tint);
+  margin: 22px auto 0;
+}
+
+.sm-hero {
+  text-align: center;
+  padding: clamp(48px, 11vw, 112px) 0 clamp(28px, 6vw, 56px);
+}
+
+.sm-section {
+  padding: clamp(36px, 8vw, 88px) 0;
+}
+
+.sm-section--flush-top {
+  padding-top: 0;
+}
+
+.sm-head {
+  text-align: center;
+  margin: 0 auto clamp(24px, 5vw, 40px);
+}
+
+/* ---- icon cards ---- */
+.sm-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 760px) {
+  .sm-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
 }
 
-.about-mission {
-  background: var(--mk-surface-2);
-  border-top: 1px solid var(--mk-line);
-  padding: clamp(72px, 11vw, 136px) 0;
-}
-
-.about-mission__label {
-  font-family: var(--font-body), system-ui, sans-serif !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.14em !important;
-  text-transform: uppercase;
-  color: var(--mk-accent) !important;
-  margin: 0 0 28px !important;
-}
-
-.about-mission__quote {
-  position: relative;
-  margin: 0;
-  padding-top: 28px;
-  max-width: 880px;
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(28px, 4.4vw, 52px);
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: var(--mk-ink);
-}
-
-.about-mission__quote::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 56px;
-  height: 2px;
-  background: var(--mk-accent);
-}
-
-/* ============================================================
-   Help page (app/help/page.tsx, components/FaqList.tsx)
-   ============================================================ */
-.help-hero {
-  padding: clamp(64px, 10vw, 120px) 0 clamp(36px, 5vw, 56px);
-}
-
-.help-hero .mk-lead {
-  margin-top: 22px;
-}
-
-.help-body {
-  padding: 0 0 clamp(72px, 10vw, 128px);
-}
-
-.help-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 48px;
-  align-items: start;
-}
-
-@media (max-width: 900px) {
-  .help-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 36px;
-  }
-}
-
-/* Search */
-.help-search {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.help-search svg {
-  position: absolute;
-  left: 16px;
-  color: var(--mk-ink-2);
-  pointer-events: none;
-}
-
-.help-search input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px 16px 14px 46px;
+.sm-card {
   background: var(--mk-surface);
-  color: var(--mk-ink);
   border: 1px solid var(--mk-line);
-  border-radius: var(--mk-radius-sm);
-  font-family: inherit;
-  font-size: 16px;
+  border-top: 3px solid var(--mk-tint);
+  border-radius: var(--mk-radius);
   box-shadow: var(--mk-shadow);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  padding: 24px 22px 26px;
+  box-sizing: border-box;
 }
 
-.help-search input::placeholder {
+.sm-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--mk-surface-2);
+  color: var(--mk-blue-text);
+  margin-bottom: 16px;
+}
+
+.sm-card p {
+  margin: 8px 0 0;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
   color: var(--mk-ink-2);
-  opacity: 0.85;
+  max-width: 40ch;
 }
 
-.help-search input:focus-visible {
-  border-color: var(--mk-blue);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--mk-accent-soft), var(--mk-shadow);
-}
-
-.help-count {
-  margin: 12px 2px 20px;
-  font-size: 13px;
-  color: var(--mk-ink-2);
-}
-
-/* Accordion */
-.help-list {
+/* ---- the one main button of a section ---- */
+.sm-btn-row {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  justify-content: center;
+  margin-top: clamp(24px, 4vw, 32px);
 }
 
-.help-item summary {
+.mk-btn--lg {
+  padding: 16px 32px;
+  font-size: 16px;
+  border-radius: 14px;
+}
+
+/* ---- closing call to action: a soft ice box ---- */
+.sm-cta {
+  background: var(--mk-surface-2);
+  border: 1px solid var(--mk-line);
+  border-radius: 28px;
+  padding: clamp(32px, 7vw, 64px) clamp(20px, 5vw, 48px);
+  text-align: center;
+}
+
+/* ---- What's New: a simple stack of small cards ---- */
+.sm-updates {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 720px;
+  display: grid;
+  gap: 16px;
+}
+
+.sm-update {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.sm-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--mk-tint);
+  color: var(--mk-on-tint);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.sm-update .sm-h3 {
+  font-size: 20px;
+}
+
+.sm-update p {
+  margin: 0;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--mk-ink-2);
+  max-width: 56ch;
+}
+
+/* ---- Help: questions + contact ---- */
+.sm-faq {
+  max-width: 720px;
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+}
+
+.sm-faq__item {
+  padding: 0;
+}
+
+.sm-faq__item summary {
+  list-style: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 22px 26px;
-  cursor: pointer;
-  list-style: none;
+  gap: 16px;
+  padding: 20px 22px;
+  min-height: 24px;
 }
 
-.help-item summary::-webkit-details-marker {
+.sm-faq__item summary::-webkit-details-marker {
   display: none;
 }
 
-.mk-page .help-q {
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(19px, 2.2vw, 23px);
-  font-weight: 500;
+.sm-faq__q {
+  font-family: var(--font-brand), "Plus Jakarta Sans", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 18px;
   line-height: 1.3;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
+  word-spacing: 0.06em;
+  color: var(--mk-ink);
   margin: 0;
 }
 
-.help-chevron {
+.sm-faq__chev {
   flex-shrink: 0;
-  color: var(--mk-accent);
+  color: var(--mk-blue-text);
   transition: transform var(--transition);
 }
 
-.help-item[open] .help-chevron {
+.sm-faq__item[open] .sm-faq__chev {
   transform: rotate(180deg);
 }
 
-.help-item[open] {
-  border-color: var(--mk-blue);
-}
-
-.help-a {
+.sm-faq__a {
   margin: 0;
-  padding: 0 26px 26px;
-  font-size: 16.5px;
-  line-height: 1.75;
+  padding: 0 22px 22px;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--mk-ink-2);
-  max-width: 68ch;
-  animation: help-open 0.3s var(--ease) both;
+  max-width: 62ch;
 }
 
-@keyframes help-open {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.sm-contact {
+  max-width: 720px;
+  margin: clamp(28px, 6vw, 48px) auto 0;
+  text-align: center;
+  padding: clamp(28px, 6vw, 44px) clamp(20px, 5vw, 40px);
 }
 
-.help-empty {
-  padding: 28px;
+.sm-contact p {
+  margin: 10px auto 0;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
   color: var(--mk-ink-2);
+  max-width: 44ch;
 }
 
-/* Contact card */
-.help-contact {
-  padding: 30px 28px 28px;
-  position: sticky;
-  top: calc(var(--mk-nav-h) + 24px);
-}
-
-@media (max-width: 900px) {
-  .help-contact {
-    position: static;
-  }
-}
-
-.help-contact p {
-  margin: 14px 0 0;
-  font-size: 15.5px;
-  line-height: 1.65;
-  color: var(--mk-ink-2);
-}
-
-.help-contact .mk-btn {
-  margin-top: 24px;
-}
-
-.help-contact__mail {
+.sm-contact a:not(.mk-btn) {
   color: var(--mk-blue-text);
   font-weight: 600;
   text-decoration: underline;
@@ -851,243 +814,70 @@
   overflow-wrap: anywhere;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .help-a {
-    animation: none;
-  }
-  .help-chevron {
-    transition: none;
-  }
-}
-
-/* ============================================================
-   What's New (app/changelog/page.tsx) — vertical timeline
-   ============================================================ */
-.cl-hero {
-  padding: clamp(64px, 10vw, 120px) 0 clamp(40px, 6vw, 72px);
-}
-
-.cl-hero .mk-lead {
-  margin-top: 22px;
-}
-
-.cl-body {
-  padding: 0 0 clamp(72px, 10vw, 128px);
-}
-
-.cl-timeline {
-  --cl-date-w: 200px;
-  --cl-gap: 64px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  position: relative;
-}
-
-/* The vertical line, centred in the gap between the date and the text. */
-.cl-timeline::before {
-  content: "";
-  position: absolute;
-  top: 10px;
-  bottom: 12px;
-  left: calc(var(--cl-date-w) + var(--cl-gap) / 2);
-  width: 1px;
-  background: var(--mk-line);
-}
-
-.cl-entry {
-  position: relative;
+/* ---- Pricing ---- */
+.sm-plans {
   display: grid;
-  grid-template-columns: var(--cl-date-w) minmax(0, 1fr);
-  column-gap: var(--cl-gap);
-  padding-bottom: clamp(44px, 6vw, 64px);
-}
-
-.cl-entry:last-child {
-  padding-bottom: 0;
-}
-
-/* The dot on the line; the newest entry's is filled blue. */
-.cl-entry::before {
-  content: "";
-  position: absolute;
-  top: 8px;
-  left: calc(var(--cl-date-w) + var(--cl-gap) / 2 - 6px);
-  width: 13px;
-  height: 13px;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: var(--mk-paper);
-  border: 2px solid var(--mk-accent);
-}
-
-.cl-entry:first-child::before {
-  background: var(--mk-blue);
-  border-color: var(--mk-blue);
-}
-
-.cl-date {
-  padding-top: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--mk-accent);
-}
-
-.cl-content .mk-h3 {
-  margin: 0 0 16px;
-}
-
-.cl-items {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  max-width: 64ch;
-}
-
-.cl-items li {
-  position: relative;
-  padding-left: 22px;
-  margin-bottom: 12px;
-  font-size: 16.5px;
-  line-height: 1.7;
-  color: var(--mk-ink-2);
-}
-
-.cl-items li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.78em;
-  width: 10px;
-  height: 1.5px;
-  background: var(--mk-accent);
-}
-
-.cl-items li:last-child {
-  margin-bottom: 0;
-}
-
-/* Phones: date sits above each entry; the line runs down the left edge. */
-@media (max-width: 760px) {
-  .cl-timeline {
-    --cl-dot-x: 6px;
-  }
-  .cl-timeline::before {
-    left: var(--cl-dot-x);
-  }
-  .cl-entry {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 8px;
-    padding-left: 34px;
-  }
-  .cl-entry::before {
-    left: 0;
-  }
-  .cl-date {
-    padding-top: 0;
-  }
-}
-
-/* ============================================================
-   Pricing page (app/pricing/page.tsx)
-   ============================================================ */
-.pr-hero {
-  padding: clamp(64px, 10vw, 120px) 0 clamp(40px, 6vw, 72px);
-  text-align: center;
-}
-
-.pr-hero .mk-lead {
-  margin: 22px auto 0;
-}
-
-.pr-body {
-  padding: 0 0 clamp(80px, 11vw, 136px);
-}
-
-.pr-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
-  max-width: 900px;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  max-width: 880px;
   margin: 0 auto;
+  align-items: stretch;
 }
 
-@media (max-width: 760px) {
-  .pr-grid {
-    grid-template-columns: minmax(0, 1fr);
+@media (min-width: 760px) {
+  .sm-plans {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Each Reveal wrapper stretches so both cards are the same height. */
-.pr-slot {
-  display: flex;
-}
-
-.pr-card {
-  position: relative;
-  flex: 1;
+/* each plan sits in a Reveal wrapper; make the wrapper a flex box so both cards
+   stretch to the same height side by side, and stay natural height on a phone */
+.sm-plans > * {
   display: flex;
   flex-direction: column;
-  padding: clamp(28px, 4vw, 40px);
 }
 
-/* The recommended plan: a blue hairline, a soft halo and a thin top bar —
-   quietly distinct, not loud. */
-.pr-card--pro {
-  border-color: color-mix(in srgb, var(--mk-blue) 60%, var(--mk-line));
-  box-shadow: var(--mk-shadow-lift), 0 0 0 4px var(--mk-accent-soft);
-  overflow: hidden;
+.sm-plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  padding: 28px 24px 26px;
 }
 
-.pr-card--pro::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--mk-blue);
+.sm-plan--pro {
+  border-color: var(--mk-blue);
+  border-top-color: var(--mk-blue);
+  box-shadow: var(--mk-shadow-lift);
 }
 
-.pr-tag {
+.sm-plan__tag {
   position: absolute;
   top: 22px;
   right: 22px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: var(--mk-tint);
-  border: 1px solid transparent;
-  color: var(--mk-on-tint);
-  font-size: 11px;
+}
+
+.sm-plan__name {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-}
-
-.pr-card__label {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--mk-ink-2);
-}
-
-.pr-card--pro .pr-card__label {
   color: var(--mk-blue-text);
+  margin: 0;
 }
 
-.pr-price {
-  margin-top: 10px;
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(48px, 6vw, 62px);
-  font-weight: 500;
+.sm-price {
+  font-family: var(--font-brand), "Plus Jakarta Sans", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(44px, 11vw, 56px);
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   color: var(--mk-ink);
+  margin: 14px 0 0;
 }
 
-.pr-price__unit {
+.sm-price span {
   font-family: var(--font-body), system-ui, sans-serif;
   font-size: 16px;
   font-weight: 500;
@@ -1095,45 +885,50 @@
   color: var(--mk-ink-2);
 }
 
-.pr-card__desc {
-  margin: 14px 0 0;
-  padding-bottom: 26px;
-  border-bottom: 1px solid var(--mk-line);
-  font-size: 15.5px;
-  line-height: 1.6;
+.sm-plan__desc {
+  margin: 10px 0 0;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
   color: var(--mk-ink-2);
 }
 
-.pr-features {
+.sm-features {
   list-style: none;
-  margin: 26px 0 36px;
-  padding: 0;
+  margin: 22px 0 26px;
+  padding: 22px 0 0;
+  border-top: 1px solid var(--mk-line);
+  display: grid;
+  gap: 12px;
+  align-content: start; /* keep rows tight; the list itself grows so both buttons line up */
   flex: 1;
 }
 
-.pr-features li {
+.sm-features li {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
-  margin-bottom: 14px;
-  font-size: 15.5px;
-  line-height: 1.55;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
   color: var(--mk-ink);
 }
 
-.pr-features li:last-child {
-  margin-bottom: 0;
-}
-
-.pr-features svg {
+.sm-features svg {
   flex-shrink: 0;
-  margin-top: 3px;
+  margin-top: 2px;
   color: var(--mk-blue-text);
 }
 
-.pr-error {
+.sm-plan__error {
   margin-top: 12px;
-  text-align: center;
-  font-size: 13.5px;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 14px;
   color: var(--mk-error);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-faq__chev {
+    transition: none;
+  }
 }

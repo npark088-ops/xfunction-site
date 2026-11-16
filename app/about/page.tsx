@@ -1,30 +1,27 @@
+import Link from "next/link";
+import { ListChecks, Repeat, Shuffle } from "lucide-react";
 import { MarketingNav } from "../../components/MarketingNav";
 import { MarketingFooter } from "../../components/MarketingFooter";
+import { IconCards } from "../../components/IconCards";
 import { Reveal } from "../../components/Reveal";
 
-// Wording is the page's original copy, unchanged — only the layout and
-// styling are new (styles: the "About" block in app/marketing.css).
-const SECTIONS = [
+// Short on purpose: each idea is one small card. (Layout and styles: the
+// "Simplified page layout" block in app/marketing.css.)
+const CARDS = [
   {
+    icon: Shuffle,
     title: "The problem",
-    paragraphs: [
-      "Most productivity systems rely heavily on constant planning, reconsideration, and motivation. This creates friction and leads to inconsistent execution.",
-      "Over time, this inconsistency prevents meaningful progress and makes even simple tasks feel overwhelming.",
-    ],
+    text: "Constant planning and shaky motivation create friction, so progress stalls.",
   },
   {
-    title: "What XFunction does",
-    paragraphs: [
-      "XFunction transforms complex workflows into structured systems. Instead of deciding what to do next, users follow predefined steps that guide execution.",
-      "This removes indecision, reduces wasted time, and allows users to focus entirely on making progress.",
-    ],
+    icon: ListChecks,
+    title: "What we do",
+    text: "We turn messy work into clear steps, so you never have to decide what's next.",
   },
   {
+    icon: Repeat,
     title: "Our approach",
-    paragraphs: [
-      "By simplifying decisions and structuring workflows, XFunction enables consistent execution regardless of external factors.",
-      "The result is a system that supports long-term productivity through clarity, structure, and repetition.",
-    ],
+    text: "Fewer decisions and steady routines make progress last.",
   },
 ];
 
@@ -34,43 +31,31 @@ export default function About() {
       <MarketingNav />
 
       <main className="mk-main">
-        {/* HERO */}
-        <section className="about-hero">
+        <section className="sm-hero">
           <div className="mk-container">
-            <h1 className="mk-h1">
-              About <span className="mk-em">XFunction</span>
-            </h1>
-            <p className="mk-lead">
-              XFunction is designed to eliminate the gap between planning and execution, enabling
-              consistent, structured progress over time.
-            </p>
+            <h1 className="sm-h1">About XFunction</h1>
+            <span className="sm-accent" aria-hidden="true" />
+            <p className="sm-lead">We close the gap between planning and doing.</p>
           </div>
         </section>
 
-        {/* THE STORY — three numbered rows */}
-        <div className="about-rows">
-          {SECTIONS.map((section) => (
-            <Reveal as="section" className="about-row" key={section.title}>
-              <div className="mk-container about-grid">
-                <h2 className="mk-h2 about-row__title">{section.title}</h2>
-                <div className="mk-prose">
-                  {section.paragraphs.map((p) => (
-                    <p key={p}>{p}</p>
-                  ))}
-                </div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-
-        {/* MISSION */}
-        <Reveal as="section" className="about-mission">
+        <Reveal as="section" className="sm-section sm-section--flush-top">
           <div className="mk-container">
-            <h2 className="about-mission__label">Designed for real progress</h2>
-            <p className="about-mission__quote">
-              XFunction is not about doing more work. It’s about creating systems that make progress
-              inevitable.
-            </p>
+            <IconCards items={CARDS} level="h2" />
+          </div>
+        </Reveal>
+
+        <Reveal as="section" className="sm-section">
+          <div className="mk-container">
+            <div className="sm-cta">
+              <h2 className="sm-h2">Designed for real progress</h2>
+              <p className="sm-lead">Not more work. A system that makes progress inevitable.</p>
+              <div className="sm-btn-row">
+                <Link href="/login" className="mk-btn mk-btn--primary mk-btn--lg">
+                  Get started free
+                </Link>
+              </div>
+            </div>
           </div>
         </Reveal>
       </main>

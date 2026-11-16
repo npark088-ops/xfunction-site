@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { Gauge, ListChecks, Repeat, Route, Target, TrendingUp } from "lucide-react";
 import { MarketingNav } from "../components/MarketingNav";
 import { MarketingFooter } from "../components/MarketingFooter";
 import { Wordmark } from "../components/Wordmark";
 import { DroneBackground } from "../components/DroneBackground";
+import { IconCards } from "../components/IconCards";
+import { Reveal } from "../components/Reveal";
 
 // Hero still image — also the poster/fallback for the optional drone
 // video (see components/DroneBackground.tsx; video files go in
@@ -22,7 +25,19 @@ const card = "var(--card)";
 const border = "var(--border)";
 const blue = "var(--blue)";
 const text = "var(--text)";
-const textDim = "var(--text-dim)";
+
+// The three small cards under each headline (short on purpose).
+const PLAN_CARDS = [
+  { icon: ListChecks, title: "Know what's next", text: "A clear system tells you what to do next." },
+  { icon: Gauge, title: "Waste less time", text: "Less replanning, less hesitation." },
+  { icon: Target, title: "Move with confidence", text: "Go straight from plan to action." },
+];
+
+const CONSISTENCY_CARDS = [
+  { icon: Route, title: "Guided every day", text: "Structured workflows guide what you do each day." },
+  { icon: Repeat, title: "Fewer decisions", text: "Less uncertainty makes it easier to start." },
+  { icon: TrendingUp, title: "Steady progress", text: "Consistent days add up to long-term results." },
+];
 
 export default function Home() {
   const [page, setPage] = useState("home");
@@ -114,143 +129,42 @@ export default function Home() {
 
           </div>
 
-          {/* SECTION 1 */}
-          <div style={{
-  padding: "120px 20px",
-  background: bg,
-  display: "flex",
-  justifyContent: "center"
-}}>
-  <div className="xf-card" style={{
-    maxWidth: "900px",
-    textAlign: "center",
-    padding: "60px",
-    borderRadius: "var(--radius-xl)",
-    background: card,
-    border: `1px solid ${border}`
-  }}>
+          {/* BELOW THE HERO — three short sections: one headline, one line, and
+              three small cards (or one button). Styles: the "Simplified page
+              layout" block in app/marketing.css. */}
+          <Reveal as="section" className="sm-section">
+            <div className="mk-container">
+              <div className="sm-head">
+                <h2 className="sm-h2">Plan less. Execute more.</h2>
+                <p className="sm-lead">Stop deciding what to do next. Follow a clear system instead.</p>
+              </div>
+              <IconCards items={PLAN_CARDS} />
+            </div>
+          </Reveal>
 
-    <h2 className="xf-marketing-heading" style={{
-      fontSize: "40px",
-      fontWeight: "700",
-      color: text
-    }}>
-      Plan less. Execute more.
-    </h2>
+          <Reveal as="section" className="sm-section sm-section--flush-top">
+            <div className="mk-container">
+              <div className="sm-head">
+                <h2 className="sm-h2">Built for consistency</h2>
+                <p className="sm-lead">Motivation comes and goes. Structure stays.</p>
+              </div>
+              <IconCards items={CONSISTENCY_CARDS} />
+            </div>
+          </Reveal>
 
-    <p style={{
-      marginTop: "20px",
-      fontSize: "20px",
-      color: textDim,
-      lineHeight: "1.7"
-    }}>
-      XFunction eliminates the constant need to decide what to do next.
-      Instead of repeatedly planning and reorganizing your work, you follow
-      a structured system that directs your actions automatically.
-    </p>
-
-    <p style={{
-      marginTop: "15px",
-      fontSize: "20px",
-      color: textDim,
-      lineHeight: "1.7"
-    }}>
-      This removes hesitation, reduces wasted time, and allows you to
-      move directly into execution with clarity and confidence.
-    </p>
-
-  </div>
-</div>
-          {/* IMAGE */}
-          <div style={{
-            height: "75vh",
-            backgroundImage:
-  "url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1600')",
-            backgroundSize: "cover",
-            backgroundPosition: "center"
-          }} />
-
-          {/* SECTION 2 */}
-          <div style={{
-  padding: "120px 20px",
-  background: bg,
-  display: "flex",
-  justifyContent: "center"
-}}>
-  <div className="xf-card" style={{
-    maxWidth: "900px",
-    textAlign: "center",
-    padding: "60px",
-    borderRadius: "var(--radius-xl)",
-    background: card,
-    border: `1px solid ${border}`
-  }}>
-    <h2 className="xf-marketing-heading" style={{
-  fontSize: "40px",
-  fontWeight: "700",
-  color: text
-}}>
-      Built for consistency
-    </h2>
-
-    <p style={{
-      marginTop: "20px",
-      fontSize: "20px",
-      color: textDim,
-      lineHeight: "1.7"
-    }}>
-      Most systems depend on motivation, which fluctuates over time.
-      XFunction replaces that unpredictability with structured workflows
-      that guide your actions every day.
-    </p>
-
-    <p style={{
-      marginTop: "15px",
-      fontSize: "20px",
-      color: textDim,
-      lineHeight: "1.7"
-    }}>
-      By removing uncertainty and simplifying decisions, execution becomes
-      consistent—and long-term progress becomes inevitable.
-    </p>
-  </div>
-</div>
-
-          {/* IMAGE 2 */}
-          <div style={{
-  height: "80vh",
-  backgroundImage:
-    "url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=1600')",
-  backgroundSize: "cover",
-  backgroundPosition: "center"
-}} />
-
-
-          {/* FINAL SECTION */}
-          <div style={{
-            padding: "140px 20px",
-            textAlign: "center",
-            background: card,
-            borderTop: `1px solid ${border}`,
-            color: text
-          }}>
-            <h2 className="xf-marketing-heading" style={{ fontSize: "44px" }}>
-              Reduce complexity. Build momentum.
-            </h2>
-
-            <p style={{
-              marginTop: "20px",
-              fontSize: "18px",
-              maxWidth: "700px",
-              marginLeft: "auto",
-              marginRight: "auto",
-              color: textDim
-            }}>
-              When structure replaces uncertainty, execution becomes natural.
-              Over time, this creates a compounding effect of consistent progress
-              and measurable results.
-            </p>
-          </div>
+          <Reveal as="section" className="sm-section">
+            <div className="mk-container">
+              <div className="sm-cta">
+                <h2 className="sm-h2">Reduce complexity. Build momentum.</h2>
+                <p className="sm-lead">When structure replaces uncertainty, execution becomes natural.</p>
+                <div className="sm-btn-row">
+                  <Link href="/login" className="mk-btn mk-btn--primary mk-btn--lg">
+                    Get started free
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </Reveal>
 
         </div>
       )}

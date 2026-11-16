@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Inter, Newsreader, Plus_Jakarta_Sans, Sora } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans, Sora } from "next/font/google";
 import { PostHogAppProvider } from "../components/PostHogProvider";
 import "./globals.css";
 import "./marketing.css";
@@ -55,30 +55,16 @@ const sora = Sora({
   display: "swap",
 });
 
-// Brand wordmark: Plus Jakarta Sans Bold, the closest match among the
-// next/font families to the lettering on the brand board (a bold geometric
-// sans with round c/o, a flat-topped t and tight spacing). One weight, so a
-// single self-hosted file. Used only by components/Wordmark.tsx.
+// Brand typeface: Plus Jakarta Sans, the closest match among the next/font
+// families to the lettering on the brand board (a bold geometric sans with
+// round c/o, a flat-topped t and tight spacing). Used for the wordmark and for
+// the big bold headings and short lead lines on the marketing pages (see
+// app/marketing.css). Loaded as ONE variable font file, so 500-800 weights
+// cost a single download. Inter (above) stays for small text.
 const brandSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: "700",
   variable: "--font-brand",
   display: "swap",
-});
-
-// Display serif for large marketing headings
-// (see app/marketing.css). Self-hosted by next/font like the two above —
-// no external requests at runtime. preload is off on purpose: the app
-// pages never use it, so they shouldn't pay to preload it; it's fetched
-// only when a page actually renders text in this family. next/font also
-// generates a size-adjusted fallback so the swap doesn't shift layout.
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  axes: ["opsz"],
-  variable: "--font-display",
-  display: "swap",
-  preload: false,
 });
 
 export default function RootLayout({
@@ -93,7 +79,7 @@ export default function RootLayout({
     // server- and client-rendered HTML. That's expected here, not a
     // real bug, so React shouldn't warn about (or try to "fix") it —
     // same recommended pattern as Next.js's own dark-mode docs.
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sora.variable} ${newsreader.variable} ${brandSans.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sora.variable} ${brandSans.variable}`}>
       <head>
         {/* Sets data-theme before first paint so returning dark-mode
             users don't see a flash of the light theme. A plain <script>

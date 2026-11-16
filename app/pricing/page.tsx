@@ -8,23 +8,22 @@ import { MarketingNav } from "../../components/MarketingNav";
 import { MarketingFooter } from "../../components/MarketingFooter";
 import { Reveal } from "../../components/Reveal";
 
-// Plan names, prices, feature lists and button labels are the page's
-// original text, unchanged. Only the layout and styling are new (styles:
-// the "Pricing" block in app/marketing.css). The checkout flow below is
-// exactly as it was.
+// Plan names and prices are unchanged; the feature lists are shortened to one
+// quick line each (same offer: Free = 3 AI generations a month, Pro = $7/month
+// unlimited AI). Layout and styles: the "Simplified page layout" block in
+// app/marketing.css. The checkout flow below is exactly as it was.
 const FREE_FEATURES = [
-  "Unlimited grade tracking across all your courses",
+  "Unlimited grade tracking",
   "Grade trend charts",
   "Email & text deadline reminders",
-  "Daily streak tracking",
-  "3 AI generations / month (study plans, study guides, practice quizzes, coach check-ins combined)",
+  "Daily streaks",
+  "3 AI generations a month, shared across the study tools",
 ];
 
 const PRO_FEATURES = [
   "Everything in Free",
-  "Unlimited study plans",
-  "Unlimited study guides",
-  "Unlimited practice quizzes",
+  "Unlimited AI study plans",
+  "Unlimited study guides & practice quizzes",
   "Unlimited AI coach check-ins",
 ];
 
@@ -61,57 +60,56 @@ export default function PricingPage() {
       <MarketingNav />
 
       <main className="mk-main">
-        {/* HERO */}
-        <section className="pr-hero">
+        <section className="sm-hero">
           <div className="mk-container">
-            <h1 className="mk-h1">Simple pricing</h1>
-            <p className="mk-lead">Start free. Upgrade whenever you want unlimited AI help.</p>
+            <h1 className="sm-h1">Simple pricing</h1>
+            <span className="sm-accent" aria-hidden="true" />
+            <p className="sm-lead">Start free. Upgrade when you want unlimited AI.</p>
           </div>
         </section>
 
-        {/* PLANS */}
-        <section className="pr-body">
+        <section className="sm-section sm-section--flush-top">
           <div className="mk-container">
-            <div className="pr-grid">
+            <div className="sm-plans">
               {/* FREE */}
-              <Reveal className="pr-slot">
-                <div className="mk-card mk-card--hover pr-card">
-                  <div className="pr-card__label">Free</div>
-                  <div className="pr-price">
-                    $0<span className="pr-price__unit"> /month</span>
-                  </div>
-                  <p className="pr-card__desc">Everything you need to stay on top of your grades.</p>
+              <Reveal>
+                <div className="mk-card sm-plan">
+                  <h2 className="sm-plan__name">Free</h2>
+                  <p className="sm-price">
+                    $0<span> /month</span>
+                  </p>
+                  <p className="sm-plan__desc">Everything you need to stay on top of your grades.</p>
 
-                  <ul className="pr-features">
+                  <ul className="sm-features">
                     {FREE_FEATURES.map((f) => (
                       <li key={f}>
-                        <Check size={16} strokeWidth={2.5} aria-hidden="true" />
+                        <Check size={18} strokeWidth={2.5} aria-hidden="true" />
                         <span>{f}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <Link href="/login" className="mk-btn mk-btn--ghost mk-btn--block pr-cta">
+                  <Link href="/login" className="mk-btn mk-btn--ghost mk-btn--block mk-btn--lg">
                     Get started free
                   </Link>
                 </div>
               </Reveal>
 
               {/* PRO */}
-              <Reveal className="pr-slot" delay={80}>
-                <div className="mk-card mk-card--hover pr-card pr-card--pro">
-                  <div className="pr-tag">Unlimited AI</div>
+              <Reveal delay={80}>
+                <div className="mk-card sm-plan sm-plan--pro">
+                  <span className="sm-chip sm-plan__tag">Unlimited AI</span>
 
-                  <div className="pr-card__label">XFunction Pro</div>
-                  <div className="pr-price">
-                    $7<span className="pr-price__unit"> /month</span>
-                  </div>
-                  <p className="pr-card__desc">For when 3 AI generations a month isn&apos;t enough.</p>
+                  <h2 className="sm-plan__name">XFunction Pro</h2>
+                  <p className="sm-price">
+                    $7<span> /month</span>
+                  </p>
+                  <p className="sm-plan__desc">For when 3 AI generations a month isn&apos;t enough.</p>
 
-                  <ul className="pr-features">
+                  <ul className="sm-features">
                     {PRO_FEATURES.map((f) => (
                       <li key={f}>
-                        <Check size={16} strokeWidth={2.5} aria-hidden="true" />
+                        <Check size={18} strokeWidth={2.5} aria-hidden="true" />
                         <span>{f}</span>
                       </li>
                     ))}
@@ -120,12 +118,12 @@ export default function PricingPage() {
                   <button
                     onClick={startCheckout}
                     disabled={loading}
-                    className="mk-btn mk-btn--primary mk-btn--block pr-cta"
+                    className="mk-btn mk-btn--primary mk-btn--block mk-btn--lg"
                   >
                     {loading ? "Redirecting…" : "Upgrade to Pro"}
                   </button>
                   {error && (
-                    <div className="pr-error" role="alert">
+                    <div className="sm-plan__error" role="alert">
                       {error}
                     </div>
                   )}
