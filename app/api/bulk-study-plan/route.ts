@@ -5,6 +5,8 @@ import { getUpcomingAssignments } from "../../../lib/upcoming-assignments";
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/profile-server";
 import { getAiModel } from "../../../lib/ai-model";
+import { getRequestTimeZone } from "../../../lib/request-tz";
+import { addDaysToDate, formatCalendarDate, localDate } from "../../../lib/local-date";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -13,11 +15,6 @@ const anthropic = new Anthropic({
 const WINDOW_DAYS = 14;
 const MIN_PLAN_DAYS = 7;
 const MAX_PLAN_DAYS = 14;
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-function formatDate(date: Date) {
-  return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-}
 
 // One combined plan across every course, instead of the per-course
 // study-plan route's single target assignment — see app/api/study-plan
@@ -45,7 +42,9 @@ export async function POST() {
   }
 
   const courses = await getUserCourses(supabase, user.id);
-  const upcoming = getUpcomingAssignments(courses, WINDOW_DAYS);
+  // The student's own days (zone from the browser), not the server's UTC.
+  const timeZone = await getRequestTimeZone();
+  const upcoming = getUpcomingAssignments(courses, WINDOW_DAYS, timeZone);
   if (upcoming.length === 0) {
     return Response.json(
       { error: "Nothing due in the next two weeks — no plan needed yet." },
@@ -72,18 +71,17 @@ export async function POST() {
     };
   });
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayStr = localDate(timeZone);
   const furthestDaysAway = Math.max(...items.map((i) => i.daysAway));
   const numDays = Math.min(Math.max(furthestDaysAway, MIN_PLAN_DAYS), MAX_PLAN_DAYS);
 
   // Precompute calendar dates ourselves, same reason as the per-course
   // route — the model only fills in tasks, so date math can't drift.
   const planDates = Array.from({ length: numDays }, (_, i) => {
-    const d = new Date(today.getTime() + i * MS_PER_DAY);
+    const date = addDaysToDate(todayStr, i);
     return {
-      date: d.toISOString().slice(0, 10),
-      label: `${formatDate(d)}${i === 0 ? " · Today" : ""}`,
+      date,
+      label: `${formatCalendarDate(date)}${i === 0 ? " · Today" : ""}`,
     };
   });
 

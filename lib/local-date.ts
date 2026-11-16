@@ -57,3 +57,54 @@ export function addDaysToDate(date: string, days: number): string {
   const [y, m, d] = date.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
+
+// The zone to use when the caller doesn't pass one: the browser's own zone in
+// client code, UTC on the server (server code should pass the request's zone,
+// see lib/request-tz.ts).
+export function defaultTimeZone(): string {
+  return typeof window !== "undefined" ? browserTimeZone() : "UTC";
+}
+
+// Whole calendar days from date `from` to date `to` ("YYYY-MM-DD" each).
+export function calendarDaysBetween(from: string, to: string): number {
+  const [fy, fm, fd] = from.split("-").map(Number);
+  const [ty, tm, td] = to.split("-").map(Number);
+  return Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(fy, fm - 1, fd)) / 86400000);
+}
+
+// How far `timeZone` is ahead of UTC at instant `at`, in milliseconds.
+function zoneOffsetMs(timeZone: string, at: Date): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(at);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  const asUtc = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second"));
+  return asUtc - Math.floor(at.getTime() / 1000) * 1000;
+}
+
+// The instant a calendar date ("YYYY-MM-DD") begins in `timeZone` (local
+// midnight). Handles daylight-saving changes.
+export function localDayStart(timeZone: string, date: string): Date {
+  const [y, m, d] = date.split("-").map(Number);
+  const guess = Date.UTC(y, m - 1, d);
+  const first = guess - zoneOffsetMs(timeZone, new Date(guess));
+  const second = guess - zoneOffsetMs(timeZone, new Date(first));
+  return new Date(second);
+}
+
+// "Thu, Nov 19" style label for a calendar date. Formats in UTC on purpose:
+// the date is already the student's calendar date, so no further zone shift.
+export function formatCalendarDate(
+  date: string,
+  options: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" }
+): string {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d, 12)));
+}

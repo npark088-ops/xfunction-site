@@ -6,6 +6,7 @@ import { OnboardingTour } from "../../components/OnboardingTour";
 import { ConsultantPanelProvider } from "../../components/ConsultantPanel";
 import { SupportChatProvider } from "../../components/SupportChatPanel";
 import { getNotificationsSnapshot } from "../../lib/notifications";
+import { TimezoneSync } from "../../components/TimezoneSync";
 
 const bg = "var(--bg)";
 
@@ -54,6 +55,7 @@ export default async function DashboardLayout({
 
   return (
     <ToastProvider>
+      {user && <TimezoneSync />}
       {user && <ToastWatcher />}
       {user && <OnboardingTour />}
       {/* ConsultantPanelProvider wraps Sidebar (not just page content) so

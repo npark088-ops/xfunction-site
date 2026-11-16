@@ -1,4 +1,5 @@
 import { getUpcomingAssignments, getDigestAssignments, URGENT_WITHIN_DAYS } from "../../../lib/upcoming-assignments";
+import { getRequestTimeZone } from "../../../lib/request-tz";
 import { createClient } from "../../../lib/supabase/server";
 import { getUserCourses } from "../../../lib/user-courses";
 
@@ -33,8 +34,9 @@ export async function POST() {
   }
 
   const courses = await getUserCourses(supabase, user.id);
-  const urgent = getUpcomingAssignments(courses, URGENT_WITHIN_DAYS);
-  const digestItems = getDigestAssignments(courses);
+  const timeZone = await getRequestTimeZone();
+  const urgent = getUpcomingAssignments(courses, URGENT_WITHIN_DAYS, timeZone);
+  const digestItems = getDigestAssignments(courses, timeZone);
   const totalCount = urgent.length + digestItems.length;
 
   if (totalCount === 0) {

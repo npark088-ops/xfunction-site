@@ -1,6 +1,7 @@
 import { createClient } from "../../../../lib/supabase/server";
 import { syncActivityNotifications } from "../../../../lib/activity-notifications";
 import { getUserCourses } from "../../../../lib/user-courses";
+import { getRequestTimeZone } from "../../../../lib/request-tz";
 
 // Fired once per visit from the Overview page (the natural "check the
 // dashboard" landing spot) instead of running on every dashboard
@@ -17,6 +18,6 @@ export async function POST() {
   }
 
   const courses = await getUserCourses(supabase, user.id);
-  await syncActivityNotifications(supabase, user.id, courses);
+  await syncActivityNotifications(supabase, user.id, courses, await getRequestTimeZone());
   return Response.json({ ok: true });
 }

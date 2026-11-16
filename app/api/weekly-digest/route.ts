@@ -1,5 +1,6 @@
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/profile-server";
+import { getRequestTimeZone } from "../../../lib/request-tz";
 import { generateCoachInsight } from "../../../lib/coach-insight";
 import { composeDigestData, sendDigestEmail } from "../../../lib/weekly-digest";
 import { getUserCourses } from "../../../lib/user-courses";
@@ -36,7 +37,7 @@ export async function POST() {
     }
   }
 
-  const data = composeDigestData(coachHighlight, courses);
+  const data = composeDigestData(coachHighlight, courses, await getRequestTimeZone());
   const result = await sendDigestEmail(user.email, data);
 
   if (!result.ok) {

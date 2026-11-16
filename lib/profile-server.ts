@@ -9,6 +9,7 @@ import {
   FREE_SUPPORT_MESSAGES_PER_MONTH,
   currentMonthStart,
 } from "./ai-usage";
+import { addDaysToDate, localDate } from "./local-date";
 
 // EVERY write to the profiles table made on behalf of a signed-in user lives
 // here. Signed-in users can no longer write profiles themselves (see
@@ -172,16 +173,20 @@ export async function markFirstStudyPlanGenerated(supabase: SupabaseClient): Pro
 
 export type StreakResult = { streak: number; longest: number; increased: boolean };
 
-const isoDay = (d: Date) => d.toISOString().slice(0, 10);
-
 // Called once per /app visit (app/api/streak). Bumps the streak the first
-// time a user shows up on a given UTC day, resets it if a day was missed, and
+// time a user shows up on a given day, resets it if a day was missed, and
 // is a no-op on repeat visits the same day. Returns null if nobody is signed in.
+// "Day" is the STUDENT'S calendar day in `timeZone` (the browser's zone, see
+// lib/request-tz.ts), not the server's UTC day, so a student who studies at 9 pm
+// keeps one streak day instead of splitting across two UTC dates.
 //
 // Concurrent visits (two tabs opening at once) can't double-count: the write
 // only matches a row whose last_active_date is not already today, so only
 // one request wins; the other just reports the stored values.
-export async function recordDailyVisit(supabase: SupabaseClient): Promise<StreakResult | null> {
+export async function recordDailyVisit(
+  supabase: SupabaseClient,
+  timeZone: string = "UTC"
+): Promise<StreakResult | null> {
   const user = await sessionUser(supabase);
   if (!user) return null;
 
@@ -199,13 +204,13 @@ export async function recordDailyVisit(supabase: SupabaseClient): Promise<Streak
     };
   };
 
-  const today = isoDay(new Date());
+  const today = localDate(timeZone);
   const before = await read();
   if (before.lastActive === today) {
     return { streak: before.streak, longest: before.longest, increased: false };
   }
 
-  const yesterday = isoDay(new Date(Date.now() - 24 * 60 * 60 * 1000));
+  const yesterday = addDaysToDate(today, -1);
   const nextStreak = before.lastActive === yesterday ? before.streak + 1 : 1;
   const nextLongest = Math.max(before.longest, nextStreak);
 

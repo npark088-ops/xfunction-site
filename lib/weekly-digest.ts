@@ -21,7 +21,8 @@ function daysAwayLabel(daysAway: number) {
 // disagree on what "this week's" grade/trend/upcoming numbers are.
 export function composeDigestData(
   coachHighlight: string | null,
-  courseMap: Record<string, MockCourse>
+  courseMap: Record<string, MockCourse>,
+  timeZone: string = "UTC"
 ): DigestData {
   const courses = Object.values(courseMap).map((course) => ({
     grade: calculateCurrentGrade(course.assignmentGroups),
@@ -30,7 +31,7 @@ export function composeDigestData(
   const overallGrade = calculateWeightedOverallGrade(courses);
   const history: GradePoint[] = getOverallGradeHistory(overallGrade, Object.keys(courseMap));
   const trend = trendDirection(history);
-  const upcoming = getUpcomingAssignments(courseMap, 7);
+  const upcoming = getUpcomingAssignments(courseMap, 7, timeZone);
 
   return { overallGrade, trend, upcoming, coachHighlight };
 }

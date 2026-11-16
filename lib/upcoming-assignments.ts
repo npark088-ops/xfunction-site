@@ -1,6 +1,6 @@
 import type { MockCourse } from "./mock-canvas-data";
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
+import { calendarDaysBetween, defaultTimeZone, localDate } from "./local-date";
+import { dueCalendarDate, dueInstant } from "./due-dates";
 
 // Same "urgent" threshold used by the App page's Coming Up section and
 // by the email reminder route — kept in one place so they can't drift
@@ -23,16 +23,24 @@ export interface UpcomingAssignment {
   daysAway: number;
 }
 
-// Ungraded assignments due within `withinDays`, across all courses,
-// sorted soonest-first. `courses` is the caller's real per-user data
-// (see lib/user-courses.ts) — this function is otherwise fully generic,
-// it just walks whatever assignmentGroups/assignments it's handed.
+// Ungraded assignments due within `withinDays` CALENDAR days (0 = today
+// only), across all courses, sorted soonest-first. `courses` is the caller's
+// real per-user data (see lib/user-courses.ts) — this function is otherwise
+// fully generic, it just walks whatever assignmentGroups/assignments it's
+// handed.
+//
+// "Today" and `daysAway` are the STUDENT'S calendar days (`timeZone`: pass the
+// request's zone on the server, see lib/request-tz.ts; in the browser it
+// defaults to the browser's own zone). daysAway 0 = due today, 1 = tomorrow.
+// A date-only due date counts as due by the end of that day (see
+// lib/due-dates.ts).
 export function getUpcomingAssignments(
   courses: Record<string, MockCourse>,
-  withinDays: number
+  withinDays: number,
+  timeZone: string = defaultTimeZone()
 ): UpcomingAssignment[] {
   const now = new Date();
-  const windowEnd = new Date(now.getTime() + withinDays * MS_PER_DAY);
+  const today = localDate(timeZone, now);
 
   return Object.values(courses)
     .flatMap((c) =>
@@ -44,15 +52,12 @@ export function getUpcomingAssignments(
             assignmentId: a.id,
             courseName: c.name,
             assignmentName: a.name,
-            dueAt: new Date(a.due_at as string),
+            dueAt: dueInstant(a.due_at as string, timeZone),
+            daysAway: calendarDaysBetween(today, dueCalendarDate(a.due_at as string, timeZone)),
           }))
       )
     )
-    .filter((a) => a.dueAt >= now && a.dueAt <= windowEnd)
-    .map((a) => ({
-      ...a,
-      daysAway: Math.ceil((a.dueAt.getTime() - now.getTime()) / MS_PER_DAY),
-    }))
+    .filter((a) => a.dueAt >= now && a.daysAway <= withinDays)
     .sort((a, b) => a.dueAt.getTime() - b.dueAt.getTime());
 }
 
@@ -60,24 +65,22 @@ export function getUpcomingAssignments(
 // URGENT_WITHIN_DAYS but within DIGEST_WITHIN_DAYS. Urgent items are
 // excluded here on purpose: they're surfaced individually and
 // immediately elsewhere, not folded into the digest.
-export function getDigestAssignments(courses: Record<string, MockCourse>): UpcomingAssignment[] {
-  return getUpcomingAssignments(courses, DIGEST_WITHIN_DAYS).filter(
+export function getDigestAssignments(
+  courses: Record<string, MockCourse>,
+  timeZone: string = defaultTimeZone()
+): UpcomingAssignment[] {
+  return getUpcomingAssignments(courses, DIGEST_WITHIN_DAYS, timeZone).filter(
     (a) => a.daysAway > URGENT_WITHIN_DAYS
   );
 }
 
-// Exact calendar-day match rather than the daysAway heuristic — a
-// "due in 6 hours" assignment and a "due in 26 hours" assignment can
-// both round to daysAway 0 or 1 depending on time of day, which isn't
-// precise enough for "what's due today" on the Today page.
-export function getAssignmentsDueToday(courses: Record<string, MockCourse>): UpcomingAssignment[] {
-  const now = new Date();
-  return getUpcomingAssignments(courses, 1).filter(
-    (a) =>
-      a.dueAt.getFullYear() === now.getFullYear() &&
-      a.dueAt.getMonth() === now.getMonth() &&
-      a.dueAt.getDate() === now.getDate()
-  );
+// Everything still due on the student's current calendar day. (Items already
+// past their time today are not included, same as the other lists here.)
+export function getAssignmentsDueToday(
+  courses: Record<string, MockCourse>,
+  timeZone: string = defaultTimeZone()
+): UpcomingAssignment[] {
+  return getUpcomingAssignments(courses, 0, timeZone);
 }
 
 // A tighter, exact-hours check for the in-app toast reminder (see
@@ -86,7 +89,10 @@ export function getAssignmentsDueToday(courses: Record<string, MockCourse>): Upc
 // and email digest). A toast interrupts what the student's doing right
 // now, so it's reserved for "due in the next 24 hours," not "due in
 // the next two days."
-export function getUrgentWithin24Hours(courses: Record<string, MockCourse>): UpcomingAssignment[] {
+export function getUrgentWithin24Hours(
+  courses: Record<string, MockCourse>,
+  timeZone: string = defaultTimeZone()
+): UpcomingAssignment[] {
   const now = Date.now();
-  return getUpcomingAssignments(courses, 2).filter((a) => a.dueAt.getTime() - now <= 24 * 60 * 60 * 1000);
+  return getUpcomingAssignments(courses, 2, timeZone).filter((a) => a.dueAt.getTime() - now <= 24 * 60 * 60 * 1000);
 }

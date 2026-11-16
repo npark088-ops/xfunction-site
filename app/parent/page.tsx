@@ -8,6 +8,7 @@ import { getUpcomingAssignments, URGENT_WITHIN_DAYS } from "../../lib/upcoming-a
 import { Gauge, gradeColor } from "../../components/Gauge";
 import { TrendChart } from "../../components/TrendChart";
 import { Users, TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
+import { getRequestTimeZone } from "../../lib/request-tz";
 
 const card = "var(--card)";
 const border = "var(--border)";
@@ -80,7 +81,7 @@ export default async function ParentDashboardPage({
   const overallGrade = calculateWeightedOverallGrade(courses);
   const overallGradeHistory = getOverallGradeHistory(overallGrade, Object.keys(studentCourses));
   const trend = trendDirection(overallGradeHistory);
-  const upcoming = getUpcomingAssignments(studentCourses, 7);
+  const upcoming = getUpcomingAssignments(studentCourses, 7, await getRequestTimeZone());
 
   return (
     <div className="xf-page-enter" style={{ maxWidth: 820, margin: "0 auto", padding: "40px 40px 64px" }}>

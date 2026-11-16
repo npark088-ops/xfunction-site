@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, ListChecks, NotebookPen } from "lucide-react";
 import type { MockCourse } from "../lib/mock-canvas-data";
 import { courseColor } from "../lib/course-colors";
+import { formatDueDate } from "../lib/due-dates";
 
 const card = "var(--card)";
 const border = "var(--border)";
@@ -174,7 +175,7 @@ export function SearchResults({
                 </div>
                 {a.dueAt && (
                   <div style={{ fontSize: 12, color: textDim, whiteSpace: "nowrap", flexShrink: 0 }}>
-                    {new Date(a.dueAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    {formatDueDate(a.dueAt)}
                   </div>
                 )}
               </Link>

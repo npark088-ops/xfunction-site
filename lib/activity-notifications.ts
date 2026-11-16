@@ -4,6 +4,7 @@ import { getCanvasConnection } from "./canvas-token-store";
 import { ACHIEVEMENTS, getUnlockedAchievementIds } from "./achievements";
 import { getUpcomingAssignments, getDigestAssignments, URGENT_WITHIN_DAYS } from "./upcoming-assignments";
 import { ensureNotification } from "./notifications";
+import { localDate } from "./local-date";
 
 // Re-derives "what notifications should exist right now" (achievement
 // unlocks + urgent deadlines) and upserts any missing ones — cheap
@@ -21,7 +22,8 @@ import { ensureNotification } from "./notifications";
 export async function syncActivityNotifications(
   supabase: SupabaseClient,
   userId: string,
-  courses: Record<string, MockCourse>
+  courses: Record<string, MockCourse>,
+  timeZone: string = "UTC"
 ) {
   const [profileRow, canvasConnection] = await Promise.all([
     supabase
@@ -52,7 +54,7 @@ export async function syncActivityNotifications(
 
   // Genuinely urgent (due within URGENT_WITHIN_DAYS) — each gets its
   // own notification, same as before.
-  const urgent = getUpcomingAssignments(courses, URGENT_WITHIN_DAYS);
+  const urgent = getUpcomingAssignments(courses, URGENT_WITHIN_DAYS, timeZone);
   await Promise.all(
     urgent.map((item) =>
       ensureNotification(supabase, {
@@ -70,7 +72,7 @@ export async function syncActivityNotifications(
   // notification that silently goes stale as the underlying list
   // changes. ensureNotification's ignoreDuplicates means this only
   // actually inserts once per day, even though sync runs on every visit.
-  const digestItems = getDigestAssignments(courses);
+  const digestItems = getDigestAssignments(courses, timeZone);
   if (digestItems.length > 0) {
     const preview = digestItems.slice(0, 3).map((item) => item.assignmentName);
     const overflow = digestItems.length - preview.length;
@@ -79,7 +81,7 @@ export async function syncActivityNotifications(
       type: "digest",
       message,
       link: "/overview",
-      dedupeKey: `digest:${new Date().toISOString().slice(0, 10)}`,
+      dedupeKey: `digest:${localDate(timeZone)}`,
     });
   }
 }

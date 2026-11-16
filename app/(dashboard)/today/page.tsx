@@ -2,6 +2,8 @@ import { getCachedUser, createClient } from "../../../lib/supabase/server";
 import { getUserCourses } from "../../../lib/user-courses";
 import { getAssignmentsDueToday } from "../../../lib/upcoming-assignments";
 import type { MockCourse } from "../../../lib/mock-canvas-data";
+import { getRequestTimeZone } from "../../../lib/request-tz";
+import { formatCalendarDate, localDate, localWeekday } from "../../../lib/local-date";
 import { TodayContent, type TodayClassBlock, type TodayPlannedTask } from "../../../components/TodayContent";
 
 const text = "var(--text)";
@@ -21,9 +23,12 @@ interface StoredStudyPlan {
 export default async function TodayPage() {
   const user = await getCachedUser();
 
-  const todayDate = new Date();
-  const todayStr = todayDate.toISOString().slice(0, 10);
-  const todayWeekday = todayDate.getDay();
+  // "Today" is the student's own calendar day (zone from the browser, see
+  // lib/request-tz.ts), not the server's UTC day: in the evening in the US,
+  // UTC is already tomorrow.
+  const timeZone = await getRequestTimeZone();
+  const todayStr = localDate(timeZone);
+  const todayWeekday = localWeekday(timeZone);
 
   let classesToday: TodayClassBlock[] = [];
   let plannedToday: TodayPlannedTask[] = [];
@@ -62,15 +67,11 @@ export default async function TodayPage() {
     userCourses = coursesResult;
   }
 
-  const dueToday = getAssignmentsDueToday(userCourses);
+  const dueToday = getAssignmentsDueToday(userCourses, timeZone);
 
   const courses = Object.values(userCourses).map((c) => ({ id: c.id, name: c.name }));
 
-  const dateLabel = todayDate.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
+  const dateLabel = formatCalendarDate(todayStr, { weekday: "long", month: "long", day: "numeric" });
 
   return (
     <div

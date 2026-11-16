@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Flame, Sparkle } from "lucide-react";
 import { resolveCssVar } from "../lib/theme-color";
 import { useEncouragement } from "./ToastProvider";
+import { TIMEZONE_HEADER, browserTimeZone } from "../lib/local-date";
 
 const card = "#FFF8EB";
 const textDim = "var(--text-dim)";
@@ -23,7 +24,7 @@ export function StreakBadge() {
   const showEncouragement = useEncouragement();
 
   useEffect(() => {
-    fetch("/api/streak", { method: "POST" })
+    fetch("/api/streak", { method: "POST", headers: { [TIMEZONE_HEADER]: browserTimeZone() } })
       .then((res) => res.json())
       .then((data) => {
         const nextStreak = typeof data.streak === "number" ? data.streak : 0;
