@@ -1160,3 +1160,49 @@
   font-size: 13.5px;
   color: var(--mk-error);
 }
+
+/* ============================================================
+   Landing hero background (components/hero/WaveBackground.tsx)
+   The wrapper's own gradient is what shows before the canvas starts, if
+   canvas is unavailable, and as the base under it. Brand navy / blue / light
+   blue; the hero is always dark, in light and dark mode alike.
+   ============================================================ */
+.xf-hero-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(70% 60% at 78% 10%, rgba(8, 120, 239, 0.34), rgba(8, 120, 239, 0) 62%),
+    radial-gradient(60% 50% at 12% 96%, rgba(155, 203, 255, 0.14), rgba(155, 203, 255, 0) 62%),
+    linear-gradient(180deg, #0B3477 0%, #092C67 50%, #051A40 100%);
+}
+
+.xf-hero-bg canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.xf-hero-bg[data-ready="true"] canvas {
+  opacity: 1;
+}
+
+/* Extra margin for the hero text: a soft navy pool behind the centre of the
+   hero, so white text keeps well above 4.5:1 wherever a wave or glow drifts. */
+.xf-hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 64% 46% at 50% 46%, rgba(5, 26, 64, 0.55), rgba(5, 26, 64, 0) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xf-hero-bg canvas {
+    transition: none;
+  }
+}
