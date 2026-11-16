@@ -289,16 +289,19 @@
 
 /* ------------------------------------------------------------
    Wordmark — one component (components/Wordmark.tsx), used in the nav,
-   landing hero, footer, login, sidebar and parent header: the brand mark
-   plus "XFunction" in Plus Jakarta Sans Bold (--font-brand, see
-   app/layout.tsx). Text is navy on light backgrounds and white on dark
+   landing hero, footer, login, sidebar and parent header: the brand mark,
+   which IS the "X" of the name, followed by "Function" in Plus Jakarta Sans
+   Bold (--font-brand, see app/layout.tsx). The mark's X is drawn to the same
+   height as the capital letters and sits on the text baseline, so the two
+   read as one word. Text is navy on light backgrounds and white on dark
    (it follows --mk-ink). The mark is full colour on light and all white on
    dark; tone="light" forces white for sitting on photos/video.
    ------------------------------------------------------------ */
 .mk-wordmark {
   display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
+  align-items: baseline;
+  gap: 0;
+  position: relative;
   font-family: var(--font-brand), "Plus Jakarta Sans", system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: -0.012em;
@@ -309,9 +312,29 @@
 
 .mk-wordmark__mark {
   display: block;
-  height: 1.02em;
+  /* The X inside the mark is ~80% of the image height (the arrow rises above
+     it), so 0.88em makes the X as tall as the capitals (~0.70em). The X's feet
+     sit ~3% above the image bottom: nudge down so they land on the baseline. */
+  height: 0.88em;
   width: auto;
   flex: none;
+  margin-bottom: -0.026em;
+  /* The arrow tip overhangs the X's feet, so pull the text in: this puts the
+     F about one normal letter-gap from the X's foot, so it reads as one word. */
+  margin-right: -0.1em;
+}
+
+/* Visually hidden but still read aloud / copied: the "X" the mark stands in for. */
+.mk-wordmark__x-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .mk-wordmark__mark--white {
