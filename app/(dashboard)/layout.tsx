@@ -7,7 +7,7 @@ import { ConsultantPanelProvider } from "../../components/ConsultantPanel";
 import { SupportChatProvider } from "../../components/SupportChatPanel";
 import { getNotificationsSnapshot } from "../../lib/notifications";
 
-const bg = "var(--bg)";
+import "../app.css";
 
 // Shared shell for every signed-in page (Overview, Courses, Tasks,
 // Settings, Grades). Fetching the user here — once, server-side —
@@ -53,6 +53,11 @@ export default async function DashboardLayout({
   }
 
   return (
+    // `.xf-app` (app/app.css) carries the signed-in app's design tokens. It
+    // wraps everything, including the toasts and slide-out panels the
+    // providers render beside the page, and uses display: contents so it adds
+    // no box of its own (custom properties still inherit through it).
+    <div className="xf-app" style={{ display: "contents" }}>
     <ToastProvider>
       {user && <ToastWatcher />}
       {user && <OnboardingTour />}
@@ -65,7 +70,7 @@ export default async function DashboardLayout({
           the Settings page's "Support" card via useSupportChat(). */}
       <ConsultantPanelProvider>
         <SupportChatProvider>
-          <div style={{ display: "flex", minHeight: "100vh", background: bg }}>
+          <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg)" }}>
             <Sidebar
               userId={user?.id ?? null}
               userEmail={user?.email ?? null}
@@ -78,5 +83,6 @@ export default async function DashboardLayout({
         </SupportChatProvider>
       </ConsultantPanelProvider>
     </ToastProvider>
+    </div>
   );
 }

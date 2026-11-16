@@ -1,0 +1,814 @@
+/* ============================================================
+   XFunction signed-in app: shared look (design tokens + base components)
+
+   Loaded only by the signed-in shell, app/(dashboard)/layout.tsx, and
+   scoped to its `.xf-app` wrapper. The public marketing pages and the login
+   page never sit inside that wrapper, so none of this reaches them.
+
+   Why it is scoped instead of edited into :root in globals.css: every screen
+   already reads the old global names (--bg, --card, --border, --text,
+   --text-dim, --blue, --green, --red, --amber) from inline styles. Re-pointing
+   those same names at the new palette inside `.xf-app` restyles every screen
+   at once, with no per-screen edits, and leaves the marketing pages (which
+   remap those names themselves, see `.mk-theme` in marketing.css) alone.
+
+   PALETTE
+     navy        #092C67   text, headings, the one dominant card
+     blue        #0878EF   graphics, focus ring
+     light blue  #9BCBFF   thin accents, chips, dark-mode links
+     ice         #F2F7FF   page background
+     white       #FFFFFF   cards, sidebar, top bar
+   Two accessibility deviations (same as the marketing pages): the exact
+   brand blue gives only 4.25:1 with white text, so
+     --xf-btn   #076BD6  button fill   (white text 5.14:1)
+     --blue     #0666CC  link text     (5.56:1 on white, 5.16:1 on ice)
+   Checked pairs (scratch/app-contrast.cjs), light:
+     navy on white 13.4   navy on ice 12.5   dim text 6.3 / 5.9
+     link on white 5.6    green 5.0          red 5.6    amber 5.4
+   dark: text 15.9, dim 8.6, link/light blue 8.7, navy on light blue 7.9
+
+   TYPE: Plus Jakarta Sans (bold, friendly) for headings and big numbers,
+   Inter for everything else. Both are self-hosted by next/font (see
+   app/layout.tsx).
+   ============================================================ */
+
+.xf-app {
+  /* --- palette (light) --- */
+  --xf-navy: #092C67;
+  --xf-btn: #076BD6;
+  --xf-btn-hover: #0559B3;
+  --xf-on-btn: #FFFFFF;
+  --xf-tint: #9BCBFF;
+  --xf-on-tint: #092C67;
+  --xf-ice: #F2F7FF;
+  --xf-ice-2: #E3EEFF;
+  --xf-focus: #0878EF;
+  --xf-hero-bg: #092C67;
+  --xf-hero-text: #FFFFFF;
+  --xf-hero-dim: #C9DDFB;
+  --xf-hero-btn: #9BCBFF;
+  --xf-hero-on-btn: #092C67;
+  --xf-urgent-bg: #FFE3E0;
+  --xf-urgent-text: #8F1D14;
+  --xf-warn-bg: #FFF8EB;
+  --xf-warn-text: #7A4D00;
+
+  /* The names every existing screen already reads. */
+  --bg: #F2F7FF;
+  --card: #FFFFFF;
+  --border: #D9E5F7;
+  --text: #092C67;
+  --text-dim: #4A6088;
+  --blue: #0666CC;
+  --green: #15803D;
+  --red: #C62828;
+  --amber: #9A5B00;
+
+  /* --- type --- */
+  --xf-font-heading: var(--font-brand), var(--font-body), system-ui, sans-serif;
+  --xf-font-body: var(--font-body), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --xf-text-xs: 12px;
+  --xf-text-sm: 14px;
+  --xf-text-base: 16px;
+  --xf-text-lg: 18px;
+  --xf-text-xl: 22px;
+  --xf-text-2xl: 28px;
+  --xf-text-3xl: 36px;
+
+  /* --- spacing (4px scale) --- */
+  --xf-space-1: 4px;
+  --xf-space-2: 8px;
+  --xf-space-3: 12px;
+  --xf-space-4: 16px;
+  --xf-space-5: 24px;
+  --xf-space-6: 32px;
+  --xf-space-7: 48px;
+
+  /* --- shape + depth --- */
+  --xf-radius-sm: 10px;
+  --xf-radius: 16px;
+  --xf-radius-lg: 20px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --shadow-sm: 0 1px 2px rgba(9, 44, 103, 0.05), 0 4px 14px rgba(9, 44, 103, 0.05);
+  --shadow-md: 0 2px 4px rgba(9, 44, 103, 0.06), 0 10px 26px rgba(9, 44, 103, 0.08);
+  --shadow-lg: 0 18px 40px rgba(9, 44, 103, 0.14), 0 2px 6px rgba(9, 44, 103, 0.06);
+
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--xf-font-body);
+  font-size: var(--xf-text-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme="dark"] .xf-app {
+  --xf-btn: #9BCBFF;
+  --xf-btn-hover: #BBDBFF;
+  --xf-on-btn: #092C67;
+  --xf-ice: #0C2656;
+  --xf-ice-2: #12326C;
+  --xf-focus: #9BCBFF;
+  --xf-hero-bg: #123A7A;
+  --xf-hero-text: #FFFFFF;
+  --xf-hero-dim: #D3E3FB;
+  --xf-urgent-bg: #4A1D1D;
+  --xf-urgent-text: #FFC9C3;
+  --xf-warn-bg: #3A2E12;
+  --xf-warn-text: #FFD590;
+
+  --bg: #071A40;
+  --card: #0C2656;
+  --border: #244A88;
+  --text: #F2F7FF;
+  --text-dim: #B4C7E8;
+  --blue: #9BCBFF;
+  --green: #4ADE80;
+  --red: #FF9C92;
+  --amber: #F5A623;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 14px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.45), 0 10px 26px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* The overscroll area behind the app matches the page, not the white body. */
+body:has(.xf-app) {
+  background: #F2F7FF;
+}
+:root[data-theme="dark"] body:has(.xf-app) {
+  background: #071A40;
+}
+
+/* The page's global CSS has no border-box reset, so the new components opt in
+   (min-heights and widths below are written as the full box). */
+.dash,
+.dash *,
+.xf-btn,
+.xf-chip,
+.xf-surface,
+.xf-streak,
+.xf-nav__item,
+.xf-sidebar,
+.xf-mobile-topbar,
+.xf-sidebar-user * {
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------------------
+   Base type
+   ------------------------------------------------------------ */
+.xf-app h1,
+.xf-app h2,
+.xf-app h3,
+.xf-app h4 {
+  font-family: var(--xf-font-heading);
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  word-spacing: 0.04em;
+}
+
+/* Several screens set `fontFamily: "Inter, sans-serif"` inline, which names a
+   family that next/font does not register under that name, so the browser
+   fell back to a default sans. Point those at the loaded Inter instead. */
+.xf-app [style*="Inter, sans-serif"] {
+  font-family: var(--xf-font-body) !important;
+}
+
+/* Numbers were set in "IBM Plex Mono", which is not loaded, so they showed in
+   the browser's default monospace. Use the heading face with tabular digits
+   (still aligned) so figures look like part of the same design. */
+.xf-app [style*="IBM Plex Mono"] {
+  font-family: var(--xf-font-heading) !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.xf-app text[font-family*="IBM Plex Mono"] {
+  font-family: var(--xf-font-heading);
+}
+
+/* Visible keyboard focus everywhere inside the app. */
+.xf-app a:focus-visible,
+.xf-app button:focus-visible,
+.xf-app summary:focus-visible,
+.xf-app input:focus-visible,
+.xf-app select:focus-visible,
+.xf-app textarea:focus-visible,
+.xf-app [tabindex]:focus-visible {
+  outline: 3px solid var(--xf-focus);
+  outline-offset: 2px;
+}
+
+/* In dark mode a filled button is light blue, so its label has to be navy.
+   Older screens hard-code white labels on `background: var(--blue)`. */
+/* (Server-rendered style attributes have no space after the colon; ones set in
+   the browser do, so both spellings are matched.) */
+:root[data-theme="dark"] .xf-app button[style*="background:var(--blue)"],
+:root[data-theme="dark"] .xf-app button[style*="background: var(--blue)"],
+:root[data-theme="dark"] .xf-app a[style*="background:var(--blue)"],
+:root[data-theme="dark"] .xf-app a[style*="background: var(--blue)"],
+:root[data-theme="dark"] .xf-app [style*="background:var(--red)"],
+:root[data-theme="dark"] .xf-app [style*="background: var(--red)"] {
+  color: #092C67 !important;
+}
+
+/* ------------------------------------------------------------
+   Reusable pieces (used by the new sidebar and the dashboard)
+   ------------------------------------------------------------ */
+.xf-surface {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--xf-radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.xf-eyebrow {
+  margin: 0;
+  font-size: var(--xf-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.xf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--xf-tint);
+  color: var(--xf-on-tint);
+  font-size: var(--xf-text-xs);
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.xf-chip--urgent {
+  background: var(--xf-urgent-bg);
+  color: var(--xf-urgent-text);
+}
+
+.xf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: var(--xf-btn);
+  color: var(--xf-on-btn);
+  font: 700 var(--xf-text-sm)/1.2 var(--xf-font-body);
+  text-decoration: none;
+  cursor: pointer;
+}
+.xf-btn:hover {
+  background: var(--xf-btn-hover);
+}
+.xf-btn:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+.xf-btn--ghost {
+  background: transparent;
+  color: var(--blue);
+  border-color: var(--border);
+}
+.xf-btn--ghost:hover {
+  background: var(--xf-ice);
+}
+.xf-btn--sm {
+  min-height: 40px;
+  padding: 8px 14px;
+}
+.xf-btn--danger {
+  background: transparent;
+  color: var(--red);
+  border-color: var(--red);
+}
+.xf-btn--danger:hover {
+  background: var(--xf-ice);
+}
+
+.xf-link {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+.xf-link:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------
+   Sidebar + mobile top bar
+   ------------------------------------------------------------ */
+.xf-sidebar {
+  background: var(--card);
+  border-right: 1px solid var(--border);
+}
+
+.xf-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.xf-nav__label {
+  margin: 18px 12px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.xf-nav__label:first-child {
+  margin-top: 0;
+}
+
+.xf-nav__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px 10px 14px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font: 600 var(--xf-text-sm)/1.2 var(--xf-font-body);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+@media (min-width: 861px) {
+  /* Mouse users get slightly tighter rows so the whole menu fits a laptop
+     screen; touch screens keep the 44px tap targets. */
+  .xf-nav__item {
+    min-height: 40px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+}
+.xf-nav__item svg {
+  flex-shrink: 0;
+  color: var(--text-dim);
+}
+.xf-nav__item:hover {
+  background: var(--xf-ice);
+}
+/* Active page: tinted fill, bold navy text and a blue bar on the left edge,
+   so it reads without relying on color alone. */
+.xf-nav__item.is-active {
+  background: var(--xf-ice-2);
+  font-weight: 800;
+}
+.xf-nav__item.is-active svg {
+  color: var(--blue);
+}
+.xf-nav__item.is-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--xf-focus);
+}
+
+/* The AI consultant gets its own filled look: it opens a panel, not a page. */
+.xf-nav__item--accent {
+  margin: 10px 0;
+  background: var(--xf-ice-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.xf-nav__item--accent svg {
+  color: var(--blue);
+}
+
+.xf-sidebar-user {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+.xf-sidebar-user__email {
+  font-size: var(--xf-text-xs);
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  word-break: break-all;
+}
+
+@media (max-width: 860px) {
+  .xf-mobile-topbar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 0 rgba(9, 44, 103, 0.04), 0 6px 18px rgba(9, 44, 103, 0.06);
+  }
+}
+
+/* ------------------------------------------------------------
+   Dashboard screen (app/(dashboard)/overview)
+   ------------------------------------------------------------ */
+.dash {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--xf-space-4);
+}
+
+.dash__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--xf-space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--xf-space-2);
+}
+.dash__title {
+  display: flex;
+  align-items: center;
+  gap: var(--xf-space-3);
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: clamp(28px, 6vw, var(--xf-text-3xl));
+  font-weight: 800;
+}
+.dash__sub {
+  margin: 6px 0 0;
+  color: var(--text-dim);
+  font-size: var(--xf-text-base);
+}
+
+/* One dominant element: the "Next up" card. */
+.dash-hero {
+  background: var(--xf-hero-bg);
+  color: var(--xf-hero-text);
+  border-radius: var(--xf-radius-lg);
+  padding: var(--xf-space-5);
+  box-shadow: var(--shadow-md);
+  border: 1px solid transparent;
+}
+:root[data-theme="dark"] .xf-app .dash-hero {
+  border-color: var(--border);
+}
+.dash-hero .xf-eyebrow {
+  color: var(--xf-hero-dim);
+}
+.dash-hero h2 {
+  margin: var(--xf-space-2) 0 var(--xf-space-1);
+  color: var(--xf-hero-text);
+  font-size: clamp(24px, 5.4vw, var(--xf-text-2xl));
+  font-weight: 800;
+}
+.dash-hero__course {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--xf-hero-dim);
+  font-size: var(--xf-text-sm);
+  font-weight: 600;
+}
+.dash-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+.dash-hero__row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--xf-space-3);
+  margin-top: var(--xf-space-4);
+}
+.dash-hero .xf-btn {
+  background: var(--xf-hero-btn);
+  color: var(--xf-hero-on-btn);
+}
+.dash-hero .xf-btn:hover {
+  background: #FFFFFF;
+}
+.dash-hero .xf-link {
+  color: #FFFFFF;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.dash-hero a:focus-visible,
+.dash-hero button:focus-visible,
+.dash-hero summary:focus-visible {
+  outline-color: #FFFFFF;
+}
+.dash-hero__empty {
+  margin: var(--xf-space-2) 0 0;
+  color: var(--xf-hero-dim);
+  max-width: 46ch;
+}
+
+/* Small stat cards. */
+.dash-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--xf-space-4);
+}
+@media (min-width: 560px) {
+  .dash-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.dash-stat {
+  padding: var(--xf-space-4) var(--xf-space-5);
+}
+.dash-stat__top {
+  display: flex;
+  align-items: center;
+  gap: var(--xf-space-4);
+}
+.dash-stat__value {
+  margin: 2px 0 0;
+  font-family: var(--xf-font-heading);
+  font-size: var(--xf-text-2xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text);
+}
+.dash-stat__note {
+  margin: 4px 0 0;
+  font-size: var(--xf-text-sm);
+  color: var(--text-dim);
+}
+.dash-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--xf-text-sm);
+  font-weight: 700;
+}
+
+/* A normal section card. */
+.dash-card {
+  padding: var(--xf-space-5);
+}
+.dash-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--xf-space-3);
+  flex-wrap: wrap;
+}
+.dash-card h2 {
+  margin: 0;
+  font-size: var(--xf-text-lg);
+  font-weight: 800;
+}
+.dash-card p {
+  margin: 0;
+}
+.dash-card__lead {
+  margin-top: var(--xf-space-2) !important;
+  color: var(--text-dim);
+  font-size: var(--xf-text-sm);
+  max-width: 56ch;
+}
+.dash-card__body {
+  margin-top: var(--xf-space-3);
+}
+.dash-text {
+  font-size: var(--xf-text-base);
+  line-height: 1.6;
+  max-width: 62ch;
+}
+.dash-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Lists of rows (upcoming work, announcements, plan days). */
+.dash-list {
+  list-style: none;
+  margin: var(--xf-space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--xf-space-2);
+}
+.dash-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--xf-space-3);
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+}
+a.dash-row:hover {
+  border-color: var(--xf-focus);
+}
+.dash-row__main {
+  min-width: 0;
+}
+.dash-row__course {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 2px;
+  font-size: var(--xf-text-xs);
+  font-weight: 600;
+  color: var(--blue);
+}
+.dash-row__course .dash-dot {
+  width: 8px;
+  height: 8px;
+  box-shadow: none;
+}
+.dash-row__title {
+  margin: 0;
+  font-size: var(--xf-text-sm);
+  font-weight: 700;
+}
+.dash-row__when {
+  font-size: var(--xf-text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+.dash-row__when.is-urgent {
+  color: var(--red);
+}
+.dash-note {
+  margin-top: var(--xf-space-2) !important;
+  font-size: var(--xf-text-xs);
+  color: var(--text-dim);
+}
+.dash-status {
+  margin-top: var(--xf-space-2) !important;
+  font-size: var(--xf-text-sm);
+}
+.dash-status--ok {
+  color: var(--green);
+}
+.dash-status--err {
+  color: var(--red);
+}
+
+/* "Show more": native <details>, so it works with the keyboard and screen
+   readers and needs no script. */
+.dash-more {
+  margin-top: var(--xf-space-3);
+}
+.dash-more > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 2px;
+  list-style: none;
+  cursor: pointer;
+  color: var(--blue);
+  font-size: var(--xf-text-sm);
+  font-weight: 700;
+}
+.dash-more > summary::-webkit-details-marker {
+  display: none;
+}
+.dash-more > summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: 2px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+}
+.dash-more[open] > summary::after {
+  transform: rotate(-135deg) translateY(-2px);
+}
+.dash-more__body {
+  margin-top: var(--xf-space-2);
+}
+
+.dash-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xf-space-3);
+  margin: var(--xf-space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.dash-bar__label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--xf-text-sm);
+  margin-bottom: 4px;
+}
+.dash-bar__label span:first-child {
+  font-weight: 700;
+}
+.dash-bar__label span:last-child {
+  color: var(--text-dim);
+}
+.dash-bar__track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+.dash-bar__fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.dash-plan-day {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.dash-plan-day h3 {
+  margin: 0 0 8px;
+  font-size: var(--xf-text-sm);
+  font-weight: 800;
+  color: var(--blue);
+}
+.dash-plan-day ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--xf-text-sm);
+  line-height: 1.5;
+}
+
+.dash-empty {
+  text-align: center;
+  padding: var(--xf-space-6) var(--xf-space-5);
+  border: 1px dashed var(--border);
+}
+.dash-empty p {
+  margin: var(--xf-space-2) auto var(--xf-space-4);
+  max-width: 40ch;
+  color: var(--text-dim);
+}
+
+/* Streak chip beside the page title. Warm, but it uses theme tokens so it
+   works in dark mode too. */
+.xf-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 12px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.xf-streak__num {
+  font-family: var(--xf-font-heading);
+  font-size: var(--xf-text-lg);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+}
+.xf-streak__label {
+  font-size: var(--xf-text-xs);
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+/* ------------------------------------------------------------
+   Motion
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .xf-app *,
+  .xf-app *::before,
+  .xf-app *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
