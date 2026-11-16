@@ -28,9 +28,8 @@ const FAQS = [
   },
 ];
 
-// Server component: SUPPORT_EMAIL is read from the server environment (the
-// same address the in-app support chat tells students to email). The
-// in-app support chat itself is untouched — it lives in the signed-in app.
+// SUPPORT_EMAIL comes from lib/support-config.ts: the one constant that is also
+// the address the in-app support chat tells students to email.
 export default function HelpPage() {
   return (
     <div className="mk-page">
