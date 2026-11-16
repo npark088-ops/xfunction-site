@@ -311,15 +311,6 @@ export default function Home() {
     (window as any).gtag?.("event", "cookie_accept");
   }
 
-  // ✅ NEW: SEND TO YOUR BACKEND
-
-  fetch("/api/events", {
-  method: "POST",
-  body: JSON.stringify({
-    event: "cookie_accept",
-    user: localStorage.getItem("user_id")
-  })
-});
 ``
 
   setAcceptedCookies(true);
