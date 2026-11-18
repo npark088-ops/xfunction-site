@@ -48,4 +48,4 @@ These are read on the server only. Set them in your host's environment settings 
 
 Text-message reminders are switched off entirely (there is no per-student phone number yet), so no Twilio variables are used.
 
-The support email address shown to students (on the Help page and in the Support chat) is a single constant, `SUPPORT_EMAIL` in `lib/support-config.ts`. It is currently a placeholder (`support@xfunction.app`); edit that one line to change it everywhere. It is no longer read from an environment variable.
+The support email address shown to students (on the Help page and in the Support chat) is a single constant, `SUPPORT_EMAIL` in `lib/support-config.ts`. Edit that one line to change it everywhere. It is no longer read from an environment variable.
