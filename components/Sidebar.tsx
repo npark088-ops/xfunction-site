@@ -10,29 +10,25 @@ import { Wordmark } from "./Wordmark";
 import { useConsultantPanel } from "./ConsultantPanel";
 import type { NotificationRow } from "../lib/notifications";
 
-const bg = "var(--bg)";
-const card = "var(--card)";
-const border = "var(--border)";
-const blue = "var(--blue)";
-const text = "var(--text)";
-const textDim = "var(--text-dim)";
+type NavLink = { href: string; label: string; icon: LucideIcon };
 
-type NavItem =
-  | { href: string; label: string; icon: LucideIcon; panel?: false }
-  | { href: null; label: string; icon: LucideIcon; panel: true };
-
-const NAV_ITEMS: NavItem[] = [
+// Same destinations as before, grouped so the list scans in two short chunks
+// instead of one run of eleven. Styles: the "Sidebar" block in app/app.css.
+const DAILY: NavLink[] = [
   { href: "/today", label: "Today", icon: Sun },
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
-  // Not a route — opens the slide-out panel in place (see
-  // components/ConsultantPanel.tsx) instead of navigating away.
-  { href: null, label: "Your Consultant", icon: Bot, panel: true },
+  { href: "/tasks", label: "Tasks", icon: ListTodo },
+  { href: "/schedule", label: "Schedule", icon: CalendarDays },
+];
+
+const CLASSES: NavLink[] = [
   { href: "/courses", label: "Courses", icon: BookOpen },
+  { href: "/trends", label: "Trends", icon: TrendingUp },
   { href: "/compare", label: "Compare", icon: Columns3 },
   { href: "/search", label: "Search", icon: Search },
-  { href: "/schedule", label: "Schedule", icon: CalendarDays },
-  { href: "/trends", label: "Trends", icon: TrendingUp },
-  { href: "/tasks", label: "Tasks", icon: ListTodo },
+];
+
+const ACCOUNT: NavLink[] = [
   { href: "/settings", label: "Settings", icon: SettingsIcon },
   { href: "/help", label: "Help", icon: HelpCircle },
 ];
@@ -85,69 +81,51 @@ export function Sidebar({
     };
   }, [mobileOpen]);
 
+  const isActive = (href: string) =>
+    pathname === href ||
+    pathname.startsWith(`${href}/`) ||
+    (href === "/courses" && pathname.startsWith("/grades"));
+
+  const renderLink = ({ href, label, icon: Icon }: NavLink) => {
+    const active = isActive(href);
+    return (
+      <Link
+        key={href}
+        href={href}
+        className={`xf-nav__item${active ? " is-active" : ""}`}
+        aria-current={active ? "page" : undefined}
+      >
+        <Icon size={18} strokeWidth={2} aria-hidden="true" />
+        {label}
+      </Link>
+    );
+  };
+
   const nav = (
-    <nav style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-      {NAV_ITEMS.map((item) => {
-        const active = item.panel
-          ? consultantOpen
-          : pathname === item.href ||
-            pathname.startsWith(`${item.href}/`) ||
-            (item.href === "/courses" && pathname.startsWith("/grades"));
-        const Icon = item.icon;
-        const itemStyle = {
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "12px 14px",
-          borderRadius: "var(--radius-sm)",
-          fontSize: 14,
-          fontWeight: 600,
-          textDecoration: "none",
-          color: active ? "white" : text,
-          background: active ? blue : "transparent",
-          transition: "background var(--transition-fast), color var(--transition-fast)",
-        } as const;
+    <nav className="xf-nav" aria-label="Main">
+      <p className="xf-nav__label">Every day</p>
+      {DAILY.map(renderLink)}
 
-        if (item.panel) {
-          return (
-            <button
-              key={item.label}
-              type="button"
-              onClick={() => {
-                setMobileOpen(false);
-                openPanel();
-              }}
-              onMouseEnter={(e) => {
-                if (!active) e.currentTarget.style.background = "var(--border)";
-              }}
-              onMouseLeave={(e) => {
-                if (!active) e.currentTarget.style.background = "transparent";
-              }}
-              style={{ ...itemStyle, border: "none", cursor: "pointer", width: "100%", textAlign: "left" }}
-            >
-              <Icon size={17} strokeWidth={2} />
-              {item.label}
-            </button>
-          );
-        }
+      <p className="xf-nav__label">Your classes</p>
+      {CLASSES.map(renderLink)}
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onMouseEnter={(e) => {
-              if (!active) e.currentTarget.style.background = "var(--border)";
-            }}
-            onMouseLeave={(e) => {
-              if (!active) e.currentTarget.style.background = "transparent";
-            }}
-            style={itemStyle}
-          >
-            <Icon size={17} strokeWidth={2} />
-            {item.label}
-          </Link>
-        );
-      })}
+      {/* Not a route — opens the slide-out panel in place (see
+          components/ConsultantPanel.tsx) instead of navigating away. */}
+      <button
+        type="button"
+        className={`xf-nav__item xf-nav__item--accent${consultantOpen ? " is-active" : ""}`}
+        aria-pressed={consultantOpen}
+        onClick={() => {
+          setMobileOpen(false);
+          openPanel();
+        }}
+      >
+        <Bot size={18} strokeWidth={2} aria-hidden="true" />
+        Your Consultant
+      </button>
+
+      <div style={{ flex: 1 }} />
+      {ACCOUNT.map(renderLink)}
     </nav>
   );
 
@@ -166,17 +144,17 @@ export function Sidebar({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            width: 36,
-            height: 36,
+            width: 40,
+            height: 40,
             borderRadius: "var(--radius-sm)",
-            border: `1px solid ${border}`,
-            background: bg,
-            color: text,
+            border: "1px solid var(--border)",
+            background: "var(--card)",
+            color: "var(--text)",
             cursor: "pointer",
             flexShrink: 0,
           }}
         >
-          <Menu size={18} strokeWidth={2} />
+          <Menu size={20} strokeWidth={2} />
         </button>
         <Link href="/" aria-label="XFunction home" style={{ textDecoration: "none", display: "inline-flex" }}>
           <Wordmark size="sm" />
@@ -197,12 +175,11 @@ export function Sidebar({
       <div
         className={`xf-sidebar${mobileOpen ? " xf-sidebar-open" : ""}`}
         style={{
-          width: 240,
+          width: 248,
           flexShrink: 0,
-          background: card,
-          borderRight: `1px solid ${border}`,
-          minHeight: "100vh",
-          padding: "28px 20px",
+          height: "100vh",
+          overflowY: "auto",
+          padding: "24px 16px",
           display: "flex",
           flexDirection: "column",
           position: "sticky",
@@ -215,7 +192,7 @@ export function Sidebar({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            marginBottom: 36,
+            margin: "0 4px 28px 8px",
           }}
         >
           <Link
@@ -238,81 +215,44 @@ export function Sidebar({
               style={{
                 alignItems: "center",
                 justifyContent: "center",
-                width: 36,
-                height: 36,
+                width: 40,
+                height: 40,
                 borderRadius: "var(--radius-sm)",
                 border: "none",
                 background: "transparent",
-                color: textDim,
+                color: "var(--text-dim)",
                 cursor: "pointer",
               }}
             >
-              <X size={18} strokeWidth={2} />
+              <X size={20} strokeWidth={2} />
             </button>
           </div>
         </div>
 
         {nav}
 
-      {hasParentAccess && (
-        <Link
-          href="/parent"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "10px 14px",
-            borderRadius: "var(--radius-sm)",
-            fontSize: 13,
-            fontWeight: 600,
-            textDecoration: "none",
-            color: textDim,
-            border: `1px dashed ${border}`,
-            marginTop: 8,
-          }}
-        >
-          <Users size={15} strokeWidth={2} />
-          Parent view
-        </Link>
-      )}
-
-      {userEmail && (
-        <div style={{ borderTop: `1px solid ${border}`, paddingTop: 16, marginTop: 16 }}>
-          <div
-            style={{
-              fontSize: 12,
-              color: textDim,
-              marginBottom: 10,
-              wordBreak: "break-all",
-            }}
+        {hasParentAccess && (
+          <Link
+            href="/parent"
+            className="xf-nav__item"
+            style={{ border: "1px dashed var(--border)", marginTop: 8 }}
           >
-            {userEmail}
+            <Users size={18} strokeWidth={2} aria-hidden="true" />
+            Parent view
+          </Link>
+        )}
+
+        {userEmail && (
+          <div className="xf-sidebar-user">
+            <div className="xf-sidebar-user__email">{userEmail}</div>
+            <form action="/auth/signout" method="POST">
+              <button type="submit" className="xf-btn xf-btn--ghost xf-btn--sm" style={{ width: "100%", color: "var(--text)" }}>
+                <LogOut size={16} strokeWidth={2} aria-hidden="true" />
+                Sign out
+              </button>
+            </form>
           </div>
-          <form action="/auth/signout" method="POST">
-            <button
-              type="submit"
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                padding: "8px 14px",
-                borderRadius: "var(--radius-sm)",
-                background: bg,
-                border: `1px solid ${border}`,
-                color: text,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              <LogOut size={15} strokeWidth={2} />
-              Sign out
-            </button>
-          </form>
-        </div>
-      )}
+        )}
       </div>
     </>
   );

@@ -5,17 +5,12 @@ import { useState, useEffect } from "react";
 import { MarketingNav } from "../components/MarketingNav";
 import { MarketingFooter } from "../components/MarketingFooter";
 import { Wordmark } from "../components/Wordmark";
-import { DroneBackground } from "../components/DroneBackground";
+import WaveBackground from "../components/hero/WaveBackground";
 
-// Hero still image — also the poster/fallback for the optional drone
-// video (see components/DroneBackground.tsx; video files go in
-// public/videos/city-drone.mp4 / .webm).
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600";
-
-// The background is lighter now, so the white hero copy gets a soft shadow
-// to stay readable over bright sky and glass.
-const HERO_TEXT_SHADOW = "0 1px 3px rgba(0,0,0,0.6), 0 2px 28px rgba(0,0,0,0.65)";
+// A soft shadow keeps the white hero copy crisp over the animated background
+// (the background itself is dark navy, so contrast is already high; this is
+// only polish). See components/hero/WaveBackground.tsx.
+const HERO_TEXT_SHADOW = "0 1px 2px rgba(5,26,64,0.55), 0 2px 24px rgba(5,26,64,0.5)";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -59,15 +54,15 @@ export default function Home() {
       {page === "home" && (
         <div>
 
-          {/* HERO (DRONE VIDEO + STILL IMAGE FALLBACK + DARK GRADIENT —
-              all inside DroneBackground, which fills this container) */}
+          {/* HERO (animated brand-palette background, drawn on a canvas by
+              WaveBackground, which fills this container) */}
           <div style={{
             position: "relative",
             height: "100vh",
             overflow: "hidden"
           }}>
 
-            <DroneBackground imageSrc={HERO_IMAGE} />
+            <WaveBackground />
 
             {/* HERO TEXT — kept white: this sits on a dark video/photo
                 overlay, not the page background, so light text is what

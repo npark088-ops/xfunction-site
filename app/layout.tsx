@@ -55,13 +55,13 @@ const sora = Sora({
   display: "swap",
 });
 
-// Brand wordmark: Plus Jakarta Sans Bold, the closest match among the
-// next/font families to the lettering on the brand board (a bold geometric
-// sans with round c/o, a flat-topped t and tight spacing). One weight, so a
-// single self-hosted file. Used only by components/Wordmark.tsx.
+// Brand sans: Plus Jakarta Sans, the closest match among the next/font
+// families to the lettering on the brand board (a bold geometric sans with
+// round c/o, a flat-topped t and tight spacing). Loaded as the variable font
+// (one self-hosted file for every weight) so the wordmark (Bold) and the
+// signed-in app's headings (Bold/ExtraBold, see app/app.css) share it.
 const brandSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: "700",
   variable: "--font-brand",
   display: "swap",
 });
