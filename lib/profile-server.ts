@@ -2,13 +2,10 @@ import "server-only";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { createAdminClient } from "./supabase/admin";
 import { ensureNotification } from "./notifications";
-import {
-  type AiUsageResult,
-  FREE_AI_GENERATIONS_PER_MONTH,
-  FREE_CHAT_MESSAGES_PER_MONTH,
-  FREE_SUPPORT_MESSAGES_PER_MONTH,
-  currentMonthStart,
-} from "./ai-usage";
+import type { AiUsageResult } from "./ai-usage";
+import { AI_LIMITS, USAGE_KIND, currentMonthStart, limitReachedMessage, nextResetAt, type UsageFeature } from "./ai-limits";
+import { getRequestTimeZone } from "./request-tz";
+import { addDaysToDate, localDate } from "./local-date";
 
 // EVERY write to the profiles table made on behalf of a signed-in user lives
 // here. Signed-in users can no longer write profiles themselves (see
@@ -43,101 +40,146 @@ async function sessionUser(supabase: SupabaseClient): Promise<User | null> {
 // ---------------------------------------------------------------------------
 // Quotas
 // ---------------------------------------------------------------------------
-
-type UsageKind = "ai" | "chat" | "support";
-
-const USAGE: Record<
-  UsageKind,
-  { limit: number; notice: (periodStart: string) => { message: string; dedupeKey: string } }
-> = {
-  ai: {
-    limit: FREE_AI_GENERATIONS_PER_MONTH,
-    notice: (p) => ({
-      message: `You've used all ${FREE_AI_GENERATIONS_PER_MONTH} free AI generations this month. Upgrade to Pro for unlimited access.`,
-      // Only fires once per billing period — hitting the limit repeatedly in
-      // the same month doesn't spam the bell.
-      dedupeKey: `ai-limit:${p}`,
-    }),
-  },
-  chat: {
-    limit: FREE_CHAT_MESSAGES_PER_MONTH,
-    notice: (p) => ({
-      message: `You've used all ${FREE_CHAT_MESSAGES_PER_MONTH} free messages to Your Consultant this month. Upgrade to Pro for unlimited access.`,
-      dedupeKey: `chat-limit:${p}`,
-    }),
-  },
-  support: {
-    limit: FREE_SUPPORT_MESSAGES_PER_MONTH,
-    notice: (p) => ({
-      message: `You've used all ${FREE_SUPPORT_MESSAGES_PER_MONTH} free messages to Support this month. Upgrade to Pro for unlimited access.`,
-      dedupeKey: `support-limit:${p}`,
-    }),
-  },
-};
-
-type ConsumeUsageRow = { r_allowed: boolean; r_used: number; r_is_pro: boolean };
+//
+// Every number lives in lib/ai-limits.ts. Free accounts count per month, Pro
+// accounts per DAY (a generous cap instead of "unlimited"); each feature
+// ("shared" tools, "ask", "support", "import") has its own counter.
 
 // One database call does the whole check-and-count: the SQL function
-// consume_usage (supabase/pending/0026_consume_usage.sql) locks the user's
-// profiles row, resets the counter if the month rolled over, lets Pro users
-// through uncounted, refuses when the free allowance is used up, and
-// otherwise adds one — all inside a single transaction. Two requests for the
-// same user can't both slip under the limit (the old read-then-write could
-// be raced), and nothing a client sends can change the outcome.
+// consume_usage_v2 (supabase/pending/0028_ai_limits.sql) locks the user's
+// profiles row, chooses the Free or Pro limit and period (only the database
+// knows whether the account is Pro at this instant), restarts the count when the
+// period has changed, refuses when the allowance is used up, and otherwise adds
+// one, all inside a single transaction. Two requests for the same user can't
+// both slip under the limit, and nothing a client sends can change the outcome
+// (the Pro "day" comes from the student's time zone but can never move
+// backwards, so it can't be used to reset the count).
 //
 // FAILS CLOSED: if the check itself errors (database down, function missing)
 // this throws, so the route returns a 500 and nothing is generated, rather
-// than quietly handing out unlimited free AI. Callers must run it BEFORE the
-// costly model call.
-async function consumeUsage(supabase: SupabaseClient, kind: UsageKind): Promise<AiUsageResult> {
+// than quietly handing out free AI. Callers must run it BEFORE the costly
+// model call.
+//
+// One deliberate exception, for a smooth rollout: if the NEW function has not
+// been created in the database yet ("function not found"), it uses the old
+// consume_usage (still a real check: Free limits enforced, Pro uncounted).
+// Anything else that goes wrong still fails closed, and the new "import"
+// counter has no old version, so it fails closed until the SQL is run.
+
+type UsageRow = { allowed: boolean; used: number; limit: number; isPro: boolean; periodKey: string };
+
+type RpcResult = { data: unknown; error: { code?: string; message: string } | null };
+
+// PostgREST says PGRST202 when a function isn't in its schema cache; Postgres
+// itself says 42883 (undefined_function).
+const isMissingFunction = (error: RpcResult["error"]) =>
+  Boolean(error && (error.code === "PGRST202" || error.code === "42883"));
+
+async function consumeUsage(supabase: SupabaseClient, feature: UsageFeature): Promise<AiUsageResult> {
   const user = await sessionUser(supabase);
   if (!user) throw new Error("Not signed in");
 
-  const cfg = USAGE[kind];
-  const periodStart = currentMonthStart();
+  const timeZone = await getRequestTimeZone();
+  const now = new Date();
+  const free = AI_LIMITS.free[feature];
+  const pro = AI_LIMITS.pro[feature];
+  const kind = USAGE_KIND[feature];
+  const monthKey = currentMonthStart(now);
+  const dayKey = localDate(timeZone, now);
+  const admin = createAdminClient();
 
-  const { data, error } = await createAdminClient().rpc("consume_usage", {
+  let row: UsageRow | null = null;
+
+  const v2 = (await admin.rpc("consume_usage_v2", {
     p_user_id: user.id,
     p_kind: kind,
-    p_limit: cfg.limit,
-    p_period: periodStart,
-  });
-  const row = (Array.isArray(data) ? data[0] : data) as ConsumeUsageRow | null | undefined;
-  if (error || !row) {
-    console.error("consume_usage failed:", error?.message ?? "no row returned");
-    throw new Error("Usage check unavailable");
+    p_free_limit: free.limit,
+    p_free_period: monthKey,
+    p_pro_limit: pro.limit,
+    p_pro_period: dayKey,
+  })) as RpcResult;
+
+  if (!v2.error) {
+    const r = (Array.isArray(v2.data) ? v2.data[0] : v2.data) as
+      | { r_allowed: boolean; r_used: number; r_limit: number; r_is_pro: boolean; r_period: string }
+      | null
+      | undefined;
+    if (r) row = { allowed: r.r_allowed, used: r.r_used, limit: r.r_limit, isPro: r.r_is_pro, periodKey: r.r_period };
+  } else if (isMissingFunction(v2.error) && kind !== "import") {
+    console.warn("consume_usage_v2 isn't in the database yet; using the old consume_usage (run 0028_ai_limits.sql).");
+    const v1 = (await admin.rpc("consume_usage", {
+      p_user_id: user.id,
+      p_kind: kind,
+      p_limit: free.limit,
+      p_period: monthKey,
+    })) as RpcResult;
+    const r = (Array.isArray(v1.data) ? v1.data[0] : v1.data) as
+      | { r_allowed: boolean; r_used: number; r_is_pro: boolean }
+      | null
+      | undefined;
+    if (!v1.error && r) {
+      row = {
+        allowed: r.r_allowed,
+        used: r.r_used,
+        limit: r.r_is_pro ? pro.limit : free.limit,
+        isPro: r.r_is_pro,
+        periodKey: r.r_is_pro ? dayKey : monthKey,
+      };
+    } else {
+      console.error("consume_usage failed:", v1.error?.message ?? "no row returned");
+    }
+  } else {
+    console.error("consume_usage_v2 failed:", v2.error?.message ?? "no row returned");
   }
 
+  if (!row) throw new Error("Usage check unavailable");
+
+  const rule = row.isPro ? pro : free;
   const result: AiUsageResult = {
-    allowed: row.r_allowed,
-    used: row.r_used,
-    limit: cfg.limit,
-    isPro: row.r_is_pro,
+    allowed: row.allowed,
+    used: row.used,
+    limit: row.limit,
+    isPro: row.isPro,
+    feature,
+    period: rule.period,
+    resetsAt: nextResetAt(rule.period, timeZone, now).toISOString(),
   };
 
   if (!result.allowed) {
     // The notification is the user's own row in the notifications table
-    // (not profiles), so the user's session client is the right one.
-    const { message, dedupeKey } = cfg.notice(periodStart);
-    await ensureNotification(supabase, { type: "ai-limit", message, link: "/settings", dedupeKey });
+    // (not profiles), so the user's session client is the right one. The
+    // dedupe key includes the period, so it fires once per period.
+    await ensureNotification(supabase, {
+      type: "ai-limit",
+      message: limitReachedMessage(feature, row.isPro, timeZone, now),
+      link: "/settings",
+      dedupeKey: `${kind}-limit:${row.periodKey}`,
+    });
   }
   return result;
 }
 
-// Combined across study plans, study guides, practice quizzes, coach
-// check-ins and the other generators — see the routes under app/api.
+// Study plans, study guides, practice quizzes, coach check-ins and the other
+// generators: the shared pool. See the routes under app/api.
 export function consumeAiGeneration(supabase: SupabaseClient): Promise<AiUsageResult> {
-  return consumeUsage(supabase, "ai");
+  return consumeUsage(supabase, "shared");
 }
 
-// Your Consultant (app/api/ask) — its own separate counter.
+// Your Consultant (app/api/ask): its own separate counter ("ask").
 export function consumeChatMessage(supabase: SupabaseClient): Promise<AiUsageResult> {
-  return consumeUsage(supabase, "chat");
+  return consumeUsage(supabase, "ask");
 }
 
-// Support chat (app/api/support-chat) — its own separate counter.
+// Support chat (app/api/support-chat): its own separate counter.
 export function consumeSupportMessage(supabase: SupabaseClient): Promise<AiUsageResult> {
   return consumeUsage(supabase, "support");
+}
+
+// Importing classes from a school platform. Nothing calls this yet (import
+// isn't available), but the counter and limits are ready: call it BEFORE doing
+// the import.
+export function consumeImport(supabase: SupabaseClient): Promise<AiUsageResult> {
+  return consumeUsage(supabase, "import");
 }
 
 // ---------------------------------------------------------------------------
@@ -172,16 +214,20 @@ export async function markFirstStudyPlanGenerated(supabase: SupabaseClient): Pro
 
 export type StreakResult = { streak: number; longest: number; increased: boolean };
 
-const isoDay = (d: Date) => d.toISOString().slice(0, 10);
-
 // Called once per /app visit (app/api/streak). Bumps the streak the first
-// time a user shows up on a given UTC day, resets it if a day was missed, and
+// time a user shows up on a given day, resets it if a day was missed, and
 // is a no-op on repeat visits the same day. Returns null if nobody is signed in.
+// "Day" is the STUDENT'S calendar day in `timeZone` (the browser's zone, see
+// lib/request-tz.ts), not the server's UTC day, so a student who studies at 9 pm
+// keeps one streak day instead of splitting across two UTC dates.
 //
 // Concurrent visits (two tabs opening at once) can't double-count: the write
 // only matches a row whose last_active_date is not already today, so only
 // one request wins; the other just reports the stored values.
-export async function recordDailyVisit(supabase: SupabaseClient): Promise<StreakResult | null> {
+export async function recordDailyVisit(
+  supabase: SupabaseClient,
+  timeZone: string = "UTC"
+): Promise<StreakResult | null> {
   const user = await sessionUser(supabase);
   if (!user) return null;
 
@@ -199,13 +245,13 @@ export async function recordDailyVisit(supabase: SupabaseClient): Promise<Streak
     };
   };
 
-  const today = isoDay(new Date());
+  const today = localDate(timeZone);
   const before = await read();
   if (before.lastActive === today) {
     return { streak: before.streak, longest: before.longest, increased: false };
   }
 
-  const yesterday = isoDay(new Date(Date.now() - 24 * 60 * 60 * 1000));
+  const yesterday = addDaysToDate(today, -1);
   const nextStreak = before.lastActive === yesterday ? before.streak + 1 : 1;
   const nextLongest = Math.max(before.longest, nextStreak);
 

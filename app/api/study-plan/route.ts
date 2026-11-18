@@ -6,17 +6,16 @@ import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration, markFirstStudyPlanGenerated } from "../../../lib/profile-server";
 import { captureServerEvent } from "../../../lib/posthog-server";
 import { getAiModel } from "../../../lib/ai-model";
+import { getRequestTimeZone } from "../../../lib/request-tz";
+import { addDaysToDate, calendarDaysBetween, formatCalendarDate, localDate } from "../../../lib/local-date";
+import { dueCalendarDate } from "../../../lib/due-dates";
+import { limitReachedResponse } from "../../../lib/ai-limit-response";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
 const MAX_PLAN_DAYS = 10;
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-function formatDate(date: Date) {
-  return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-}
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -30,13 +29,7 @@ export async function POST(req: Request) {
 
   const usage = await consumeAiGeneration(supabase);
   if (!usage.allowed) {
-    return Response.json(
-      {
-        error: "upgrade_required",
-        message: `You've used all ${usage.limit} free AI generations this month.`,
-      },
-      { status: 402 }
-    );
+    return limitReachedResponse(usage);
   }
 
   const { courseId } = await req.json();
@@ -57,23 +50,26 @@ export async function POST(req: Request) {
   const currentGrade = calculateCurrentGrade(course.assignmentGroups);
   const breakdown = calculateCategoryBreakdown(course.assignmentGroups);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const dueDate = new Date(target.assignment.due_at ?? today);
-  dueDate.setHours(0, 0, 0, 0);
+  // Calendar dates are the STUDENT'S days (zone from the browser), not the
+  // server's UTC days, so "Today" in the plan is really their today and the
+  // Today page can match it (see lib/local-date.ts).
+  const timeZone = await getRequestTimeZone();
+  const todayStr = localDate(timeZone);
+  const dueStr = target.assignment.due_at ? dueCalendarDate(target.assignment.due_at, timeZone) : todayStr;
+  const dueLabel = formatCalendarDate(dueStr, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 
-  const daysUntilDue = Math.round((dueDate.getTime() - today.getTime()) / MS_PER_DAY);
+  const daysUntilDue = calendarDaysBetween(todayStr, dueStr);
   const numDays = Math.min(Math.max(daysUntilDue, 0) + 1, MAX_PLAN_DAYS);
 
   // Precompute the actual calendar date/label for each day ourselves —
   // the model only fills in tasks, so it can't get date math wrong.
   const planDates = Array.from({ length: numDays }, (_, i) => {
-    const d = new Date(today.getTime() + i * MS_PER_DAY);
+    const date = addDaysToDate(todayStr, i);
     const isToday = i === 0;
-    const isDueDate = d.getTime() === dueDate.getTime();
+    const isDueDate = date === dueStr;
     return {
-      date: d.toISOString().slice(0, 10),
-      label: `${formatDate(d)}${isToday ? " · Today" : ""}${isDueDate ? " · Due date" : ""}`,
+      date,
+      label: `${formatCalendarDate(date)}${isToday ? " · Today" : ""}${isDueDate ? " · Due date" : ""}`,
     };
   });
 
@@ -88,7 +84,7 @@ Course: ${course.name}
 Current overall grade: ${currentGrade.toFixed(1)}%
 Grade breakdown by category: ${breakdownSummary}
 
-Upcoming target: "${target.assignment.name}" (${target.group.name} category, worth ${target.assignment.points_possible} points), due ${dueDate.toDateString()}.
+Upcoming target: "${target.assignment.name}" (${target.group.name} category, worth ${target.assignment.points_possible} points), due ${dueLabel}.
 
 Base every task on what "${target.assignment.name}" is SPECIFICALLY about — its title is the strongest signal of scope (e.g. "Quiz 2: Genetics" means genetics tasks, not general course review). Only broaden to the course's general subject matter if the name gives no topic hint at all.
 
@@ -131,7 +127,7 @@ Rules:
       courseName: course.name,
       targetAssignment: target.assignment.name,
       targetGroup: target.group.name,
-      targetDueDate: dueDate.toDateString(),
+      targetDueDate: dueLabel,
       days,
     });
   } catch (error) {

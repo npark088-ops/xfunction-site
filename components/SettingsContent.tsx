@@ -17,6 +17,8 @@ import {
   Headset,
 } from "lucide-react";
 import { ACHIEVEMENTS } from "../lib/achievements";
+import { AI_LIMITS, describeReset } from "../lib/ai-limits";
+import { browserTimeZone } from "../lib/local-date";
 import { useSupportChat } from "./SupportChatPanel";
 
 const bg = "var(--bg)";
@@ -213,6 +215,10 @@ export function SettingsContent({
           setDigestStatus({ kind: "error", message: data.error || "Failed to send digest" });
           return;
         }
+        if (data.disabled) {
+          setDigestStatus({ kind: "error", message: data.message || "Email isn't switched on yet." });
+          return;
+        }
         setDigestStatus({ kind: "sent" });
       })
       .catch(() => setDigestStatus({ kind: "error", message: "Failed to send digest" }));
@@ -239,7 +245,7 @@ export function SettingsContent({
           }}
         >
           <PartyPopper size={18} strokeWidth={2} />
-          You&apos;re on XFunction Pro now — unlimited AI generations.
+          You&apos;re on XFunction Pro now — up to {AI_LIMITS.pro.shared.limit} AI generations a day.
         </div>
       )}
 
@@ -275,8 +281,13 @@ export function SettingsContent({
               XFunction Pro
             </div>
             <div style={{ fontSize: 13, color: textDim, marginBottom: 16 }}>
-              Unlimited study plans, study guides, practice quizzes, coach check-ins, and messages
-              to Your Consultant.
+              Up to {AI_LIMITS.pro.shared.limit} AI generations (study plans, study guides, practice
+              quizzes, coach check-ins), {AI_LIMITS.pro.ask.limit} messages to Your Consultant and{" "}
+              {AI_LIMITS.pro.support.limit} Support messages a day.
+            </div>
+            <div style={{ fontSize: 13, color: textDim, marginBottom: 16 }} suppressHydrationWarning>
+              Today: {used} / {limit} AI generations and {chatUsed} / {chatLimit} Consultant messages
+              used. Resets {describeReset("day", browserTimeZone())}.
             </div>
             <button
               onClick={openBillingPortal}
@@ -313,11 +324,16 @@ export function SettingsContent({
             </div>
             <div style={{ fontSize: 13, color: textDim, marginBottom: 6 }}>
               {used} / {limit} AI generations used this month (study plans, study guides,
-              practice quizzes, and coach check-ins combined).
+              practice quizzes, and coach check-ins combined). Resets{" "}
+              <span suppressHydrationWarning>{describeReset("month", browserTimeZone())}</span>.
             </div>
             <div style={{ fontSize: 13, color: textDim, marginBottom: 16 }}>
               {chatUsed} / {chatLimit} messages to Your Consultant used this month — a separate
               limit from the AI generations above.
+            </div>
+            <div style={{ fontSize: 13, color: textDim, marginBottom: 16 }}>
+              XFunction Pro raises these to {AI_LIMITS.pro.shared.limit} AI generations and{" "}
+              {AI_LIMITS.pro.ask.limit} Consultant messages a day.
             </div>
             <button
               onClick={startCheckout}

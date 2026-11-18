@@ -1,115 +1,88 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  type UsageFeature,
+  type UsagePeriod,
+  limitRule,
+  nextResetAt,
+  usagePeriodKey,
+} from "./ai-limits";
 
-// Free-tier AI limits and READ-ONLY usage snapshots. This file is safe to
-// import from anywhere: it never writes. Everything that COUNTS usage lives
-// in lib/profile-server.ts (server-only) — signed-in users can't write their
-// own profiles row, so the counters can only be advanced by the server, in
-// one atomic step (see supabase/pending/0026_consume_usage.sql).
-
-// Combined across study plans, study guides, practice quizzes, and
-// coach check-ins — see app/api/study-plan, app/api/study-guide,
-// app/api/practice-quiz, app/api/coach-overview.
-export const FREE_AI_GENERATIONS_PER_MONTH = 3;
-
-// Your Consultant (the AI chat advisor, see app/api/ask) has its own
-// separate free-tier quota — a conversation naturally takes more turns
-// than "generate one study plan," so it gets its own, larger allowance
-// instead of sharing the 3/month pool above and evaporating it in one
-// exchange.
-export const FREE_CHAT_MESSAGES_PER_MONTH = 10;
-
-// Support chat (see app/api/support-chat) also gets its own quota,
-// separate from both pools above — it's a different feature for a
-// different purpose (account/app help, not academic help), so heavy use
-// of one shouldn't eat into the other. Same size as Your Consultant's
-// allowance since both are open-ended chats.
-export const FREE_SUPPORT_MESSAGES_PER_MONTH = 10;
+// READ-ONLY usage snapshots (for Settings and the Support chat's context). The
+// limits themselves are all in lib/ai-limits.ts. This file never writes:
+// everything that COUNTS usage lives in lib/profile-server.ts (server-only),
+// because signed-in users can't write their own profiles row; the counters can
+// only be advanced by the server, in one atomic step (see
+// supabase/pending/0028_ai_limits.sql, and 0026 for the older version).
 
 export type AiUsageResult = {
   allowed: boolean;
   used: number;
   limit: number;
   isPro: boolean;
+  // Which feature's counter this is, how long one period is (Free: a month,
+  // Pro: a day), and when it next resets (ISO time; display it in the student's
+  // own time zone).
+  feature: UsageFeature;
+  period: UsagePeriod;
+  resetsAt: string;
 };
 
-// First day of the current UTC month, as YYYY-MM-DD — the billing period key
-// stored in the *_usage_period_start columns.
-export function currentMonthStart(): string {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10);
-}
+// The profile columns each feature's counter lives in.
+const COUNTER_COLUMNS: Record<UsageFeature, { used: string; periodStart: string }> = {
+  shared: { used: "ai_generations_used", periodStart: "usage_period_start" },
+  ask: { used: "chat_messages_used", periodStart: "chat_usage_period_start" },
+  support: { used: "support_messages_used", periodStart: "support_usage_period_start" },
+  import: { used: "import_used", periodStart: "import_usage_period_start" },
+};
 
-// Read-only — for displaying plan/usage status (e.g. the Settings page)
-// without counting a generation against the quota.
-export async function getAiUsageSnapshot(
+// Read-only: how much of the limit this student has used right now, without
+// counting anything. `timeZone` is the student's own (see lib/request-tz.ts);
+// it decides which "day" a Pro account's count belongs to.
+export async function getUsageSnapshot(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
+  feature: UsageFeature,
+  timeZone = "UTC"
 ): Promise<AiUsageResult> {
-  const periodStart = currentMonthStart();
-
-  const { data: profile } = await supabase
+  const columns = COUNTER_COLUMNS[feature];
+  const { data } = await supabase
     .from("profiles")
-    .select("is_pro, ai_generations_used, usage_period_start")
+    .select(`is_pro, ${columns.used}, ${columns.periodStart}`)
     .eq("user_id", userId)
     .maybeSingle();
 
-  const usedThisPeriod =
-    profile && profile.usage_period_start === periodStart ? profile.ai_generations_used : 0;
+  const row = data as unknown as Record<string, unknown> | null;
+  const isPro = Boolean(row?.is_pro);
+  const rule = limitRule(feature, isPro);
+  const key = usagePeriodKey(feature, isPro, timeZone);
+  const storedPeriod = (row?.[columns.periodStart] as string | undefined) ?? null;
+  const storedUsed = (row?.[columns.used] as number | undefined) ?? 0;
+
+  // Same rule as the database function: Free counts only inside the current
+  // month; Pro counts under the later of the stored day and today, never
+  // backwards (see supabase/pending/0028_ai_limits.sql).
+  const sameWindow = storedPeriod !== null && (isPro ? storedPeriod >= key : storedPeriod === key);
 
   return {
     allowed: true,
-    used: usedThisPeriod,
-    limit: FREE_AI_GENERATIONS_PER_MONTH,
-    isPro: profile?.is_pro ?? false,
+    used: sameWindow ? storedUsed : 0,
+    limit: rule.limit,
+    isPro,
+    feature,
+    period: rule.period,
+    resetsAt: nextResetAt(rule.period, timeZone).toISOString(),
   };
 }
 
-// Read-only counterpart for Your Consultant's separate counter
-// (chat_messages_used / chat_usage_period_start).
-export async function getChatUsageSnapshot(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<AiUsageResult> {
-  const periodStart = currentMonthStart();
+export const getAiUsageSnapshot = (supabase: SupabaseClient, userId: string, timeZone?: string) =>
+  getUsageSnapshot(supabase, userId, "shared", timeZone);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_pro, chat_messages_used, chat_usage_period_start")
-    .eq("user_id", userId)
-    .maybeSingle();
+// Your Consultant's counter.
+export const getChatUsageSnapshot = (supabase: SupabaseClient, userId: string, timeZone?: string) =>
+  getUsageSnapshot(supabase, userId, "ask", timeZone);
 
-  const usedThisPeriod =
-    profile && profile.chat_usage_period_start === periodStart ? profile.chat_messages_used : 0;
+export const getSupportUsageSnapshot = (supabase: SupabaseClient, userId: string, timeZone?: string) =>
+  getUsageSnapshot(supabase, userId, "support", timeZone);
 
-  return {
-    allowed: true,
-    used: usedThisPeriod,
-    limit: FREE_CHAT_MESSAGES_PER_MONTH,
-    isPro: profile?.is_pro ?? false,
-  };
-}
-
-// Read-only counterpart for Support's separate counter
-// (support_messages_used / support_usage_period_start).
-export async function getSupportUsageSnapshot(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<AiUsageResult> {
-  const periodStart = currentMonthStart();
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_pro, support_messages_used, support_usage_period_start")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  const usedThisPeriod =
-    profile && profile.support_usage_period_start === periodStart ? profile.support_messages_used : 0;
-
-  return {
-    allowed: true,
-    used: usedThisPeriod,
-    limit: FREE_SUPPORT_MESSAGES_PER_MONTH,
-    isPro: profile?.is_pro ?? false,
-  };
-}
+export const getImportUsageSnapshot = (supabase: SupabaseClient, userId: string, timeZone?: string) =>
+  getUsageSnapshot(supabase, userId, "import", timeZone);

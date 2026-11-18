@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { BlackboardUser } from "../../../../../../../lib/blackboard-types";
+import { blockMockServerInProduction } from "../../../../../../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -9,6 +10,8 @@ import { BlackboardUser } from "../../../../../../../lib/blackboard-types";
 // find out the authorizing user's actual name, since Blackboard's token
 // response (unlike Canvas's) only includes a user_id, not a display name.
 export async function GET(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const authHeader = request.headers.get("authorization") ?? "";
   if (!authHeader.startsWith("Bearer ")) {
     return new Response("Missing bearer token", { status: 401 });

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { schoologyOAuthConfig } from "../../../../lib/schoology-oauth-config";
 import { verifyOAuth1Signature } from "../../../../lib/oauth1-signing";
 import { issueRequestToken, extractOAuthParam } from "../../../../lib/mock-schoology-server-store";
+import { blockMockServerInProduction } from "../../../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -13,6 +14,8 @@ import { issueRequestToken, extractOAuthParam } from "../../../../lib/mock-schoo
 // issues an unauthorized request token + secret pair, exactly like
 // real Schoology's response shape (form-urlencoded body, not JSON).
 export async function GET(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const authHeader = request.headers.get("authorization");
   if (!authHeader) {
     return new Response("Missing Authorization header", { status: 401 });

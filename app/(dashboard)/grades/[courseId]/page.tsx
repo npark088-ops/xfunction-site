@@ -53,6 +53,7 @@ import { DemoDataBadge } from "../../../../components/DemoDataBadge";
 import { courseColor } from "../../../../lib/course-colors";
 import { useEncouragement } from "../../../../components/ToastProvider";
 import { alreadyShownToday, markShownToday } from "../../../../lib/toast-dedupe";
+import { formatDueDate } from "../../../../lib/due-dates";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -1716,12 +1717,7 @@ export default function GradesPage({
                                 {a.name}
                               </div>
                               <div style={{ fontSize: 12, color: textDim }}>
-                                {a.due_at
-                                  ? new Date(a.due_at).toLocaleDateString("en-US", {
-                                      month: "short",
-                                      day: "numeric",
-                                    })
-                                  : "No due date"}
+                                {a.due_at ? formatDueDate(a.due_at) : "No due date"}
                               </div>
                             </div>
                             {timeEstimates?.[a.id] != null && (

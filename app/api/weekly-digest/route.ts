@@ -1,5 +1,7 @@
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/profile-server";
+import { EMAIL_DISABLED_MESSAGE, emailSendingEnabled } from "../../../lib/email-config";
+import { getRequestTimeZone } from "../../../lib/request-tz";
 import { generateCoachInsight } from "../../../lib/coach-insight";
 import { composeDigestData, sendDigestEmail } from "../../../lib/weekly-digest";
 import { getUserCourses } from "../../../lib/user-courses";
@@ -20,6 +22,12 @@ export async function POST() {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
+  // No verified sender yet: do nothing (and don't spend an AI generation on
+  // a digest that can't be sent).
+  if (!emailSendingEnabled()) {
+    return Response.json({ sent: false, disabled: true, message: EMAIL_DISABLED_MESSAGE });
+  }
+
   const courses = await getUserCourses(supabase, user.id);
 
   // The coach highlight draws from the same monthly AI quota as study
@@ -36,7 +44,7 @@ export async function POST() {
     }
   }
 
-  const data = composeDigestData(coachHighlight, courses);
+  const data = composeDigestData(coachHighlight, courses, await getRequestTimeZone());
   const result = await sendDigestEmail(user.email, data);
 
   if (!result.ok) {

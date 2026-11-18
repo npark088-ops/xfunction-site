@@ -3,6 +3,7 @@ import { getUserCourses } from "../../../lib/user-courses";
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/profile-server";
 import { getAiModel } from "../../../lib/ai-model";
+import { limitReachedResponse } from "../../../lib/ai-limit-response";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -24,13 +25,7 @@ export async function POST(req: Request) {
 
   const usage = await consumeAiGeneration(supabase);
   if (!usage.allowed) {
-    return Response.json(
-      {
-        error: "upgrade_required",
-        message: `You've used all ${usage.limit} free AI generations this month.`,
-      },
-      { status: 402 }
-    );
+    return limitReachedResponse(usage);
   }
 
   const { courseId } = await req.json();

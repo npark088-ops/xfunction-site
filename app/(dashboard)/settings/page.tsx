@@ -1,6 +1,8 @@
 import { Gauge as GaugeIcon } from "lucide-react";
 import { getCachedUser, createClient } from "../../../lib/supabase/server";
 import { getAiUsageSnapshot, getChatUsageSnapshot } from "../../../lib/ai-usage";
+import { AI_LIMITS } from "../../../lib/ai-limits";
+import { getRequestTimeZone } from "../../../lib/request-tz";
 import { getCanvasConnection } from "../../../lib/canvas-token-store";
 import { getUnlockedAchievementIds } from "../../../lib/achievements";
 import { getUserCourses } from "../../../lib/user-courses";
@@ -32,9 +34,9 @@ export default async function SettingsPage({
 
   let isPro = false;
   let used = 0;
-  let limit = 3;
+  let limit: number = AI_LIMITS.free.shared.limit;
   let chatUsed = 0;
-  let chatLimit = 10;
+  let chatLimit: number = AI_LIMITS.free.ask.limit;
   let unlockedIds: string[] = [];
   let parentLinks: ParentLink[] = [];
   let predictionSummary: { totalBaselines: number; comparableCount: number; avgDiff: number | null } = {
@@ -45,11 +47,13 @@ export default async function SettingsPage({
 
   if (user) {
     const supabase = await createClient();
+    // The student's own time zone decides which "day" a Pro account's usage counts in.
+    const timeZone = await getRequestTimeZone();
 
     const [usage, chatUsage, profileRow, canvasConnection, parentLinksRow, predictionsRow, courses] =
       await Promise.all([
-        getAiUsageSnapshot(supabase, user.id),
-        getChatUsageSnapshot(supabase, user.id),
+        getAiUsageSnapshot(supabase, user.id, timeZone),
+        getChatUsageSnapshot(supabase, user.id, timeZone),
         supabase
           .from("profiles")
           .select("longest_streak, first_study_plan_at")

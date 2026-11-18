@@ -61,6 +61,14 @@ export interface PlatformConfig {
   comingSoonCopy?: string;
 }
 
+// One switch for "can a student really connect a school platform and have
+// their courses imported?". Today the connect flows only save a sign-in token;
+// nothing downloads courses or grades afterwards. While this is false the
+// "Connect" buttons read "Coming soon" and the "Connected Canvas" badge cannot
+// unlock. All the connect/status/disconnect code is still here: when an import
+// exists, set this to true.
+export const PLATFORM_IMPORT_AVAILABLE = false;
+
 const DEMO_SYNC_COPY =
   "The course data shown below is still sample data — this connection doesn't sync real grades yet.";
 

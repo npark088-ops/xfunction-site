@@ -6,6 +6,7 @@ import { CalendarCheck, Clock, ListChecks, Sparkles, CheckCircle2 } from "lucide
 import { formatTime12h } from "./ScheduleGrid";
 import { courseColor } from "../lib/course-colors";
 import { UpgradePrompt } from "./UpgradePrompt";
+import { TIMEZONE_HEADER, browserTimeZone } from "../lib/local-date";
 
 const card = "var(--card)";
 const border = "var(--border)";
@@ -89,7 +90,7 @@ export function TodayContent({
   const loadCoachInsight = () => {
     setCoachLoading(true);
     setCoachError(null);
-    fetch("/api/coach-overview")
+    fetch("/api/coach-overview", { headers: { [TIMEZONE_HEADER]: browserTimeZone() } })
       .then((res) => res.json().then((data) => ({ ok: res.ok, status: res.status, data })))
       .then(({ ok, status, data }) => {
         if (!ok) {
@@ -99,7 +100,13 @@ export function TodayContent({
           });
           return;
         }
-        setCoachInsight(data.insight);
+        // The server returns the day's saved tip when one exists (no new AI
+        // generation), and null when there are no courses to coach on.
+        setCoachInsight(
+          typeof data.insight === "string"
+            ? data.insight
+            : "Add a class on the Courses page to get your coach check-in here."
+        );
       })
       .catch(() => setCoachError({ kind: "error", message: "Failed to generate check-in" }))
       .finally(() => setCoachLoading(false));
@@ -241,7 +248,7 @@ export function TodayContent({
         {!coachLoading && !coachInsight && !coachError && (
           <>
             <p style={{ fontSize: 13, color: textDim, marginTop: 0, marginBottom: 14 }}>
-              Uses one of your monthly AI generations — generate it here when you want it, rather than
+              Uses one of your AI generations — generate it here when you want it, rather than
               automatically every time you visit.
             </p>
             <button

@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { CheckCircle2, AlertTriangle, Link2, Clock, BookOpen, GraduationCap, Sparkles } from "lucide-react";
-import { LMS_PLATFORMS, SIS_PLATFORMS, PlatformConfig, PlatformId, PlatformPreference } from "../lib/platforms";
+import {
+  LMS_PLATFORMS,
+  SIS_PLATFORMS,
+  PLATFORM_IMPORT_AVAILABLE,
+  PlatformConfig,
+  PlatformId,
+  PlatformPreference,
+} from "../lib/platforms";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -105,7 +112,11 @@ export function PlatformConnectionsCard({
               <div style={{ fontSize: 14, fontWeight: 600, color: text, marginBottom: 2 }}>
                 {platform.name} not connected
               </div>
-              <div style={{ fontSize: 13, color: textDim, maxWidth: 440 }}>{platform.notConnectedCopy}</div>
+              <div style={{ fontSize: 13, color: textDim, maxWidth: 440 }}>
+                {PLATFORM_IMPORT_AVAILABLE
+                  ? platform.notConnectedCopy
+                  : `Importing your classes from ${platform.name} isn't ready yet. For now, add your classes by hand or load the demo data.`}
+              </div>
             </>
           )}
           {platformBanner && (
@@ -145,6 +156,29 @@ export function PlatformConnectionsCard({
             }}
           >
             Disconnect
+          </button>
+        ) : !PLATFORM_IMPORT_AVAILABLE ? (
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 20px",
+              borderRadius: "var(--radius-sm)",
+              background: bg,
+              border: `1px dashed ${border}`,
+              color: textDim,
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: "not-allowed",
+              flexShrink: 0,
+            }}
+          >
+            <Clock size={15} strokeWidth={2} />
+            Coming soon
           </button>
         ) : (
           <a
@@ -192,8 +226,9 @@ export function PlatformConnectionsCard({
         Connect your platform
       </h2>
       <p style={{ fontSize: 13, color: textDim, margin: preferredPlatform ? "0 0 8px" : "0 0 20px" }}>
-        Schools often run one system for coursework and a separate one for official grades — pick
-        whichever applies to your school in each category below.
+        {PLATFORM_IMPORT_AVAILABLE
+          ? "Schools often run one system for coursework and a separate one for official grades — pick whichever applies to your school in each category below."
+          : "Importing from a school platform isn't ready yet. Add your classes by hand (or load the demo data) for now."}
       </p>
       {preferredPlatform === "other" && (
         <p style={{ fontSize: 12, color: textDim, margin: "0 0 20px", fontStyle: "italic" }}>
@@ -222,22 +257,24 @@ export function PlatformConnectionsCard({
                 gap: 4,
                 fontSize: 11,
                 fontWeight: 700,
-                color: green,
-                background: "rgba(34, 197, 94, 0.12)",
-                border: `1px solid ${green}`,
+                color: PLATFORM_IMPORT_AVAILABLE ? green : amber,
+                background: PLATFORM_IMPORT_AVAILABLE ? "rgba(34, 197, 94, 0.12)" : "rgba(245, 166, 35, 0.14)",
+                border: `1px solid ${PLATFORM_IMPORT_AVAILABLE ? green : amber}`,
                 borderRadius: 999,
                 padding: "2px 8px",
                 textTransform: "uppercase",
                 letterSpacing: "0.03em",
               }}
             >
-              <CheckCircle2 size={11} strokeWidth={2} />
-              Available
+              {PLATFORM_IMPORT_AVAILABLE ? <CheckCircle2 size={11} strokeWidth={2} /> : <Clock size={11} strokeWidth={2} />}
+              {PLATFORM_IMPORT_AVAILABLE ? "Available" : "Coming soon"}
             </span>
           </div>
           <p style={{ fontSize: 12, color: textDim, margin: "0 0 12px" }}>
-            LMS — day-to-day assignments and coursework. Realistically reachable by an individual
-            developer, so every option here has a working connect flow.
+            LMS — day-to-day assignments and coursework.{" "}
+            {PLATFORM_IMPORT_AVAILABLE
+              ? "Realistically reachable by an individual developer, so every option here has a working connect flow."
+              : "Connecting will come once importing works."}
           </p>
 
           <select

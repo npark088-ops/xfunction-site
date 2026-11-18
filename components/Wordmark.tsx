@@ -1,5 +1,8 @@
-// The one XFunction wordmark: the brand mark + "XFunction" in Plus Jakarta
-// Sans Bold. Use it anywhere the product name is shown as a logo — nav,
+// The one XFunction wordmark: the brand mark followed by "Function" in Plus
+// Jakarta Sans Bold. The mark already contains the letter X, so IT is the "X"
+// of the name (it reads as "XFunction", not "XXFunction"). A visually hidden
+// "X" is kept in the text so screen readers, copy/paste and search still see
+// the full name "XFunction". Use it anywhere the product name is shown as a logo — nav,
 // landing hero, footer, login, sidebar, parent view — so it can't drift.
 // Styles live in app/marketing.css (.mk-wordmark*).
 //
@@ -10,8 +13,7 @@
 //
 // The mark is public/brand/logo-mark.svg (full colour) and
 // public/brand/logo-mark-white.svg, decorative (alt="") because the text
-// carries the name, so screen readers read "XFunction". The text is live
-// text, crisp at any size. Headings keep their own element: wrap it, e.g.
+// carries the name. The text is live text, crisp at any size. Headings keep their own element: wrap it, e.g.
 // <h1><Wordmark size="xl" /></h1>.
 export function Wordmark({
   size = "md",
@@ -48,7 +50,9 @@ export function Wordmark({
         loading="lazy"
         draggable={false}
       />
-      <span className="mk-wordmark__text">XFunction</span>
+      <span className="mk-wordmark__text">
+        <span className="mk-wordmark__x-sr">X</span>Function
+      </span>
     </span>
   );
 }

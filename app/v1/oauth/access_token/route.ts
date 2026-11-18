@@ -6,6 +6,7 @@ import {
   exchangeRequestTokenForAccessToken,
   extractOAuthParam,
 } from "../../../../lib/mock-schoology-server-store";
+import { blockMockServerInProduction } from "../../../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -15,6 +16,8 @@ import {
 // token's secret, then exchanges it for a long-lived access token +
 // secret pair, exactly like real Schoology's response shape.
 export async function GET(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const authHeader = request.headers.get("authorization");
   if (!authHeader) {
     return new Response("Missing Authorization header", { status: 401 });

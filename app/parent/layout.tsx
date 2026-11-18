@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCachedUser } from "../../lib/supabase/server";
 import { Wordmark } from "../../components/Wordmark";
+import { TimezoneSync } from "../../components/TimezoneSync";
 
 const bg = "var(--bg)";
 const border = "var(--border)";
@@ -15,6 +16,7 @@ export default async function ParentLayout({ children }: { children: React.React
 
   return (
     <div style={{ minHeight: "100vh", background: bg }}>
+      {user && <TimezoneSync />}
       <div
         style={{
           display: "flex",

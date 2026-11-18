@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { getTokenInfo } from "../../../../lib/mock-moodle-server-store";
 import { MoodleSiteInfo } from "../../../../lib/moodle-types";
+import { blockMockServerInProduction } from "../../../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -10,6 +11,8 @@ import { MoodleSiteInfo } from "../../../../lib/moodle-types";
 // Moodle sites expose dozens of wsfunctions; this mock only implements
 // the one lib/moodle-auth.ts actually calls).
 export async function GET(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const params = request.nextUrl.searchParams;
   const token = params.get("wstoken") ?? "";
   const wsfunction = params.get("wsfunction") ?? "";

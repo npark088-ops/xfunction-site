@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, X, Pin, Timer } from "lucide-react";
 import { formatTime12h, type ScheduleBlock } from "./ScheduleGrid";
 import type { StudySession } from "../lib/study-sessions";
+import { dueCalendarDate } from "../lib/due-dates";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -91,7 +92,13 @@ export function ScheduleMonthView({
   });
 
   const assignments = useMemo<AssignmentDue[]>(
-    () => assignmentsDue.map((a) => ({ ...a, dueAt: new Date(a.dueAt) })),
+    // The calendar cell an assignment lands in is the student's own due DATE
+    // (a date-only due date must not slip to the day before, see lib/due-dates.ts).
+    () =>
+      assignmentsDue.map((a) => {
+        const [y, m, d] = dueCalendarDate(a.dueAt).split("-").map(Number);
+        return { ...a, dueAt: new Date(y, m - 1, d) };
+      }),
     [assignmentsDue]
   );
   const cells = useMemo(() => buildMonthGrid(monthCursor), [monthCursor]);

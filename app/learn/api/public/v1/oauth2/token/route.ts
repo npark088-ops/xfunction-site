@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { blackboardOAuthConfig } from "../../../../../../../lib/blackboard-oauth-config";
 import { consumeAuthorizationCode } from "../../../../../../../lib/mock-blackboard-server-store";
 import { BlackboardOAuthTokenResponse } from "../../../../../../../lib/blackboard-types";
+import { blockMockServerInProduction } from "../../../../../../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -17,6 +18,8 @@ import { BlackboardOAuthTokenResponse } from "../../../../../../../lib/blackboar
 // client_secret form field the way Canvas/Google do it — so that's what
 // gets checked here too.
 export async function POST(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const authHeader = request.headers.get("authorization") ?? "";
   const basicMatch = authHeader.match(/^Basic (.+)$/);
   if (!basicMatch) {

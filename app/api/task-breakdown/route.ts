@@ -2,12 +2,13 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "../../../lib/supabase/server";
 import { consumeAiGeneration } from "../../../lib/profile-server";
 import { getAiModel } from "../../../lib/ai-model";
+import { limitReachedResponse } from "../../../lib/ai-limit-response";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// Shares the same 3/month free-tier quota as the study plan/guide/quiz
+// Shares the same shared-tools quota (lib/ai-limits.ts) as the study plan/guide/quiz
 // routes (see lib/ai-usage.ts) — this route previously had no auth
 // check or quota gating at all, which meant it was both unmetered
 // (unlike every other AI feature) and, since it never checked for a
@@ -25,13 +26,7 @@ export async function POST(req: Request) {
 
   const usage = await consumeAiGeneration(supabase);
   if (!usage.allowed) {
-    return Response.json(
-      {
-        error: "upgrade_required",
-        message: `You've used all ${usage.limit} free AI generations this month.`,
-      },
-      { status: 402 }
-    );
+    return limitReachedResponse(usage);
   }
 
   try {

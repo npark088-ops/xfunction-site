@@ -3,6 +3,8 @@ import { getUserCourses } from "../../../lib/user-courses";
 import { getCanvasConnection } from "../../../lib/canvas-token-store";
 import { ACHIEVEMENTS, getUnlockedAchievementIds } from "../../../lib/achievements";
 import { ensureNotification } from "../../../lib/notifications";
+import { getRequestTimeZone } from "../../../lib/request-tz";
+import { localDate, localDayStart } from "../../../lib/local-date";
 
 interface StoredStudyPlan {
   days?: { date?: string; tasks?: string[] }[];
@@ -37,9 +39,10 @@ export async function GET() {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayStr = todayStart.toISOString().slice(0, 10);
+  // The student's own day (zone from the browser), not the server's UTC day.
+  const timeZone = await getRequestTimeZone();
+  const todayStr = localDate(timeZone);
+  const todayStart = localDayStart(timeZone, todayStr);
 
   const [profileRow, canvasConnection, existingAchievementNotifs, plansResult, sessionsResult, courses] =
     await Promise.all([

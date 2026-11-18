@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { moodleAuthConfig } from "../../../lib/moodle-auth-config";
 import { issueTokenForCredentials } from "../../../lib/mock-moodle-server-store";
 import { MoodleTokenResponse, MoodleTokenError } from "../../../lib/moodle-types";
+import { blockMockServerInProduction } from "../../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -18,6 +19,8 @@ import { MoodleTokenResponse, MoodleTokenError } from "../../../lib/moodle-types
 // `error`/`errorcode` body instead of an HTTP error status — same shape
 // reproduced here.
 export async function POST(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const formData = await request.formData();
   const username = String(formData.get("username") ?? "");
   const password = String(formData.get("password") ?? "");

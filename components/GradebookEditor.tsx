@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 import type { CanvasAssignmentGroup, CanvasAssignment } from "../lib/canvas-types";
+import { dueToInputValue, formatDueDate, inputValueToDueAt } from "../lib/due-dates";
 
 const bg = "var(--bg)";
 const card = "var(--card)";
@@ -24,8 +25,7 @@ const inputStyle = {
 };
 
 function toDateInputValue(dueAt: string | null): string {
-  if (!dueAt) return "";
-  return new Date(dueAt).toISOString().slice(0, 10);
+  return dueToInputValue(dueAt);
 }
 
 // Add/edit/delete this course's grading categories and assignments —
@@ -128,7 +128,7 @@ export function GradebookEditor({
         body: JSON.stringify({
           name: newAName,
           pointsPossible: Number(newAPoints),
-          dueAt: newADue ? new Date(newADue).toISOString() : null,
+          dueAt: inputValueToDueAt(newADue),
           score: newAScore === "" ? null : Number(newAScore),
         }),
       })
@@ -158,7 +158,7 @@ export function GradebookEditor({
         body: JSON.stringify({
           name: editAName,
           pointsPossible: Number(editAPoints),
-          dueAt: editADue ? new Date(editADue).toISOString() : null,
+          dueAt: inputValueToDueAt(editADue),
           score: editAScore === "" ? null : Number(editAScore),
         }),
       })
@@ -279,7 +279,7 @@ export function GradebookEditor({
                       {a.submission?.score != null ? `${a.submission.score}/${a.points_possible}` : `— /${a.points_possible}`}
                     </div>
                     <div style={{ fontSize: 12, color: textDim, whiteSpace: "nowrap" }}>
-                      {a.due_at ? new Date(a.due_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "No due date"}
+                      {a.due_at ? formatDueDate(a.due_at) : "No due date"}
                     </div>
                     <button onClick={() => startEditAssignment(group.id, a)} style={{ background: "transparent", border: "none", color: textDim, cursor: "pointer", display: "flex", padding: 4 }} aria-label="Edit assignment">
                       <Pencil size={13} strokeWidth={2} />

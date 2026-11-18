@@ -1,10 +1,13 @@
+import { browserTimeZone, localDate } from "./local-date";
+
 // Client-side "have I already shown this toast today" tracking for
 // triggers that don't need server-side history — just enough to keep
 // a celebration/reminder from repeating every time the same page
 // loads. Shared by components/ToastWatcher.tsx and any page-level
 // trigger (e.g. the Grades page's "grade trending up" toast).
 function todayKey(prefix: string): string {
-  return `${prefix}-${new Date().toISOString().slice(0, 10)}`;
+  // The student's own date, not the UTC date (which flips mid-evening in the US).
+  return `${prefix}-${localDate(browserTimeZone())}`;
 }
 
 export function alreadyShownToday(prefix: string): boolean {

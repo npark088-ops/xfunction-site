@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorizeRequestToken } from "../../../lib/mock-schoology-server-store";
+import { blockMockServerInProduction } from "../../../lib/mock-server-guard";
 
 // FAKE STAND-IN ONLY
 // ---------------------------------------------------------------------
@@ -27,6 +28,8 @@ function escapeHtml(value: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const oauthToken = request.nextUrl.searchParams.get("oauth_token") ?? "";
 
   if (!oauthToken) {
@@ -72,6 +75,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const blocked = blockMockServerInProduction();
+  if (blocked) return blocked;
   const formData = await request.formData();
   const decision = formData.get("decision");
   const oauthToken = String(formData.get("oauth_token") ?? "");

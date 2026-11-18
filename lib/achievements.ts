@@ -1,5 +1,6 @@
 import { ClipboardList, Flame, Award, Link2, type LucideIcon } from "lucide-react";
 import type { MockCourse } from "./mock-canvas-data";
+import { PLATFORM_IMPORT_AVAILABLE } from "./platforms";
 
 export interface Achievement {
   id: string;
@@ -8,7 +9,7 @@ export interface Achievement {
   icon: LucideIcon;
 }
 
-export const ACHIEVEMENTS: Achievement[] = [
+const ALL_ACHIEVEMENTS: Achievement[] = [
   {
     id: "first-study-plan",
     name: "First study plan generated",
@@ -34,6 +35,14 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: Link2,
   },
 ];
+
+// "Connected Canvas" can't be earned while connecting a platform does nothing
+// useful (a saved sign-in token alone is not an achievement), so it is left
+// out of the list students see until PLATFORM_IMPORT_AVAILABLE is true. The
+// definition above is kept for that day.
+export const ACHIEVEMENTS: Achievement[] = ALL_ACHIEVEMENTS.filter(
+  (a) => a.id !== "canvas-connected" || PLATFORM_IMPORT_AVAILABLE
+);
 
 export interface AchievementContext {
   longestStreak: number;
@@ -67,7 +76,8 @@ export function getUnlockedAchievementIds(ctx: AchievementContext): Set<string> 
   if (ctx.hasGeneratedStudyPlan) unlocked.add("first-study-plan");
   if (ctx.longestStreak >= 7) unlocked.add("week-streak");
   if (hasScoredAtOrAbove(ctx.courses, 90)) unlocked.add("first-a");
-  if (ctx.canvasConnected) unlocked.add("canvas-connected");
+  // Needs real imported data, not just a saved token.
+  if (PLATFORM_IMPORT_AVAILABLE && ctx.canvasConnected) unlocked.add("canvas-connected");
   return unlocked;
 }
 
