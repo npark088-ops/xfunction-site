@@ -7,25 +7,24 @@ import posthog from "posthog-js";
 import { MarketingNav } from "../../components/MarketingNav";
 import { MarketingFooter } from "../../components/MarketingFooter";
 import { Reveal } from "../../components/Reveal";
+import { AI_LIMITS } from "../../lib/ai-limits";
 
-// Plan names, prices, feature lists and button labels are the page's
-// original text, unchanged. Only the layout and styling are new (styles:
-// the "Pricing" block in app/marketing.css). The checkout flow below is
-// exactly as it was.
+// Plan names, prices and button labels are the page's original text. The AI
+// wording says what the plans really include: Free has a small monthly
+// allowance, Pro a much larger DAILY one (the numbers come from
+// lib/ai-limits.ts, so they can't drift). Styles: the "Pricing" block in
+// app/marketing.css. The checkout flow below is exactly as it was.
 const FREE_FEATURES = [
   "Unlimited grade tracking across all your courses",
   "Grade trend charts",
   "Email & text deadline reminders",
   "Daily streak tracking",
-  "3 AI generations / month (study plans, study guides, practice quizzes, coach check-ins combined)",
+  `${AI_LIMITS.free.shared.limit} AI generations / month (study plans, study guides, practice quizzes, coach check-ins combined)`,
 ];
 
 const PRO_FEATURES = [
   "Everything in Free",
-  "Unlimited study plans",
-  "Unlimited study guides",
-  "Unlimited practice quizzes",
-  "Unlimited AI coach check-ins",
+  "High daily limits on study plans, guides, quizzes and coach check-ins",
 ];
 
 export default function PricingPage() {
@@ -65,7 +64,7 @@ export default function PricingPage() {
         <section className="pr-hero">
           <div className="mk-container">
             <h1 className="mk-h1">Simple pricing</h1>
-            <p className="mk-lead">Start free. Upgrade whenever you want unlimited AI help.</p>
+            <p className="mk-lead">Start free. Upgrade whenever you want more AI help each day.</p>
           </div>
         </section>
 
@@ -100,13 +99,13 @@ export default function PricingPage() {
               {/* PRO */}
               <Reveal className="pr-slot" delay={80}>
                 <div className="mk-card mk-card--hover pr-card pr-card--pro">
-                  <div className="pr-tag">Unlimited AI</div>
+                  <div className="pr-tag">More AI, every day</div>
 
                   <div className="pr-card__label">XFunction Pro</div>
                   <div className="pr-price">
                     $7<span className="pr-price__unit"> /month</span>
                   </div>
-                  <p className="pr-card__desc">For when 3 AI generations a month isn&apos;t enough.</p>
+                  <p className="pr-card__desc">For when {AI_LIMITS.free.shared.limit} AI generations a month isn&apos;t enough.</p>
 
                   <ul className="pr-features">
                     {PRO_FEATURES.map((f) => (

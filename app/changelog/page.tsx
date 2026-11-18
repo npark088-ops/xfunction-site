@@ -40,7 +40,7 @@ const ENTRIES: ChangelogEntry[] = [
     title: "AI study tools, Pricing, and XFunction Pro",
     items: [
       "Added AI-powered study plans, study guides, practice quizzes, and quick coach check-ins — all built around your real course and assignment data.",
-      "Added a Pricing page and real subscriptions for XFunction Pro, which removes the free monthly limit on AI generations.",
+      "Added a Pricing page and real subscriptions for XFunction Pro, which gives much higher daily limits on AI generations.",
       "General performance improvements across the app.",
     ],
   },
