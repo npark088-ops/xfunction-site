@@ -5,6 +5,7 @@ import { buildAcademicContext } from "../../../lib/academic-context";
 import { getUserCourses } from "../../../lib/user-courses";
 import { captureServerEvent } from "../../../lib/posthog-server";
 import { getAiModel } from "../../../lib/ai-model";
+import { limitReachedResponse } from "../../../lib/ai-limit-response";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -17,10 +18,9 @@ const MAX_HISTORY_MESSAGES = 20;
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
-// Your Consultant has its own free-tier quota (10 messages/month),
-// tracked completely separately from the shared 3/month study
-// plan/guide/quiz/coach-insight quota — see lib/ai-usage.ts. Pro users
-// are unlimited on both.
+// Your Consultant has its own quota ("ask"), tracked separately from the
+// shared study plan/guide/quiz/coach-insight quota. Free counts per month, Pro
+// per day; every number is in lib/ai-limits.ts.
 export async function POST(req: Request) {
   const supabase = await createClient();
   const {
@@ -33,13 +33,7 @@ export async function POST(req: Request) {
 
   const usage = await consumeChatMessage(supabase);
   if (!usage.allowed) {
-    return Response.json(
-      {
-        error: "upgrade_required",
-        message: `You've used all ${usage.limit} free messages to Your Consultant this month.`,
-      },
-      { status: 402 }
-    );
+    return limitReachedResponse(usage);
   }
 
   const { messages } = await req.json();

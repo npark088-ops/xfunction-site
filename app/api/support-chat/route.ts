@@ -5,6 +5,7 @@ import { buildSupportContext } from "../../../lib/support-context";
 import { SUPPORT_EMAIL } from "../../../lib/support-config";
 import { captureServerEvent } from "../../../lib/posthog-server";
 import { getAiModel } from "../../../lib/ai-model";
+import { limitReachedResponse } from "../../../lib/ai-limit-response";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -29,13 +30,7 @@ export async function POST(req: Request) {
 
   const usage = await consumeSupportMessage(supabase);
   if (!usage.allowed) {
-    return Response.json(
-      {
-        error: "upgrade_required",
-        message: `You've used all ${usage.limit} free messages to Support this month.`,
-      },
-      { status: 402 }
-    );
+    return limitReachedResponse(usage);
   }
 
   const { messages } = await req.json();

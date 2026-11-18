@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getAiUsageSnapshot, getChatUsageSnapshot } from "./ai-usage";
+import { AI_LIMITS } from "./ai-limits";
 import { getCanvasConnection } from "./canvas-token-store";
 import { getGoogleClassroomConnection } from "./google-classroom-token-store";
 import { getSchoologyConnection } from "./schoology-token-store";
@@ -46,7 +47,7 @@ export async function buildSupportContext(
     aiUsageResult.status === "fulfilled" ? aiUsageResult.value.isPro : false;
 
   const planLine = isPro
-    ? "Plan: XFunction Pro (unlimited AI generations and chat messages)."
+    ? `Plan: XFunction Pro (daily caps, not unlimited: up to ${AI_LIMITS.pro.shared.limit} AI generations, ${AI_LIMITS.pro.ask.limit} Your Consultant messages and ${AI_LIMITS.pro.support.limit} Support messages per day; each resets at the student's local midnight).`
     : aiUsageResult.status === "fulfilled" && chatUsageResult.status === "fulfilled"
       ? `Plan: Free. ${aiUsageResult.value.used}/${aiUsageResult.value.limit} AI generations used this month (study plans/guides/quizzes/coach check-ins), ${chatUsageResult.value.used}/${chatUsageResult.value.limit} messages to Your Consultant used this month.`
       : "Plan: unknown (usage lookup failed — don't guess, ask the student to check Settings).";

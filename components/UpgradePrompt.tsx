@@ -3,12 +3,25 @@
 import { useState } from "react";
 import { Zap } from "lucide-react";
 import posthog from "posthog-js";
+import { AI_LIMITS } from "../lib/ai-limits";
 
 const card = "#FFF8EB";
 const amber = "var(--amber)";
 const blue = "var(--blue)";
 const red = "var(--red)";
 const text = "var(--text)";
+
+// What Pro gets, read from lib/ai-limits.ts so the numbers never drift.
+const PRO_LIMIT = {
+  chat: AI_LIMITS.pro.ask.limit,
+  support: AI_LIMITS.pro.support.limit,
+  generations: AI_LIMITS.pro.shared.limit,
+};
+const PRO_NOUN = {
+  chat: "messages to Your Consultant",
+  support: "Support messages",
+  generations: "AI generations (study plans, guides, quizzes and check-ins)",
+};
 
 // Shown wherever an AI generation request comes back 402 upgrade_required
 // (see lib/ai-usage.ts). "Upgrade to Pro" kicks off a real Stripe
@@ -72,12 +85,10 @@ export function UpgradePrompt({
         Free plan limit reached
       </div>
       <p style={{ fontSize: 13, color: text, margin: 0, marginBottom: 14, lineHeight: 1.5 }}>
-        {message ?? "You've used all your free AI generations this month."}{" "}
-        {context === "chat"
-          ? "Upgrade to XFunction Pro for unlimited messages to Your Consultant — $7/month."
-          : context === "support"
-            ? "Upgrade to XFunction Pro for unlimited Support messages — $7/month."
-            : "Upgrade to XFunction Pro for unlimited study plans, study guides, practice quizzes, and coach check-ins — $7/month."}
+        {message ?? "You've used all your free AI generations."}{" "}
+        {message
+          ? "Pro is $7/month."
+          : `Upgrade to XFunction Pro for up to ${PRO_LIMIT[context]} ${PRO_NOUN[context]} per day — $7/month.`}
       </p>
       <button
         onClick={startCheckout}

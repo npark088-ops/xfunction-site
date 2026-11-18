@@ -248,7 +248,7 @@ export function TodayContent({
         {!coachLoading && !coachInsight && !coachError && (
           <>
             <p style={{ fontSize: 13, color: textDim, marginTop: 0, marginBottom: 14 }}>
-              Uses one of your monthly AI generations — generate it here when you want it, rather than
+              Uses one of your AI generations — generate it here when you want it, rather than
               automatically every time you visit.
             </p>
             <button

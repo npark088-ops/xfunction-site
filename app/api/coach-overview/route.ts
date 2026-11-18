@@ -5,6 +5,7 @@ import { getUserCourses } from "../../../lib/user-courses";
 import { getCachedCoachTip, saveCoachTip } from "../../../lib/coach-cache";
 import { getRequestTimeZone } from "../../../lib/request-tz";
 import { localDate } from "../../../lib/local-date";
+import { limitReachedResponse } from "../../../lib/ai-limit-response";
 
 // The coach check-in. Spends a free AI generation ONLY when it really has to:
 //   1. no courses yet      -> nothing to coach on; no AI call, nothing counted
@@ -44,13 +45,7 @@ export async function GET() {
 
   const usage = await consumeAiGeneration(supabase);
   if (!usage.allowed) {
-    return Response.json(
-      {
-        error: "upgrade_required",
-        message: `You've used all ${usage.limit} free AI generations this month.`,
-      },
-      { status: 402 }
-    );
+    return limitReachedResponse(usage);
   }
 
   try {

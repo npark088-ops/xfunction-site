@@ -7,10 +7,9 @@
 // This is deliberately NOT tied to lib/ai-usage.ts's quota functions —
 // every call site already gets `isPro` back from consumeAiGeneration /
 // consumeChatMessage / consumeSupportMessage, so no extra profile
-// lookup is needed here. Free-tier generation limits (3/month for
-// study tools, 10/month for chat) are entirely unaffected by this —
-// this only changes which model answers a request that was already
-// allowed through.
+// lookup is needed here. The usage limits (see lib/ai-limits.ts) are
+// entirely unaffected by this — this only changes which model answers a
+// request that was already allowed through.
 export const FREE_TIER_MODEL = "claude-haiku-5-5";
 export const PRO_TIER_MODEL = "claude-sonnet-5-5";
 
