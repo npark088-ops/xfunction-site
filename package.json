@@ -6,7 +6,8 @@
     "dev": "cross-env NODE_OPTIONS=--use-system-ca next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "node scripts/run-tests.cjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
