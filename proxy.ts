@@ -23,7 +23,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // Schoology/Moodle/Blackboard's OWN servers, which obviously don't
 // check for an XFunction session.
 
-const PROTECTED_PREFIXES = ["/app", "/today", "/overview", "/ask", "/courses", "/compare", "/search", "/schedule", "/trends", "/tasks", "/grades", "/settings", "/parent", "/connect"];
+const PROTECTED_PREFIXES = ["/app", "/today", "/overview", "/ask", "/courses", "/compare", "/search", "/schedule", "/trends", "/tasks", "/grades", "/settings", "/parent", "/connect", "/start"];
 
 export default async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

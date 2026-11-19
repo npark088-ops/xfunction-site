@@ -70,6 +70,9 @@ function LoginForm() {
   // Validated: ?next= is attacker-controllable, so only same-site paths
   // (query string included, e.g. /parent/join?code=...) are honored.
   const next = safeNextPath(searchParams.get("next"), "/today");
+  // After SIGN-UP a new student is offered Quick Start (skippable) instead of
+  // an empty Today page, unless they came with a destination of their own.
+  const afterSignup = searchParams.get("next") ? next : "/start?welcome=1";
 
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
@@ -125,7 +128,7 @@ function LoginForm() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(afterSignup)}`,
         // Picked up by the handle_new_user() trigger (see
         // supabase/migrations/0023_signup_profile_fields.sql) and
         // written straight to profiles at account-creation time — both
@@ -151,7 +154,7 @@ function LoginForm() {
       // Fire-and-forget: the welcome email shouldn't block getting the
       // student into the app (see app/api/onboarding/welcome).
       fetch("/api/onboarding/welcome", { method: "POST" }).catch(() => {});
-      window.location.href = next;
+      window.location.href = afterSignup;
       return;
     }
     setInfo("Check your email for a confirmation link to finish creating your account.");

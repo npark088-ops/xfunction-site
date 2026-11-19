@@ -4,6 +4,7 @@ import { getAssignmentsDueToday } from "../../../lib/upcoming-assignments";
 import type { MockCourse } from "../../../lib/mock-canvas-data";
 import { getRequestTimeZone } from "../../../lib/request-tz";
 import { formatCalendarDate, localDate, localWeekday } from "../../../lib/local-date";
+import { QuickStartPrompt } from "../../../components/QuickStartPrompt";
 import { TodayContent, type TodayClassBlock, type TodayPlannedTask } from "../../../components/TodayContent";
 
 const text = "var(--text)";
@@ -20,7 +21,12 @@ interface StoredStudyPlan {
 // The one thing that's genuinely on-demand is the AI coach insight (see
 // TodayContent) — that one costs a monthly AI generation, so it's not
 // auto-fetched just from visiting this page.
-export default async function TodayPage() {
+export default async function TodayPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ quickstart?: string }>;
+}) {
+  const { quickstart } = await searchParams;
   const user = await getCachedUser();
 
   // "Today" is the student's own calendar day (zone from the browser, see
@@ -101,6 +107,22 @@ export default async function TodayPage() {
         <p style={{ color: textDim, marginBottom: 24, fontSize: 15 }}>
           Everything relevant to today, in one place — due dates, classes, planned study, and your coach.
         </p>
+
+        {/* After Quick Start: "?quickstart=<classes>-<assignments>". Only digits are read. */}
+        {(() => {
+          const m = /^(\d{1,3})-(\d{1,4})$/.exec(quickstart ?? "");
+          if (!m) return null;
+          const c = Number(m[1]);
+          const a = Number(m[2]);
+          return (
+            <p className="qs-success" role="status">
+              Added {c} class{c === 1 ? "" : "es"} and {a} assignment{a === 1 ? "" : "s"}. You can edit them anytime on the Courses page.
+            </p>
+          );
+        })()}
+
+        {/* Not forced: shown only while there are no classes, and can be hidden. */}
+        {courses.length === 0 && <QuickStartPrompt />}
 
         <TodayContent
           courses={courses}

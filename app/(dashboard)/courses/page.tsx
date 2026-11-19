@@ -14,6 +14,7 @@ import { PlatformConnectionsCard } from "../../../components/PlatformConnections
 import { PlatformId, PlatformPreference } from "../../../lib/platforms";
 import { DemoDataBadge } from "../../../components/DemoDataBadge";
 import { AddCourseCard } from "../../../components/AddCourseCard";
+import { QuickStartPrompt } from "../../../components/QuickStartPrompt";
 import { courseColor } from "../../../lib/course-colors";
 
 const card = "var(--card)";
@@ -196,6 +197,9 @@ export default async function CoursesPage({
         <p style={{ color: textDim, marginBottom: 24, fontSize: 15 }}>
           Add your real classes and track grades yourself, or connect a platform above to sync automatically.
         </p>
+
+        {/* Not forced: shown only while there are no classes, and can be hidden. */}
+        {courses.length === 0 && <QuickStartPrompt />}
 
         <PlatformConnectionsCard
           initialStatuses={initialStatuses}
