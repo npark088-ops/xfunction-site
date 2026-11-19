@@ -17,7 +17,7 @@ import { AI_LIMITS } from "../../lib/ai-limits";
 const FREE_FEATURES = [
   "Unlimited grade tracking across all your courses",
   "Grade trend charts",
-  "Email & text deadline reminders",
+  "Deadline reminders in the app",
   "Daily streak tracking",
   `${AI_LIMITS.free.shared.limit} AI generations / month (study plans, study guides, practice quizzes, coach check-ins combined)`,
 ];

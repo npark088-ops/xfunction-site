@@ -22,7 +22,7 @@ const FAQS = [
   },
   {
     q: "What's free vs. Pro?",
-    a: `Free includes unlimited grade tracking across all your courses, grade trend charts, deadline reminders, daily streak tracking, and a small monthly allowance of AI help: ${FREE.shared.limit} AI generations a month (study plans, study guides, practice quizzes, and coach check-ins combined) and ${FREE.ask.limit} messages a month to Your Consultant. Pro is $7/month and gives you a much larger allowance that resets every day instead: up to ${PRO.shared.limit} AI generations and ${PRO.ask.limit} Consultant messages a day.`,
+    a: `Free includes unlimited grade tracking across all your courses, grade trend charts, in-app deadline reminders, daily streak tracking, and a small monthly allowance of AI help: ${FREE.shared.limit} AI generations a month (study plans, study guides, practice quizzes, and coach check-ins combined) and ${FREE.ask.limit} messages a month to Your Consultant. Pro is $7/month and gives you a much larger allowance that resets every day instead: up to ${PRO.shared.limit} AI generations and ${PRO.ask.limit} Consultant messages a day.`,
   },
   {
     q: "How do AI generations work?",
