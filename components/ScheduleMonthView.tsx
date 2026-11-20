@@ -259,7 +259,7 @@ export function ScheduleMonthView({
                         gap: 3,
                         fontSize: 10,
                         lineHeight: 1.3,
-                        color: "white",
+                        color: "var(--on-course)",
                         background: courseColor(item.session.course_id),
                         borderRadius: 4,
                         padding: "3px 5px",

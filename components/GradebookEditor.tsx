@@ -222,7 +222,7 @@ export function GradebookEditor({
                   style={{ ...inputStyle, width: 70 }}
                   placeholder="%"
                 />
-                <button onClick={() => saveGroupEdit(group.id)} disabled={busy} style={{ background: green(), border: "none", borderRadius: "var(--radius-sm)", width: 32, height: 32, color: "white", cursor: "pointer" }}>
+                <button onClick={() => saveGroupEdit(group.id)} disabled={busy} style={{ background: "var(--success-fill)", border: "none", borderRadius: "var(--radius-sm)", width: 32, height: 32, color: "var(--on-success-fill)", cursor: "pointer" }}>
                   <Check size={15} strokeWidth={2.5} style={{ margin: "auto" }} />
                 </button>
                 <button onClick={() => setEditingGroupId(null)} style={{ background: "transparent", border: `1px solid ${border}`, borderRadius: "var(--radius-sm)", width: 32, height: 32, color: textDim, cursor: "pointer" }}>
@@ -265,7 +265,7 @@ export function GradebookEditor({
                     <input type="number" value={editAPoints} onChange={(e) => setEditAPoints(e.target.value)} style={{ ...inputStyle, width: 64 }} placeholder="Pts" />
                     <input type="date" value={editADue} onChange={(e) => setEditADue(e.target.value)} style={{ ...inputStyle, width: 130 }} />
                     <input type="number" value={editAScore} onChange={(e) => setEditAScore(e.target.value)} style={{ ...inputStyle, width: 64 }} placeholder="Score" />
-                    <button onClick={() => saveAssignmentEdit(group.id, a.id)} disabled={busy} style={{ background: green(), border: "none", borderRadius: "var(--radius-sm)", width: 28, height: 28, color: "white", cursor: "pointer" }}>
+                    <button onClick={() => saveAssignmentEdit(group.id, a.id)} disabled={busy} style={{ background: "var(--success-fill)", border: "none", borderRadius: "var(--radius-sm)", width: 28, height: 28, color: "var(--on-success-fill)", cursor: "pointer" }}>
                       <Check size={13} strokeWidth={2.5} style={{ margin: "auto" }} />
                     </button>
                     <button onClick={() => setEditingAssignmentId(null)} style={{ background: "transparent", border: `1px solid ${border}`, borderRadius: "var(--radius-sm)", width: 28, height: 28, color: textDim, cursor: "pointer" }}>
@@ -297,7 +297,7 @@ export function GradebookEditor({
                   <input type="number" value={newAPoints} onChange={(e) => setNewAPoints(e.target.value)} style={{ ...inputStyle, width: 64 }} placeholder="Pts" />
                   <input type="date" value={newADue} onChange={(e) => setNewADue(e.target.value)} style={{ ...inputStyle, width: 130 }} />
                   <input type="number" value={newAScore} onChange={(e) => setNewAScore(e.target.value)} style={{ ...inputStyle, width: 64 }} placeholder="Score (if graded)" />
-                  <button onClick={() => addAssignment(group.id)} disabled={busy} style={{ background: blue, border: "none", borderRadius: "var(--radius-sm)", padding: "6px 12px", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                  <button onClick={() => addAssignment(group.id)} disabled={busy} style={{ background: blue, border: "none", borderRadius: "var(--radius-sm)", padding: "6px 12px", color: "var(--on-btn)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                     Add
                   </button>
                   <button onClick={() => setAddingAssignmentTo(null)} style={{ background: "transparent", border: `1px solid ${border}`, borderRadius: "var(--radius-sm)", padding: "6px 12px", color: textDim, fontSize: 12, cursor: "pointer" }}>
@@ -322,7 +322,7 @@ export function GradebookEditor({
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 16, flexWrap: "wrap" }}>
           <input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 120 }} placeholder="Category name (e.g. Tests)" />
           <input type="number" value={newGroupWeight} onChange={(e) => setNewGroupWeight(e.target.value)} style={{ ...inputStyle, width: 90 }} placeholder="Weight %" />
-          <button onClick={addGroup} disabled={busy} style={{ background: blue, border: "none", borderRadius: "var(--radius-sm)", padding: "8px 16px", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={addGroup} disabled={busy} style={{ background: blue, border: "none", borderRadius: "var(--radius-sm)", padding: "8px 16px", color: "var(--on-btn)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
             Add
           </button>
           <button onClick={() => setAddingGroup(false)} style={{ background: "transparent", border: `1px solid ${border}`, borderRadius: "var(--radius-sm)", padding: "8px 16px", color: textDim, fontSize: 13, cursor: "pointer" }}>
@@ -340,8 +340,4 @@ export function GradebookEditor({
       )}
     </div>
   );
-}
-
-function green() {
-  return "var(--green)";
 }

@@ -97,7 +97,7 @@ export default async function ParentDashboardPage({
                 fontSize: 13,
                 fontWeight: 600,
                 textDecoration: "none",
-                color: s.student_id === active.student_id ? "white" : text,
+                color: s.student_id === active.student_id ? "var(--on-btn)" : text,
                 background: s.student_id === active.student_id ? blue : card,
                 border: `1px solid ${s.student_id === active.student_id ? blue : border}`,
               }}
@@ -238,7 +238,7 @@ export default async function ParentDashboardPage({
                     gap: 12,
                     padding: "12px 14px",
                     borderRadius: "var(--radius-sm)",
-                    background: urgent ? "rgba(241, 101, 101, 0.06)" : "var(--bg)",
+                    background: urgent ? "var(--danger-bg)" : "var(--bg)",
                     border: `1px solid ${urgent ? red : border}`,
                   }}
                 >

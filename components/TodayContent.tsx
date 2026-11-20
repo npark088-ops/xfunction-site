@@ -260,7 +260,7 @@ export function TodayContent({
                 padding: "10px 18px",
                 borderRadius: "var(--radius-sm)",
                 background: blue,
-                color: "white",
+                color: "var(--on-btn)",
                 border: "none",
                 fontSize: 13,
                 fontWeight: 700,

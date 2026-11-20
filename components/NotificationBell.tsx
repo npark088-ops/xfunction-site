@@ -8,7 +8,6 @@ import type { NotificationRow } from "../lib/notifications";
 
 const card = "var(--card)";
 const border = "var(--border)";
-const red = "var(--red)";
 const text = "var(--text)";
 const textDim = "var(--text-dim)";
 
@@ -97,8 +96,8 @@ export function NotificationBell({
               height: 16,
               padding: "0 4px",
               borderRadius: 999,
-              background: red,
-              color: "white",
+              background: "var(--danger-fill)",
+              color: "var(--on-danger-fill)",
               fontSize: 10,
               fontWeight: 700,
               display: "flex",
@@ -156,7 +155,7 @@ export function NotificationBell({
                         gap: 10,
                         padding: "10px 10px",
                         borderRadius: "var(--radius-sm)",
-                        background: n.read ? "transparent" : "rgba(37, 99, 235, 0.08)",
+                        background: n.read ? "transparent" : "var(--tint-blue)",
                       }}
                     >
                       <div style={{ color: textDim, flexShrink: 0, paddingTop: 1 }}>

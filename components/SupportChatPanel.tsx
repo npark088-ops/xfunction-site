@@ -9,6 +9,8 @@ const card = "var(--card)";
 const border = "var(--border)";
 const blue = "var(--blue)";
 const green = "var(--green)";
+const fill = "var(--success-fill)"; // solid green parts (header, send button, bubbles)
+const onFill = "var(--on-success-fill)";
 const red = "var(--red)";
 const text = "var(--text)";
 const textDim = "var(--text-dim)";
@@ -139,8 +141,8 @@ export function SupportChatProvider({ children }: { children: React.ReactNode })
           width: 56,
           height: 56,
           borderRadius: "50%",
-          background: green,
-          color: "white",
+          background: fill,
+          color: onFill,
           border: "none",
           display: "flex",
           alignItems: "center",
@@ -159,7 +161,7 @@ export function SupportChatProvider({ children }: { children: React.ReactNode })
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(15, 23, 42, 0.5)",
+            background: "var(--overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -198,8 +200,8 @@ export function SupportChatProvider({ children }: { children: React.ReactNode })
                     width: 32,
                     height: 32,
                     borderRadius: "50%",
-                    background: green,
-                    color: "white",
+                    background: fill,
+                    color: onFill,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -297,8 +299,8 @@ export function SupportChatProvider({ children }: { children: React.ReactNode })
                         width: 28,
                         height: 28,
                         borderRadius: "50%",
-                        background: m.role === "user" ? border : green,
-                        color: m.role === "user" ? text : "white",
+                        background: m.role === "user" ? border : fill,
+                        color: m.role === "user" ? text : onFill,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -311,7 +313,7 @@ export function SupportChatProvider({ children }: { children: React.ReactNode })
                       style={{
                         maxWidth: "80%",
                         background: m.role === "user" ? blue : bg,
-                        color: m.role === "user" ? "white" : text,
+                        color: m.role === "user" ? "var(--on-btn)" : text,
                         border: m.role === "user" ? "none" : `1px solid ${border}`,
                         borderRadius: "var(--radius-md)",
                         padding: "12px 16px",
@@ -332,8 +334,8 @@ export function SupportChatProvider({ children }: { children: React.ReactNode })
                         width: 28,
                         height: 28,
                         borderRadius: "50%",
-                        background: green,
-                        color: "white",
+                        background: fill,
+                        color: onFill,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -397,8 +399,8 @@ export function SupportChatProvider({ children }: { children: React.ReactNode })
                   width: 40,
                   height: 40,
                   borderRadius: "var(--radius-sm)",
-                  background: green,
-                  color: "white",
+                  background: fill,
+                  color: onFill,
                   border: "none",
                   cursor: loading || !input.trim() ? "default" : "pointer",
                   opacity: loading || !input.trim() ? 0.6 : 1,

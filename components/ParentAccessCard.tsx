@@ -218,7 +218,7 @@ export function ParentAccessCard({
           padding: "10px 18px",
           borderRadius: "var(--radius-sm)",
           background: blue,
-          color: "white",
+          color: "var(--on-btn)",
           border: "none",
           fontSize: 14,
           fontWeight: 700,

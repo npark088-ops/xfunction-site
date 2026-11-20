@@ -190,7 +190,7 @@ export function ScheduleGrid({
                 borderRadius: "var(--radius-sm)",
                 border: "none",
                 background: active ? blue : "transparent",
-                color: active ? "white" : textDim,
+                color: active ? "var(--on-btn)" : textDim,
                 fontSize: 13,
                 fontWeight: 700,
                 cursor: "pointer",
@@ -324,7 +324,7 @@ export function ScheduleGrid({
               padding: "9px 18px",
               borderRadius: "var(--radius-sm)",
               background: blue,
-              color: "white",
+              color: "var(--on-btn)",
               border: "none",
               fontSize: 13,
               fontWeight: 700,
@@ -516,8 +516,8 @@ export function ScheduleGrid({
                           gap: 4,
                         }}
                       >
-                        <Timer size={10} strokeWidth={2.5} color="white" style={{ flexShrink: 0 }} />
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <Timer size={10} strokeWidth={2.5} color="var(--on-course)" style={{ flexShrink: 0 }} />
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--on-course)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {courseName(s.course_id)}
                         </span>
                       </div>

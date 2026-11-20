@@ -553,7 +553,7 @@ const button = {
   gap: 8,
   background: blue,
   border: "none",
-  color: "white",
+  color: "var(--on-btn)",
   padding: "12px 20px",
   borderRadius: "var(--radius-sm)",
   cursor: "pointer",

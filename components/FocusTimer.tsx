@@ -30,7 +30,7 @@ const primaryButton = {
   padding: "10px 22px",
   borderRadius: "var(--radius-sm)",
   background: blue,
-  color: "white",
+  color: "var(--on-btn)",
   border: "none",
   fontSize: 14,
   fontWeight: 700,
@@ -56,7 +56,7 @@ const stepperButton = {
   height: 26,
   borderRadius: "var(--radius-sm)",
   border: `1px solid ${border}`,
-  background: "white",
+  background: "var(--card)",
   color: text,
   display: "flex",
   alignItems: "center",
@@ -162,7 +162,7 @@ export function FocusTimer({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(15, 23, 42, 0.5)",
+        background: "var(--overlay)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -237,7 +237,7 @@ export function FocusTimer({
               {phase === "focus" ? "Nice work — take a break." : "Break's over — ready to focus?"}
             </div>
             <button onClick={switchPhase} style={primaryButton}>
-              <Play size={14} strokeWidth={2} fill="white" />
+              <Play size={14} strokeWidth={2} style={{ fill: "var(--on-btn)" }} />
               {phase === "focus" ? "Start break" : "Start next focus session"}
             </button>
           </div>
@@ -245,7 +245,7 @@ export function FocusTimer({
           <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 28 }}>
             {!running ? (
               <button onClick={start} style={primaryButton}>
-                <Play size={14} strokeWidth={2} fill="white" />
+                <Play size={14} strokeWidth={2} style={{ fill: "var(--on-btn)" }} />
                 Start
               </button>
             ) : (

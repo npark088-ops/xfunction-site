@@ -13,6 +13,7 @@ import {
 import { BarChart3, Award } from "lucide-react";
 import { weeklyTotals, minutesByCourse, totalMinutes, formatDuration, type StudySession } from "../lib/study-sessions";
 import { resolveCssVar } from "../lib/theme-color";
+import { useResolvedTheme } from "../lib/use-theme";
 
 ChartJS.register(BarElement, LinearScale, CategoryScale, Tooltip);
 
@@ -41,15 +42,20 @@ export function StudyStats({
   const byCourse = useMemo(() => minutesByCourse(sessions), [sessions]);
   const allTimeTotal = useMemo(() => totalMinutes(sessions), [sessions]);
 
+  // The chart palette comes from the theme tokens (app/app.css) and is read
+  // again whenever the student switches Light / Dark / System, so the lines,
+  // gridlines, labels and tooltips are readable in both modes.
+  const theme = useResolvedTheme();
   const colors = useMemo(
     () => ({
-      blue: resolveCssVar("--blue", "#2563EB"),
-      border: resolveCssVar("--border", "#E2E8F0"),
-      bg: resolveCssVar("--bg", "#FFFFFF"),
-      text: resolveCssVar("--text", "#0F172A"),
-      textDim: resolveCssVar("--text-dim", "#64748B"),
+      blue: resolveCssVar("--chart-line", "#0878EF"),
+      border: resolveCssVar("--chart-grid", "#D9E5F7"),
+      bg: resolveCssVar("--card", "#FFFFFF"),
+      text: resolveCssVar("--text", "#092C67"),
+      textDim: resolveCssVar("--text-dim", "#37507F"),
     }),
-    []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [theme]
   );
 
   const chartData = {
@@ -74,7 +80,7 @@ export function StudyStats({
         borderColor: colors.border,
         borderWidth: 1,
         titleColor: colors.text,
-        bodyColor: colors.blue,
+        bodyColor: colors.text,
         padding: 10,
         callbacks: {
           label: (ctx: TooltipItem<"bar">) => `${ctx.parsed.y}h studied`,

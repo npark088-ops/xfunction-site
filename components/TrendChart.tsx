@@ -14,12 +14,13 @@ import {
 } from "chart.js";
 import type { GradePoint } from "../lib/grade-history";
 import { resolveCssVar } from "../lib/theme-color";
+import { useResolvedTheme } from "../lib/use-theme";
 
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler);
 
 function hexToRgba(hex: string, alpha: number): string {
   const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!match) return `rgba(37, 99, 235, ${alpha})`;
+  if (!match) return `rgba(8, 120, 239, ${alpha})`;
   const r = parseInt(match[1], 16);
   const g = parseInt(match[2], 16);
   const b = parseInt(match[3], 16);
@@ -27,15 +28,20 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 export function TrendChart({ points, height = 160 }: { points: GradePoint[]; height?: number }) {
+  // The chart palette comes from the theme tokens (app/app.css) and is read
+  // again whenever the student switches Light / Dark / System, so the lines,
+  // gridlines, labels and tooltips are readable in both modes.
+  const theme = useResolvedTheme();
   const colors = useMemo(
     () => ({
-      blue: resolveCssVar("--blue", "#2563EB"),
-      border: resolveCssVar("--border", "#E2E8F0"),
-      bg: resolveCssVar("--bg", "#FFFFFF"),
-      text: resolveCssVar("--text", "#0F172A"),
-      textDim: resolveCssVar("--text-dim", "#64748B"),
+      blue: resolveCssVar("--chart-line", "#0878EF"),
+      border: resolveCssVar("--chart-grid", "#D9E5F7"),
+      bg: resolveCssVar("--card", "#FFFFFF"),
+      text: resolveCssVar("--text", "#092C67"),
+      textDim: resolveCssVar("--text-dim", "#37507F"),
     }),
-    []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [theme]
   );
 
   const data = {
@@ -66,7 +72,7 @@ export function TrendChart({ points, height = 160 }: { points: GradePoint[]; hei
         borderColor: colors.border,
         borderWidth: 1,
         titleColor: colors.text,
-        bodyColor: colors.blue,
+        bodyColor: colors.text,
         padding: 10,
         callbacks: {
           label: (ctx: TooltipItem<"line">) =>

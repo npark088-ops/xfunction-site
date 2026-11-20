@@ -20,7 +20,7 @@ export function DemoDataBadge() {
         gap: 6,
         padding: "4px 10px",
         borderRadius: 999,
-        background: "rgba(245, 166, 35, 0.14)",
+        background: "var(--warning-bg)",
         border: `1px solid ${amber}`,
         color: amber,
         fontSize: 11,
