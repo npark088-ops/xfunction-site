@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import posthog from "posthog-js";
 import {
   PartyPopper,
@@ -10,14 +10,17 @@ import {
   Trash2,
   Sun,
   Moon,
+  Monitor,
   Trophy,
   Mail,
   MessageSquareOff,
   Bell,
   Headset,
+  type LucideIcon,
 } from "lucide-react";
 import { ACHIEVEMENTS } from "../lib/achievements";
 import { AI_LIMITS, describeReset } from "../lib/ai-limits";
+import { readThemeChoice, saveThemeChoice, type ThemeChoice } from "../lib/theme";
 import { browserTimeZone } from "../lib/local-date";
 import { useSupportChat } from "./SupportChatPanel";
 
@@ -45,8 +48,7 @@ function Toggle({
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
       aria-pressed={on}
-      // The dark-mode toggle's initial `on` value is read from the DOM
-      // (see darkMode's lazy useState initializer below), which can
+      // A toggle's state can come from the browser (saved settings), which can
       // legitimately differ from the server-rendered markup — that's
       // expected, not a real mismatch, so it shouldn't warn.
       suppressHydrationWarning
@@ -54,7 +56,7 @@ function Toggle({
         width: 44,
         height: 24,
         borderRadius: 999,
-        border: `1px solid ${on && !disabled ? blue : border}`,
+        border: `1px solid ${on && !disabled ? blue : "var(--control-border)"}`,
         background: on && !disabled ? blue : "transparent",
         position: "relative",
         cursor: disabled ? "not-allowed" : "pointer",
@@ -71,13 +73,19 @@ function Toggle({
           width: 18,
           height: 18,
           borderRadius: "50%",
-          background: on && !disabled ? "white" : textDim,
+          background: on && !disabled ? "var(--on-btn)" : "var(--control-border)",
           transition: "left 0.15s ease",
         }}
       />
     </button>
   );
 }
+
+const THEME_OPTIONS: { value: ThemeChoice; label: string; hint: string; Icon: LucideIcon }[] = [
+  { value: "light", label: "Light", hint: "Always light", Icon: Sun },
+  { value: "dark", label: "Dark", hint: "Always dark", Icon: Moon },
+  { value: "system", label: "System", hint: "Match my device", Icon: Monitor },
+];
 
 // Everything here is seeded from the server (see
 // app/(dashboard)/settings/page.tsx) — email, plan/usage, and
@@ -124,28 +132,20 @@ export function SettingsContent({
     { kind: "sending" } | { kind: "sent" } | { kind: "error"; message: string } | null
   >(null);
 
-  // Lazy initializer (not an effect) reads the DOM attribute the
-  // no-flash script in app/layout.tsx already set before first paint —
-  // this just syncs the toggle's own displayed state with it.
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    if (typeof document === "undefined") return false;
-    return document.documentElement.getAttribute("data-theme") === "dark";
-  });
+  // The saved choice (Light / Dark / System, default System). The page is
+  // already showing the right theme before this renders (the script in
+  // app/layout.tsx); this just shows which option is selected. The choice is
+  // read after mount so the server and browser render the same thing first.
+  const [themeChoice, setThemeChoice] = useState<ThemeChoice>("system");
+  useEffect(() => {
+    // Reading localStorage can only happen in the browser, after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setThemeChoice(readThemeChoice());
+  }, []);
 
-  const toggleDarkMode = () => {
-    const next = !darkMode;
-    setDarkMode(next);
-    if (next) {
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-      document.documentElement.removeAttribute("data-theme");
-    }
-    try {
-      localStorage.setItem("theme", next ? "dark" : "light");
-    } catch {
-      // Private browsing / storage disabled — the toggle still works
-      // for this page load, it just won't be remembered next visit.
-    }
+  const chooseTheme = (choice: ThemeChoice) => {
+    setThemeChoice(choice);
+    saveThemeChoice(choice);
   };
 
   const startCheckout = () => {
@@ -224,6 +224,7 @@ export function SettingsContent({
       .catch(() => setDigestStatus({ kind: "error", message: "Failed to send digest" }));
   };
 
+
   const unlockedSet = new Set(unlockedAchievementIds);
 
   return (
@@ -234,12 +235,12 @@ export function SettingsContent({
             display: "flex",
             alignItems: "center",
             gap: 10,
-            background: "#F0FDF4",
+            background: "var(--success-bg)",
             border: `1px solid ${green}`,
             borderRadius: "var(--radius-md)",
             padding: "14px 18px",
             marginBottom: 24,
-            color: "#166534",
+            color: "var(--success)",
             fontSize: 14,
             fontWeight: 600,
           }}
@@ -277,7 +278,7 @@ export function SettingsContent({
 
         {isPro ? (
           <>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#8A5A00", marginBottom: 4 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--warning)", marginBottom: 4 }}>
               XFunction Pro
             </div>
             <div style={{ fontSize: 13, color: textDim, marginBottom: 16 }}>
@@ -342,7 +343,7 @@ export function SettingsContent({
                 padding: "10px 18px",
                 borderRadius: "var(--radius-sm)",
                 background: blue,
-                color: "white",
+                color: "var(--on-btn)",
                 border: "none",
                 fontSize: 14,
                 fontWeight: 700,
@@ -554,9 +555,9 @@ export function SettingsContent({
                   style={{
                     padding: "10px 18px",
                     borderRadius: "var(--radius-sm)",
-                    background: red,
+                    background: "var(--danger-fill)",
                     border: "none",
-                    color: "white",
+                    color: "var(--on-danger-fill)",
                     fontSize: 14,
                     fontWeight: 700,
                     cursor: deleteConfirmText === "DELETE" && !deleting ? "pointer" : "default",
@@ -608,20 +609,28 @@ export function SettingsContent({
         <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: text }}>
           Appearance
         </h2>
-        <p style={{ fontSize: 12, color: textDim, marginBottom: 20 }}>
-          Choose how XFunction looks.
+        <p style={{ fontSize: 12, color: textDim, marginBottom: 16 }}>
+          Choose how XFunction looks. Remembered on this browser.
         </p>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {darkMode ? <Moon size={17} strokeWidth={2} color={textDim} /> : <Sun size={17} strokeWidth={2} color={textDim} />}
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: text }}>Dark mode</div>
-              <div style={{ fontSize: 12, color: textDim }}>
-                Switches the whole app to a dark theme. Remembered on this browser.
-              </div>
-            </div>
-          </div>
-          <Toggle on={darkMode} onClick={toggleDarkMode} />
+        <div role="radiogroup" aria-label="Theme" className="xf-theme-options">
+          {THEME_OPTIONS.map(({ value, label, hint, Icon }) => {
+            const selected = themeChoice === value;
+            return (
+              <label key={value} className={`xf-theme-option${selected ? " is-selected" : ""}`}>
+                <input
+                  type="radio"
+                  name="theme"
+                  value={value}
+                  checked={selected}
+                  onChange={() => chooseTheme(value)}
+                  className="xf-theme-option__input"
+                />
+                <Icon size={18} strokeWidth={2} aria-hidden="true" />
+                <span className="xf-theme-option__label">{label}</span>
+                <span className="xf-theme-option__hint">{hint}</span>
+              </label>
+            );
+          })}
         </div>
       </div>
 
@@ -672,7 +681,7 @@ export function SettingsContent({
                   gap: 12,
                   padding: 14,
                   borderRadius: "var(--radius-md)",
-                  background: unlocked ? "#F0FDF4" : bg,
+                  background: unlocked ? "var(--success-bg)" : bg,
                   border: `1px solid ${unlocked ? green : border}`,
                   opacity: unlocked ? 1 : 0.6,
                 }}

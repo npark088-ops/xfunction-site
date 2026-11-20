@@ -50,19 +50,63 @@
   --xf-hero-on-btn: #092C67;
   --xf-urgent-bg: #FFE3E0;
   --xf-urgent-text: #8F1D14;
-  --xf-warn-bg: #FFF8EB;
+  --xf-warn-bg: #FFF4DD;
   --xf-warn-text: #7A4D00;
 
-  /* The names every existing screen already reads. */
-  --bg: #F2F7FF;
-  --card: #FFFFFF;
+  /* ---------------- THE COLOR TOKENS (light) ----------------
+     Everything in the signed-in app takes its colors from these names, so a
+     screen needs no theme logic of its own: dark mode only swaps the values
+     (the block below). scripts/check-contrast.cjs checks every pair that
+     matters against WCAG AA for BOTH modes; run it after changing a value. */
+
+  /* Surfaces and text */
+  --bg: #F2F7FF;            /* page */
+  --card: #FFFFFF;          /* cards, sidebar, top bar */
   --border: #D9E5F7;
-  --text: #092C67;
-  --text-dim: #4A6088;
-  --blue: #0666CC;
-  --green: #15803D;
-  --red: #C62828;
-  --amber: #9A5B00;
+  --text: #092C67;          /* navy */
+  --text-dim: #37507F;      /* secondary text */
+
+  /* Links and accents */
+  --blue: #0666CC;          /* link text */
+  --accent: #0878EF;        /* graphics and the focus ring (never small text) */
+  --control-border: #6B84AE; /* borders of form fields and switches (3:1 on cards and the page) */
+  --btn: #076BD6;           /* button fill */
+  --on-btn: #FFFFFF;        /* text on a button */
+
+  /* Status. Each has a text color, a soft background to sit on, and a solid
+     fill (for badges) with the text color that goes on it. */
+  --success: #15803D;
+  --success-bg: #EEF8F1;
+  --success-fill: #15803D;
+  --on-success-fill: #FFFFFF;
+  --warning: #8A5300;
+  --warning-bg: #FFF4DD;
+  --danger: #C62828;
+  --danger-bg: #FDECEA;
+  --danger-fill: #C62828;
+  --on-danger-fill: #FFFFFF;
+
+  /* The older names, kept so existing screens keep working. */
+  --green: var(--success);
+  --red: var(--danger);
+  --amber: var(--warning);
+
+  /* Overlays and tints */
+  --overlay: rgba(9, 44, 103, 0.5);
+  --tint-blue: rgba(8, 120, 239, 0.08);
+
+  /* Charts */
+  --chart-line: #0878EF;
+  --chart-grid: #D9E5F7;
+
+  /* Course colors: dots, bars and the blocks on the schedule. The teal is
+     darker than the default so the white text on those blocks passes. */
+  --course-purple: #7C3AED;
+  --course-teal: #0F766E;
+  --course-pink: #BE185D;
+  --on-course: #FFFFFF;
+
+  color-scheme: light;
 
   /* --- type --- */
   --xf-font-heading: var(--font-brand), var(--font-body), system-ui, sans-serif;
@@ -118,15 +162,43 @@
   --xf-warn-bg: #3A2E12;
   --xf-warn-text: #FFD590;
 
+  /* ---------------- THE COLOR TOKENS (dark) ---------------- */
   --bg: #071A40;
   --card: #0C2656;
   --border: #244A88;
   --text: #F2F7FF;
   --text-dim: #B4C7E8;
+
   --blue: #9BCBFF;
-  --green: #4ADE80;
-  --red: #FF9C92;
-  --amber: #F5A623;
+  --accent: #9BCBFF;
+  --control-border: #6C93D2;
+  --btn: #9BCBFF;
+  --on-btn: #092C67;
+
+  --success: #4ADE80;
+  --success-bg: #123D2B;
+  --success-fill: #4ADE80;
+  --on-success-fill: #062A18;
+  --warning: #F5B94A;
+  --warning-bg: #3A2E12;
+  --danger: #FF9C92;
+  --danger-bg: #4A1D1D;
+  --danger-fill: #FF9C92;
+  --on-danger-fill: #3B0D0A;
+
+  --overlay: rgba(0, 0, 0, 0.62);
+  --tint-blue: rgba(155, 203, 255, 0.12);
+
+  --chart-line: #9BCBFF;
+  --chart-grid: #244A88;
+
+  /* Course colors, lightened for the dark page; text on them is navy. */
+  --course-purple: #A78BFA;
+  --course-teal: #2DD4BF;
+  --course-pink: #F472B6;
+  --on-course: #092C67;
+
+  color-scheme: dark;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 14px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.45), 0 10px 26px rgba(0, 0, 0, 0.35);
@@ -202,17 +274,15 @@ body:has(.xf-app) {
   outline-offset: 2px;
 }
 
-/* In dark mode a filled button is light blue, so its label has to be navy.
-   Older screens hard-code white labels on `background: var(--blue)`. */
-/* (Server-rendered style attributes have no space after the colon; ones set in
-   the browser do, so both spellings are matched.) */
-:root[data-theme="dark"] .xf-app button[style*="background:var(--blue)"],
-:root[data-theme="dark"] .xf-app button[style*="background: var(--blue)"],
-:root[data-theme="dark"] .xf-app a[style*="background:var(--blue)"],
-:root[data-theme="dark"] .xf-app a[style*="background: var(--blue)"],
-:root[data-theme="dark"] .xf-app [style*="background:var(--red)"],
-:root[data-theme="dark"] .xf-app [style*="background: var(--red)"] {
-  color: #092C67 !important;
+/* Form fields: a border you can actually see (3:1 against the card and the
+   page, in both modes). Older screens set their own border inline, hence
+   !important. Placeholders use the secondary text color so they stay readable. */
+.xf-app :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]) {
+  border-color: var(--control-border) !important;
+}
+.xf-app ::placeholder {
+  color: var(--text-dim);
+  opacity: 1;
 }
 
 /* ------------------------------------------------------------
@@ -417,7 +487,7 @@ body:has(.xf-app) {
   .xf-mobile-topbar {
     background: var(--card);
     border-bottom: 1px solid var(--border);
-    box-shadow: 0 1px 0 rgba(9, 44, 103, 0.04), 0 6px 18px rgba(9, 44, 103, 0.06);
+    box-shadow: var(--shadow-sm);
   }
 }
 
@@ -811,4 +881,73 @@ a.dash-row:hover {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ------------------------------------------------------------
+   Appearance setting (Settings): Light / Dark / System
+   ------------------------------------------------------------ */
+.xf-theme-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--xf-space-3);
+}
+@media (min-width: 560px) {
+  .xf-theme-options {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.xf-theme-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  grid-template-areas: "icon label" "icon hint";
+  column-gap: var(--xf-space-3);
+  align-items: center;
+  min-height: 64px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 2px solid var(--control-border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.xf-theme-option svg {
+  grid-area: icon;
+  color: var(--text-dim);
+}
+.xf-theme-option__label {
+  grid-area: label;
+  font-weight: 800;
+  font-size: var(--xf-text-sm);
+}
+.xf-theme-option__hint {
+  grid-area: hint;
+  font-size: var(--xf-text-xs);
+  color: var(--text-dim);
+}
+.xf-theme-option:hover {
+  border-color: var(--accent);
+}
+.xf-theme-option.is-selected {
+  border-color: var(--accent);
+  background: var(--xf-ice-2);
+}
+.xf-theme-option.is-selected svg {
+  color: var(--blue);
+}
+/* The real radio input is hidden visually but stays in the page for keyboards
+   and screen readers; the card shows the focus ring. */
+.xf-theme-option__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.xf-theme-option:has(.xf-theme-option__input:focus-visible) {
+  outline: 3px solid var(--xf-focus);
+  outline-offset: 2px;
 }

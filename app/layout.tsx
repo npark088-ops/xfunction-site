@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Inter, Newsreader, Plus_Jakarta_Sans, Sora } from "next/font/google";
 import { PostHogAppProvider } from "../components/PostHogProvider";
+import { THEME_INIT_SCRIPT } from "../lib/theme";
 import "./globals.css";
 import "./marketing.css";
 
@@ -102,12 +103,10 @@ export default function RootLayout({
             isn't valid HTML and throws a real hydration error; a raw
             script tag works because the browser executes it during the
             initial HTML parse, before React ever touches this node. The
-            toggle lives in Settings → Appearance (components/SettingsContent.tsx). */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();`,
-          }}
-        />
+            choice (Light / Dark / System, default System) lives in
+            Settings → Appearance (components/SettingsContent.tsx); the logic
+            is in lib/theme.ts. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
 
       {/* ✅ GOOGLE ANALYTICS */}

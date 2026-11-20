@@ -7,6 +7,7 @@ import { ConsultantPanelProvider } from "../../components/ConsultantPanel";
 import { SupportChatProvider } from "../../components/SupportChatPanel";
 import { getNotificationsSnapshot } from "../../lib/notifications";
 import { TimezoneSync } from "../../components/TimezoneSync";
+import { ThemeSync } from "../../components/ThemeSync";
 
 import "../app.css";
 
@@ -61,6 +62,7 @@ export default async function DashboardLayout({
     <div className="xf-app" style={{ display: "contents" }}>
     <ToastProvider>
       {user && <TimezoneSync />}
+      <ThemeSync />
       {user && <ToastWatcher />}
       {user && <OnboardingTour />}
       {/* ConsultantPanelProvider wraps Sidebar (not just page content) so
