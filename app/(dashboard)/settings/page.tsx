@@ -62,7 +62,8 @@ export default async function SettingsPage({
         getCanvasConnection(supabase, user.id),
         supabase
           .from("parent_links")
-          .select("id, parent_email, status, invite_code, created_at")
+          .select("id, parent_email, status, expires_at, created_at")
+          .eq("student_id", user.id)
           .order("created_at", { ascending: false }),
         supabase
           .from("grade_predictions")
@@ -215,7 +216,7 @@ export default async function SettingsPage({
           )}
         </div>
 
-        <ParentAccessCard initialLinks={parentLinks} userEmail={user?.email ?? null} />
+        <ParentAccessCard initialLinks={parentLinks} />
       </div>
     </div>
   );

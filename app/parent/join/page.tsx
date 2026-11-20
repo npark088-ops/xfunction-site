@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { UserCheck, AlertCircle } from "lucide-react";
-import { createClient } from "../../../lib/supabase/client";
 
 const card = "var(--card)";
 const border = "var(--border)";
@@ -28,6 +27,8 @@ function JoinForm() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
 
+  // The student's email arrives already masked ("j***@gmail.com"): the server
+  // never sends the full address to a parent who hasn't accepted yet.
   const [studentEmail, setStudentEmail] = useState<string | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
   // Lazy initializer (not an effect) reads `code` — already available
@@ -42,16 +43,23 @@ function JoinForm() {
 
   useEffect(() => {
     if (!code) return;
-    const supabase = createClient();
-    supabase
-      .rpc("peek_parent_invite", { p_invite_code: code })
-      .then(({ data, error }) => {
+    fetch("/api/parent/peek", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
         setPreviewLoading(false);
-        if (error || !data || data.length === 0) {
-          setPreviewError("This invite link is invalid or has already been used.");
+        if (!ok || !data.maskedEmail) {
+          setPreviewError(data.message || "This invite link is invalid, expired or has already been used.");
           return;
         }
-        setStudentEmail(data[0].student_email);
+        setStudentEmail(data.maskedEmail);
+      })
+      .catch(() => {
+        setPreviewLoading(false);
+        setPreviewError("Something went wrong. Please try again.");
       });
   }, [code]);
 
@@ -59,16 +67,23 @@ function JoinForm() {
     if (!code) return;
     setAccepting(true);
     setAcceptError(null);
-    const supabase = createClient();
-    supabase
-      .rpc("accept_parent_invite", { p_invite_code: code })
-      .then(({ data, error }) => {
+    fetch("/api/parent/accept", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
         setAccepting(false);
-        if (error || !data || data.length === 0) {
-          setAcceptError(error?.message || "Failed to accept this invite.");
+        if (!ok) {
+          setAcceptError(data.message || "Failed to accept this invite.");
           return;
         }
         setAccepted(true);
+      })
+      .catch(() => {
+        setAccepting(false);
+        setAcceptError("Something went wrong. Please try again.");
       });
   };
 
@@ -138,8 +153,9 @@ function JoinForm() {
               </h1>
               <p style={{ fontSize: 14, color: textDim, marginBottom: 24, lineHeight: 1.6 }}>
                 Link your account for read-only access to <strong style={{ color: text }}>{studentEmail}</strong>&apos;s
-                overall grades, upcoming deadlines, and grade trend. You won&apos;t be able to see
-                their notes or change anything.
+                overall grade and trend, each class&apos;s grade, and what&apos;s due soon. You
+                won&apos;t see their individual scores, notes or anything else, and you can&apos;t change anything. They
+                can end your access at any time, and so can you.
               </p>
               <button
                 onClick={accept}
