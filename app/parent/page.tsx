@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { getCachedUser, createClient } from "../../lib/supabase/server";
-import { getCreditHours } from "../../lib/mock-canvas-data";
-import { getUserCourses } from "../../lib/user-courses";
-import { calculateCurrentGrade, calculateWeightedOverallGrade } from "../../lib/grade-calculator";
-import { getOverallGradeHistory, trendDirection } from "../../lib/grade-history";
-import { getUpcomingAssignments, URGENT_WITHIN_DAYS } from "../../lib/upcoming-assignments";
+import { URGENT_WITHIN_DAYS } from "../../lib/upcoming-assignments";
+import { getParentSummary } from "../../lib/parent-server";
+import { calendarDaysBetween, localDate } from "../../lib/local-date";
+import { LeaveLinkButton } from "../../components/LeaveLinkButton";
 import { Gauge, gradeColor } from "../../components/Gauge";
 import { TrendChart } from "../../components/TrendChart";
 import { Users, TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
@@ -32,12 +31,15 @@ export default async function ParentDashboardPage({
   const { student: selectedStudentId } = await searchParams;
   const user = await getCachedUser();
 
-  let linkedStudents: { student_id: string; student_email: string }[] = [];
+  // Only links where the signed-in user is the PARENT. (A student who has
+  // parents linked must not see their own links listed here as "students".)
+  let linkedStudents: { id: string; student_id: string; student_email: string }[] = [];
   if (user) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("parent_links")
-      .select("student_id, student_email")
+      .select("id, student_id, student_email")
+      .eq("parent_id", user.id)
       .eq("status", "active")
       .order("accepted_at", { ascending: true });
     if (error) console.error(error);
@@ -62,26 +64,36 @@ export default async function ParentDashboardPage({
   const active =
     linkedStudents.find((s) => s.student_id === selectedStudentId) ?? linkedStudents[0];
 
-  // Genuinely the linked STUDENT's own real courses (see
-  // lib/user-courses.ts), fetched with the signed-in PARENT's own
-  // session — that works because of the "Parents can view their linked
-  // student's courses" RLS policy (see supabase/migrations/0022_manual_courses.sql),
-  // which only allows it for an active, accepted link. Without that
-  // policy this would just silently return nothing (RLS still scopes
-  // it to auth.uid() = the parent, not the student).
+  // Parents have NO direct database access to a student's courses, categories or
+  // assignments. getParentSummary (lib/parent-server.ts) first checks, from this
+  // parent's own session, that an ACTIVE link to this student exists, then reads
+  // with the admin client and returns only: overall grade and trend, per-class
+  // grade, and upcoming work (title, class, due date). No scores, notes, tasks,
+  // goals, study sessions, schedule, plans, chat, settings or notifications.
   const supabase = await createClient();
-  const studentCourses = await getUserCourses(supabase, active.student_id);
+  const timeZone = await getRequestTimeZone();
+  const summary = await getParentSummary(supabase, active.student_id, timeZone);
 
-  const courses = Object.values(studentCourses).map((c) => ({
-    id: c.id,
-    name: c.name,
-    grade: calculateCurrentGrade(c.assignmentGroups),
-    creditHours: getCreditHours(c),
+  if (!summary) {
+    return (
+      <div style={{ maxWidth: 640, margin: "0 auto", padding: "64px 24px", textAlign: "center" }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: text, marginBottom: 8 }}>
+          This view isn&apos;t available right now
+        </h1>
+        <p style={{ fontSize: 14, color: textDim, lineHeight: 1.6 }}>
+          Please try again in a moment. If it keeps happening, ask the student to send a new invite.
+        </p>
+      </div>
+    );
+  }
+
+  const { overallGrade, trend, courses } = summary;
+  const overallGradeHistory = summary.history;
+  const todayStr = localDate(timeZone);
+  const upcoming = summary.upcoming.map((u) => ({
+    ...u,
+    daysAway: u.dueDate ? Math.max(0, calendarDaysBetween(todayStr, u.dueDate)) : 7,
   }));
-  const overallGrade = calculateWeightedOverallGrade(courses);
-  const overallGradeHistory = getOverallGradeHistory(overallGrade, Object.keys(studentCourses));
-  const trend = trendDirection(overallGradeHistory);
-  const upcoming = getUpcomingAssignments(studentCourses, 7, await getRequestTimeZone());
 
   return (
     <div className="xf-page-enter" style={{ maxWidth: 820, margin: "0 auto", padding: "40px 40px 64px" }}>
@@ -130,7 +142,12 @@ export default async function ParentDashboardPage({
         }}
       >
         <Info size={14} strokeWidth={2} />
-        You have read-only access — notes, settings, and AI tools aren&apos;t visible here.
+        You have read-only access: overall grade, each class&apos;s grade and what&apos;s due soon. Individual scores,
+        notes and everything else stay private to the student.
+      </div>
+
+      <div style={{ marginBottom: 24 }}>
+        <LeaveLinkButton linkId={active.id} studentLabel={active.student_email} />
       </div>
 
       {/* Overall grade */}
@@ -243,8 +260,8 @@ export default async function ParentDashboardPage({
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: 12, color: blue, marginBottom: 2 }}>{item.courseName}</div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: text }}>{item.assignmentName}</div>
+                    <div style={{ fontSize: 12, color: blue, marginBottom: 2 }}>{item.course}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: text }}>{item.title}</div>
                   </div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: urgent ? red : textDim, whiteSpace: "nowrap" }}>
                     {daysAwayLabel(item.daysAway)}
